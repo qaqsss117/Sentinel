@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:riverpod/riverpod.dart';
 import 'context.dart';
 
-mixin AutoDisposeNotifierMixin<T> on AutoDisposeNotifier<T> {
+mixin AutoDisposeNotifierMixin<T> on AnyNotifier<T, T> {
   set value(T value) {
     state = value;
   }
 
   @override
-  bool updateShouldNotify(previous, next) {
+  bool updateShouldNotify(T previous, T next) {
     final res = super.updateShouldNotify(previous, next);
     if (res) {
       onUpdate(next);
@@ -17,7 +17,7 @@ mixin AutoDisposeNotifierMixin<T> on AutoDisposeNotifier<T> {
     return res;
   }
 
-  onUpdate(T value) {}
+  void onUpdate(T value) {}
 }
 
 mixin PageMixin<T extends StatefulWidget> on State<T> {

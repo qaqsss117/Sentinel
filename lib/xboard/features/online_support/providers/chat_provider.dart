@@ -10,6 +10,7 @@ import 'package:fl_clash/xboard/features/online_support/services/service_config.
 import 'package:fl_clash/xboard/features/online_support/services/websocket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('chat_provider.dart');

@@ -5,7 +5,7 @@ part 'generated/invite.g.dart';
 
 /// 领域层：邀请信息模型
 @freezed
-class DomainInvite with _$DomainInvite {
+abstract class DomainInvite with _$DomainInvite {
   const factory DomainInvite({
     /// 邀请码列表
     @Default([]) List<DomainInviteCode> codes,
@@ -25,7 +25,7 @@ class DomainInvite with _$DomainInvite {
 
 /// 邀请码模型
 @freezed
-class DomainInviteCode with _$DomainInviteCode {
+abstract class DomainInviteCode with _$DomainInviteCode {
   const factory DomainInviteCode({
     /// 邀请码
     required String code,
@@ -60,7 +60,7 @@ extension DomainInviteCodeX on DomainInviteCode {
 
 /// 邀请统计模型
 @freezed
-class InviteStats with _$InviteStats {
+abstract class InviteStats with _$InviteStats {
   const factory InviteStats({
     /// 邀请人数
     @Default(0) int invitedCount,
@@ -89,7 +89,7 @@ class InviteStats with _$InviteStats {
 
 /// 佣金明细模型
 @freezed
-class DomainCommission with _$DomainCommission {
+abstract class DomainCommission with _$DomainCommission {
   const factory DomainCommission({
     /// ID
     required int id,

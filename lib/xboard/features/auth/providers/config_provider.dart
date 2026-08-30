@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 /// 配置数据Provider

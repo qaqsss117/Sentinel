@@ -7,7 +7,7 @@ part 'generated/plan.g.dart';
 /// 
 /// 代表应用中"套餐/订阅计划"的概念
 @freezed
-class DomainPlan with _$DomainPlan {
+abstract class DomainPlan with _$DomainPlan {
   const factory DomainPlan({
     /// 套餐 ID
     required int id,

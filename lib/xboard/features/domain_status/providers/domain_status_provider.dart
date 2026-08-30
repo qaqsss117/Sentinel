@@ -1,5 +1,6 @@
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../models/domain_status_state.dart';
 import '../services/domain_status_service.dart';

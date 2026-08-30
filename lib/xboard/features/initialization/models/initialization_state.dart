@@ -22,7 +22,7 @@ enum InitializationStatus {
 
 /// XBoard 初始化状态
 @freezed
-class InitializationState with _$InitializationState {
+abstract class InitializationState with _$InitializationState {
   const factory InitializationState({
     /// 当前状态
     @Default(InitializationStatus.idle) InitializationStatus status,

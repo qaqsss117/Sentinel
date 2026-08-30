@@ -5,7 +5,7 @@ part 'generated/notice.g.dart';
 
 /// 领域层：公告模型
 @freezed
-class DomainNotice with _$DomainNotice {
+abstract class DomainNotice with _$DomainNotice {
   const factory DomainNotice({
     /// 公告 ID
     required int id,

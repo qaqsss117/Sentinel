@@ -6,7 +6,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'generated/config.g.dart';
 
 @riverpod
-class AppSetting extends _$AppSetting with AutoDisposeNotifierMixin {
+class AppSetting extends _$AppSetting
+  with AutoDisposeNotifierMixin<AppSettingProps> {
   @override
   AppSettingProps build() {
     return globalState.config.appSetting;
@@ -25,7 +26,8 @@ class AppSetting extends _$AppSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class WindowSetting extends _$WindowSetting with AutoDisposeNotifierMixin {
+class WindowSetting extends _$WindowSetting
+  with AutoDisposeNotifierMixin<WindowProps> {
   @override
   WindowProps build() {
     return globalState.config.windowProps;
@@ -44,7 +46,8 @@ class WindowSetting extends _$WindowSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class VpnSetting extends _$VpnSetting with AutoDisposeNotifierMixin {
+class VpnSetting extends _$VpnSetting
+  with AutoDisposeNotifierMixin<VpnProps> {
   @override
   VpnProps build() {
     return globalState.config.vpnProps;
@@ -63,7 +66,8 @@ class VpnSetting extends _$VpnSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class NetworkSetting extends _$NetworkSetting with AutoDisposeNotifierMixin {
+class NetworkSetting extends _$NetworkSetting
+  with AutoDisposeNotifierMixin<NetworkProps> {
   @override
   NetworkProps build() {
     return globalState.config.networkProps;
@@ -82,7 +86,8 @@ class NetworkSetting extends _$NetworkSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class ThemeSetting extends _$ThemeSetting with AutoDisposeNotifierMixin {
+class ThemeSetting extends _$ThemeSetting
+  with AutoDisposeNotifierMixin<ThemeProps> {
   @override
   ThemeProps build() {
     return globalState.config.themeProps;
@@ -101,7 +106,8 @@ class ThemeSetting extends _$ThemeSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Profiles extends _$Profiles with AutoDisposeNotifierMixin {
+class Profiles extends _$Profiles
+  with AutoDisposeNotifierMixin<List<Profile>> {
   @override
   List<Profile> build() {
     return globalState.config.profiles;
@@ -157,7 +163,7 @@ class Profiles extends _$Profiles with AutoDisposeNotifierMixin {
 
 @riverpod
 class CurrentProfileId extends _$CurrentProfileId
-    with AutoDisposeNotifierMixin {
+  with AutoDisposeNotifierMixin<String?> {
   @override
   String? build() {
     return globalState.config.currentProfileId;
@@ -172,7 +178,8 @@ class CurrentProfileId extends _$CurrentProfileId
 }
 
 @riverpod
-class AppDAVSetting extends _$AppDAVSetting with AutoDisposeNotifierMixin {
+class AppDAVSetting extends _$AppDAVSetting
+  with AutoDisposeNotifierMixin<DAV?> {
   @override
   DAV? build() {
     return globalState.config.dav;
@@ -191,7 +198,7 @@ class AppDAVSetting extends _$AppDAVSetting with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin {
+class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin<bool> {
   @override
   bool build() {
     return globalState.config.overrideDns;
@@ -206,7 +213,8 @@ class OverrideDns extends _$OverrideDns with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class HotKeyActions extends _$HotKeyActions with AutoDisposeNotifierMixin {
+class HotKeyActions extends _$HotKeyActions
+  with AutoDisposeNotifierMixin<List<HotKeyAction>> {
   @override
   List<HotKeyAction> build() {
     return globalState.config.hotKeyActions;
@@ -222,7 +230,7 @@ class HotKeyActions extends _$HotKeyActions with AutoDisposeNotifierMixin {
 
 @riverpod
 class ProxiesStyleSetting extends _$ProxiesStyleSetting
-    with AutoDisposeNotifierMixin {
+  with AutoDisposeNotifierMixin<ProxiesStyle> {
   @override
   ProxiesStyle build() {
     return globalState.config.proxiesStyle;
@@ -241,7 +249,8 @@ class ProxiesStyleSetting extends _$ProxiesStyleSetting
 }
 
 @riverpod
-class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
+class ScriptState extends _$ScriptState
+  with AutoDisposeNotifierMixin<ScriptProps> {
   @override
   ScriptProps build() {
     return globalState.config.scriptProps;
@@ -293,7 +302,7 @@ class ScriptState extends _$ScriptState with AutoDisposeNotifierMixin {
 
 @riverpod
 class PatchClashConfig extends _$PatchClashConfig
-    with AutoDisposeNotifierMixin {
+  with AutoDisposeNotifierMixin<ClashConfig> {
   @override
   ClashConfig build() {
     return globalState.config.patchClashConfig;

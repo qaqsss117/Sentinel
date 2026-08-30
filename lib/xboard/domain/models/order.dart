@@ -5,7 +5,7 @@ part 'generated/order.g.dart';
 
 /// 领域层：订单模型
 @freezed
-class DomainOrder with _$DomainOrder {
+abstract class DomainOrder with _$DomainOrder {
   const factory DomainOrder({
     /// 订单号（交易号）
     required String tradeNo,

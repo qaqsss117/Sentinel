@@ -5,7 +5,7 @@ part 'generated/ticket.g.dart';
 
 /// 领域层：工单模型
 @freezed
-class DomainTicket with _$DomainTicket {
+abstract class DomainTicket with _$DomainTicket {
   const factory DomainTicket({
     /// 工单 ID
     required int id,
@@ -101,7 +101,7 @@ enum TicketStatus {
 
 /// 工单消息模型
 @freezed
-class TicketMessage with _$TicketMessage {
+abstract class TicketMessage with _$TicketMessage {
   const factory TicketMessage({
     /// 消息 ID
     required int id,

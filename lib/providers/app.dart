@@ -9,7 +9,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'generated/app.g.dart';
 
 @riverpod
-class RealTunEnable extends _$RealTunEnable with AutoDisposeNotifierMixin {
+class RealTunEnable extends _$RealTunEnable
+  with AutoDisposeNotifierMixin<bool> {
   @override
   bool build() {
     return globalState.appState.realTunEnable;
@@ -24,7 +25,7 @@ class RealTunEnable extends _$RealTunEnable with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Logs extends _$Logs with AutoDisposeNotifierMixin {
+class Logs extends _$Logs with AutoDisposeNotifierMixin<FixedList<Log>> {
   @override
   FixedList<Log> build() {
     return globalState.appState.logs;
@@ -43,7 +44,8 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Requests extends _$Requests with AutoDisposeNotifierMixin {
+class Requests extends _$Requests
+  with AutoDisposeNotifierMixin<FixedList<Connection>> {
   @override
   FixedList<Connection> build() {
     return globalState.appState.requests;
@@ -62,7 +64,8 @@ class Requests extends _$Requests with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Providers extends _$Providers with AutoDisposeNotifierMixin {
+class Providers extends _$Providers
+  with AutoDisposeNotifierMixin<List<ExternalProvider>> {
   @override
   List<ExternalProvider> build() {
     return globalState.appState.providers;
@@ -84,7 +87,8 @@ class Providers extends _$Providers with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Packages extends _$Packages with AutoDisposeNotifierMixin {
+class Packages extends _$Packages
+  with AutoDisposeNotifierMixin<List<Package>> {
   @override
   List<Package> build() {
     return globalState.appState.packages;
@@ -99,7 +103,8 @@ class Packages extends _$Packages with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class AppBrightness extends _$AppBrightness with AutoDisposeNotifierMixin {
+class AppBrightness extends _$AppBrightness
+  with AutoDisposeNotifierMixin<Brightness?> {
   @override
   Brightness? build() {
     return globalState.appState.brightness;
@@ -118,7 +123,8 @@ class AppBrightness extends _$AppBrightness with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Traffics extends _$Traffics with AutoDisposeNotifierMixin {
+class Traffics extends _$Traffics
+  with AutoDisposeNotifierMixin<FixedList<Traffic>> {
   @override
   FixedList<Traffic> build() {
     return globalState.appState.traffics;
@@ -141,7 +147,8 @@ class Traffics extends _$Traffics with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class TotalTraffic extends _$TotalTraffic with AutoDisposeNotifierMixin {
+class TotalTraffic extends _$TotalTraffic
+  with AutoDisposeNotifierMixin<Traffic> {
   @override
   Traffic build() {
     return globalState.appState.totalTraffic;
@@ -156,7 +163,7 @@ class TotalTraffic extends _$TotalTraffic with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class LocalIp extends _$LocalIp with AutoDisposeNotifierMixin {
+class LocalIp extends _$LocalIp with AutoDisposeNotifierMixin<String?> {
   @override
   String? build() {
     return globalState.appState.localIp;
@@ -179,7 +186,7 @@ class LocalIp extends _$LocalIp with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class RunTime extends _$RunTime with AutoDisposeNotifierMixin {
+class RunTime extends _$RunTime with AutoDisposeNotifierMixin<int?> {
   @override
   int? build() {
     return globalState.appState.runTime;
@@ -198,7 +205,7 @@ class RunTime extends _$RunTime with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class ViewSize extends _$ViewSize with AutoDisposeNotifierMixin {
+class ViewSize extends _$ViewSize with AutoDisposeNotifierMixin<Size> {
   @override
   Size build() {
     return globalState.appState.viewSize;
@@ -237,7 +244,7 @@ double viewHeight(Ref ref) {
 }
 
 @riverpod
-class Init extends _$Init with AutoDisposeNotifierMixin {
+class Init extends _$Init with AutoDisposeNotifierMixin<bool> {
   @override
   bool build() {
     return globalState.appState.isInit;
@@ -253,7 +260,7 @@ class Init extends _$Init with AutoDisposeNotifierMixin {
 
 @riverpod
 class CurrentPageLabel extends _$CurrentPageLabel
-    with AutoDisposeNotifierMixin {
+  with AutoDisposeNotifierMixin<PageLabel> {
   @override
   PageLabel build() {
     return globalState.appState.pageLabel;
@@ -268,7 +275,7 @@ class CurrentPageLabel extends _$CurrentPageLabel
 }
 
 @riverpod
-class SortNum extends _$SortNum with AutoDisposeNotifierMixin {
+class SortNum extends _$SortNum with AutoDisposeNotifierMixin<int> {
   @override
   int build() {
     return globalState.appState.sortNum;
@@ -285,7 +292,7 @@ class SortNum extends _$SortNum with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class CheckIpNum extends _$CheckIpNum with AutoDisposeNotifierMixin {
+class CheckIpNum extends _$CheckIpNum with AutoDisposeNotifierMixin<int> {
   @override
   int build() {
     return globalState.appState.checkIpNum;
@@ -302,7 +309,7 @@ class CheckIpNum extends _$CheckIpNum with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class BackBlock extends _$BackBlock with AutoDisposeNotifierMixin {
+class BackBlock extends _$BackBlock with AutoDisposeNotifierMixin<bool> {
   @override
   bool build() {
     return globalState.appState.backBlock;
@@ -317,7 +324,7 @@ class BackBlock extends _$BackBlock with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Version extends _$Version with AutoDisposeNotifierMixin {
+class Version extends _$Version with AutoDisposeNotifierMixin<int> {
   @override
   int build() {
     return globalState.appState.version;
@@ -332,7 +339,7 @@ class Version extends _$Version with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class Groups extends _$Groups with AutoDisposeNotifierMixin {
+class Groups extends _$Groups with AutoDisposeNotifierMixin<List<Group>> {
   @override
   List<Group> build() {
     return globalState.appState.groups;
@@ -347,7 +354,8 @@ class Groups extends _$Groups with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class DelayDataSource extends _$DelayDataSource with AutoDisposeNotifierMixin {
+class DelayDataSource extends _$DelayDataSource
+  with AutoDisposeNotifierMixin<DelayMap> {
   @override
   DelayMap build() {
     return globalState.appState.delayMap;
@@ -373,7 +381,8 @@ class DelayDataSource extends _$DelayDataSource with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class ProxiesQuery extends _$ProxiesQuery with AutoDisposeNotifierMixin {
+class ProxiesQuery extends _$ProxiesQuery
+  with AutoDisposeNotifierMixin<String> {
   @override
   String build() {
     return globalState.appState.proxiesQuery;
