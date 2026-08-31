@@ -140,7 +140,7 @@ dart setup.dart <platform> [options]
 
 #### 前置要求
 - Android SDK 和 NDK（通过 Android Studio 安装）
-- 设置环境变量 `ANDROID_NDK` 指向 NDK 路径
+- 设置 `ANDROID_HOME` 或 `ANDROID_SDK_ROOT` 指向 Android SDK；也可用 `ANDROID_NDK`、`ANDROID_NDK_HOME` 或 `ANDROID_NDK_ROOT` 显式指定 NDK 路径
 
 #### 运行构建
 

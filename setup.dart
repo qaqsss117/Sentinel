@@ -146,25 +146,78 @@ class Build {
 
   static String get distPath => join(current, "dist");
 
-  static String _getCc(BuildItem buildItem) {
+  static String? _getAndroidNdk() {
     final environment = Platform.environment;
+    for (final name in [
+      "ANDROID_NDK",
+      "ANDROID_NDK_HOME",
+      "ANDROID_NDK_ROOT",
+    ]) {
+      final path = environment[name];
+      if (path != null && Directory(path).existsSync()) {
+        return path;
+      }
+    }
+
+    final sdk = environment["ANDROID_HOME"] ??
+        environment["ANDROID_SDK_ROOT"];
+    if (sdk == null) {
+      return null;
+    }
+
+    final ndkDirectory = Directory(join(sdk, "ndk"));
+    if (!ndkDirectory.existsSync()) {
+      return null;
+    }
+
+    final installedNdks = ndkDirectory
+        .listSync()
+        .whereType<Directory>()
+        .toList()
+      ..sort((left, right) => left.path.compareTo(right.path));
+    return installedNdks.isEmpty ? null : installedNdks.last.path;
+  }
+
+  static String _getCc(BuildItem buildItem) {
     if (buildItem.target == Target.android) {
-      final ndk = environment["ANDROID_NDK"];
-      assert(ndk != null);
+      final ndk = _getAndroidNdk();
+      if (ndk == null) {
+        throw StateError(
+          "Android NDK not found. Install it with Android Studio or set "
+          "ANDROID_NDK to the NDK directory.",
+        );
+      }
       final prebuiltDir =
-          Directory(join(ndk!, "toolchains", "llvm", "prebuilt"));
-      final prebuiltDirList = prebuiltDir.listSync();
+          Directory(join(ndk, "toolchains", "llvm", "prebuilt"));
+      final prebuiltDirList = prebuiltDir
+          .listSync()
+          .whereType<Directory>()
+          .toList();
+      if (prebuiltDirList.isEmpty) {
+        throw StateError("Android NDK toolchain not found in ${prebuiltDir.path}");
+      }
       final map = {
         "armeabi-v7a": "armv7a-linux-androideabi21-clang",
         "arm64-v8a": "aarch64-linux-android21-clang",
         "x86": "i686-linux-android21-clang",
         "x86_64": "x86_64-linux-android21-clang"
       };
-      return join(
+      final compilerName = map[buildItem.archName];
+      if (compilerName == null) {
+        throw UnsupportedError(
+          "Unsupported Android architecture: ${buildItem.archName}",
+        );
+      }
+      final compiler = join(
         prebuiltDirList.first.path,
         "bin",
-        map[buildItem.archName],
+        compilerName,
       );
+      if (!File(compiler).existsSync() &&
+          !File("$compiler.cmd").existsSync()) {
+        throw StateError("Android C compiler not found: $compiler");
+      }
+      return compiler;
     }
     return "gcc";
   }
@@ -468,7 +521,7 @@ class BuildCommand extends Command {
     await Build.exec(
       name: name,
       Build.getExecutable(
-        "flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
+        "dart pub global run flutter_distributor:main package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
       ),
     );
   }
