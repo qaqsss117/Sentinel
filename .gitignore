@@ -35,6 +35,9 @@ migrate_working_dir/
 /build/
 /dist/
 
+# Rust build artifacts
+/services/helper/target/
+
 # Generated files (build_runner, freezed, etc.)
 *.g.dart
 *.freezed.dart
