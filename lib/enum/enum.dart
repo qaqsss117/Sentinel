@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:fl_clash/common/build_capabilities.dart';
 import 'package:fl_clash/views/dashboard/widgets/widgets.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
@@ -396,6 +397,10 @@ enum DashboardWidget {
     this.widget, {
     this.platforms = SupportPlatform.values,
   });
+
+  bool get isAvailable =>
+      platforms.contains(SupportPlatform.currentPlatform) &&
+      (this != DashboardWidget.tunButton || buildCapabilities.supportsTun);
 
   static DashboardWidget getDashboardWidget(GridItem gridItem) {
     final dashboardWidgets = DashboardWidget.values;

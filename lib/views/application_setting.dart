@@ -270,7 +270,7 @@ class ApplicationSettingView extends StatelessWidget {
     List<Widget> items = [
       MinimizeItem(),
       if (system.isDesktop) ...[
-        AutoLaunchItem(),
+        if (buildCapabilities.supportsAutoLaunchControl) AutoLaunchItem(),
         SilentLaunchItem(),
       ],
       AutoRunItem(),

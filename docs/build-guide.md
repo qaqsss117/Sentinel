@@ -155,17 +155,27 @@ dart setup.dart android
 ### 🪟 Windows 构建
 
 #### 前置要求
-- GCC 编译器（[MinGW-w64](https://www.mingw-w64.org/) 或 [TDM-GCC](https://jmeubank.github.io/tdm-gcc/)）
-- Inno Setup（用于打包安装程序）
+- Visual Studio 2022，安装“使用 C++ 的桌面开发”工作负载
+- Windows 10/11 SDK
+- Golang
 
 #### 运行构建
 
 ```bash
-dart setup.dart windows --arch amd64   # AMD64 架构
-dart setup.dart windows --arch arm64   # ARM64 架构
+dart setup.dart windows --arch amd64
 ```
 
-**构建输出：** `build/windows/runner/Release/xboard_mihomo.exe`
+**构建输出：** `dist/Flclash-<version>-windows-amd64.msix`
+
+当前 MSIX 配置仅支持 AMD64，传入其他 Windows 架构会直接报错，避免生成架构标记不正确的安装包。
+
+此分支的 Windows 包是受限 MSIX 版本：
+
+- 保留普通 Core 进程、系统代理和应用内代理功能。
+- 禁用并隐藏 TUN、Helper Service、UWP 回环解锁和应用内自启动控制。
+- 不编译或打包 `FlClashHelperService.exe`，也不打包 `EnableLoopback.exe`。
+
+默认构建使用 `msix` 工具的自签名测试证书，适合本地验证但不适合正式分发。发布前必须在 `windows/packaging/msix/make_config.yaml` 中配置与包 Publisher 匹配的受信任代码签名证书，或替换为 Microsoft Store 分配的 Identity 和 Publisher。
 
 ---
 

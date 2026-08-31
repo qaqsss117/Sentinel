@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 
+import 'build_capabilities.dart';
 import 'constant.dart';
 import 'system.dart';
 
@@ -47,4 +48,6 @@ class AutoLaunch {
   }
 }
 
-final autoLaunch = system.isDesktop ? AutoLaunch() : null;
+final autoLaunch = system.isDesktop && buildCapabilities.supportsAutoLaunchControl
+  ? AutoLaunch()
+  : null;

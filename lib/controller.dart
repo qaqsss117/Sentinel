@@ -272,6 +272,10 @@ class AppController {
   }
 
   Future<Result<bool>> _requestAdmin(bool enableTun) async {
+    if (!buildCapabilities.supportsTun) {
+      _ref.read(realTunEnableProvider.notifier).value = false;
+      return Result.success(false);
+    }
     final realTunEnable = _ref.read(realTunEnableProvider);
     if (enableTun != realTunEnable && realTunEnable == false) {
       final code = await system.authorizeCore();
@@ -815,6 +819,9 @@ class AppController {
   }
 
   updateTun() {
+    if (!buildCapabilities.supportsTun) {
+      return;
+    }
     _ref.read(patchClashConfigProvider.notifier).updateState(
           (state) => state.copyWith.tun(enable: !state.tun.enable),
         );

@@ -315,8 +315,13 @@ class GlobalState {
     final profileId = profile.id;
     final configMap = await getProfileConfig(profileId);
     final rawConfig = await handleEvaluate(configMap);
+    final resolvedTun = patchConfig.tun.getRealTun(
+      config.networkProps.routeMode,
+    );
     final realPatchConfig = patchConfig.copyWith(
-      tun: patchConfig.tun.getRealTun(config.networkProps.routeMode),
+      tun: resolvedTun.copyWith(
+        enable: buildCapabilities.resolveTunEnabled(resolvedTun.enable),
+      ),
     );
     rawConfig["external-controller"] = realPatchConfig.externalController.value;
     rawConfig["external-ui"] = "";

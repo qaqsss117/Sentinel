@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:tray_manager/tray_manager.dart';
 
 import 'app_localizations.dart';
+import 'build_capabilities.dart';
 import 'constant.dart';
 import 'window.dart';
 
@@ -116,15 +117,17 @@ class Tray {
       }
     }
     if (trayState.isStart) {
-      menuItems.add(
-        MenuItem.checkbox(
-          label: appLocalizations.tun,
-          onClick: (_) {
-            globalState.appController.updateTun();
-          },
-          checked: trayState.tunEnable,
-        ),
-      );
+      if (buildCapabilities.supportsTun) {
+        menuItems.add(
+          MenuItem.checkbox(
+            label: appLocalizations.tun,
+            onClick: (_) {
+              globalState.appController.updateTun();
+            },
+            checked: trayState.tunEnable,
+          ),
+        );
+      }
       menuItems.add(
         MenuItem.checkbox(
           label: appLocalizations.systemProxy,
@@ -136,20 +139,24 @@ class Tray {
       );
       menuItems.add(MenuItem.separator());
     }
-    final autoStartMenuItem = MenuItem.checkbox(
-      label: appLocalizations.autoLaunch,
-      onClick: (_) async {
-        globalState.appController.updateAutoLaunch();
-      },
-      checked: trayState.autoLaunch,
-    );
+    final autoStartMenuItem = buildCapabilities.supportsAutoLaunchControl
+        ? MenuItem.checkbox(
+            label: appLocalizations.autoLaunch,
+            onClick: (_) async {
+              globalState.appController.updateAutoLaunch();
+            },
+            checked: trayState.autoLaunch,
+          )
+        : null;
     final copyEnvVarMenuItem = MenuItem(
       label: appLocalizations.copyEnvVar,
       onClick: (_) async {
         await _copyEnv(trayState.port);
       },
     );
-    menuItems.add(autoStartMenuItem);
+    if (autoStartMenuItem != null) {
+      menuItems.add(autoStartMenuItem);
+    }
     menuItems.add(copyEnvVarMenuItem);
     menuItems.add(MenuItem.separator());
     final exitMenuItem = MenuItem(

@@ -76,7 +76,8 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
         _ThemeItem(),
         _BackupItem(),
         if (system.isDesktop) _HotkeyItem(),
-        if (Platform.isWindows) _LoopbackItem(),
+        if (Platform.isWindows && buildCapabilities.supportsLoopbackExemption)
+          _LoopbackItem(),
         if (Platform.isAndroid) _AccessItem(),
         _ConfigItem(),
         _SettingItem(),

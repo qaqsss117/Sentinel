@@ -36,10 +36,16 @@ class HotKeyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final actions = HotAction.values
+        .where(
+          (action) =>
+              buildCapabilities.supportsTun || action != HotAction.tun,
+        )
+        .toList();
     return ListView.builder(
-      itemCount: HotAction.values.length,
+      itemCount: actions.length,
       itemBuilder: (_, index) {
-        final hotAction = HotAction.values[index];
+        final hotAction = actions[index];
         return Consumer(
           builder: (_, ref, __) {
             final hotKeyAction = ref.watch(getHotKeyActionProvider(hotAction));

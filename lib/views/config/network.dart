@@ -371,9 +371,10 @@ final networkItems = [
   ...generateSection(
     title: appLocalizations.options,
     items: [
-      if (system.isDesktop) const TUNItem(),
+      if (system.isDesktop && buildCapabilities.supportsTun) const TUNItem(),
       if (Platform.isMacOS) const AutoSetSystemDnsItem(),
-      const TunStackItem(),
+      if (buildCapabilities.supportsTun || !system.isDesktop)
+        const TunStackItem(),
       if (!system.isDesktop) ...[
         const RouteModeItem(),
         const RouteAddressItem(),

@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/build_capabilities.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -100,7 +101,10 @@ class XBoardOutboundMode extends StatelessWidget {
     return Consumer(
       builder: (context, ref, child) {
         final mode = ref.watch(patchClashConfigProvider.select((state) => state.mode));
-        final tunEnabled = ref.watch(patchClashConfigProvider.select((state) => state.tun.enable));
+        final tunEnabled = buildCapabilities.supportsTun &&
+            ref.watch(
+              patchClashConfigProvider.select((state) => state.tun.enable),
+            );
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
@@ -171,25 +175,26 @@ class XBoardOutboundMode extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                      child: FilterChip(
-                        label: const Text("TUN"),
-                        selected: tunEnabled,
-                        onSelected: (selected) {
-                          _handleTunToggle(context, ref, selected);
-                        },
-                        selectedColor: tunSelectedColor,
-                        checkmarkColor: tunCheckmarkColor,
-                        side: tunEnabled
-                            ? BorderSide(color: tunBorderColor, width: 1)
-                            : null,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                        labelStyle: const TextStyle(fontSize: 13),
+                  if (buildCapabilities.supportsTun)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        child: FilterChip(
+                          label: const Text("TUN"),
+                          selected: tunEnabled,
+                          onSelected: (selected) {
+                            _handleTunToggle(context, ref, selected);
+                          },
+                          selectedColor: tunSelectedColor,
+                          checkmarkColor: tunCheckmarkColor,
+                          side: tunEnabled
+                              ? BorderSide(color: tunBorderColor, width: 1)
+                              : null,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                          labelStyle: const TextStyle(fontSize: 13),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 6),

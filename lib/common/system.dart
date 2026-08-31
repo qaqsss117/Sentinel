@@ -33,6 +33,9 @@ class System {
   }
 
   Future<bool> checkIsAdmin() async {
+    if (Platform.isWindows && !buildCapabilities.supportsHelperService) {
+      return false;
+    }
     final corePath = appPath.corePath.replaceAll(' ', '\\\\ ');
     if (Platform.isWindows) {
       final result = await windows?.checkService();
@@ -57,6 +60,9 @@ class System {
 
   Future<AuthorizeCode> authorizeCore() async {
     if (Platform.isAndroid) {
+      return AuthorizeCode.error;
+    }
+    if (Platform.isWindows && !buildCapabilities.supportsHelperService) {
       return AuthorizeCode.error;
     }
     final corePath = appPath.corePath.replaceAll(' ', '\\\\ ');

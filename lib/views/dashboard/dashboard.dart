@@ -148,9 +148,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> with PageMixin {
     final children = [
       ...dashboardState.dashboardWidgets
           .where(
-            (item) => item.platforms.contains(
-              SupportPlatform.currentPlatform,
-            ),
+            (item) => item.isAvailable,
           )
           .map(
             (item) => item.widget,
@@ -161,9 +159,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> with PageMixin {
           .where(
             (item) =>
                 !children.contains(item.widget) &&
-                item.platforms.contains(
-                  SupportPlatform.currentPlatform,
-                ),
+                item.isAvailable,
           )
           .map((item) => item.widget)
           .toList();
@@ -191,9 +187,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> with PageMixin {
                             children: [
                               ...dashboardState.dashboardWidgets
                                   .where(
-                                    (item) => item.platforms.contains(
-                                      SupportPlatform.currentPlatform,
-                                    ),
+                                    (item) => item.isAvailable,
                                   )
                                   .map(
                                     (item) => item.widget,

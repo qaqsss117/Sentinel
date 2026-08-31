@@ -516,12 +516,14 @@ class BuildCommand extends Command {
     required String targets,
     String args = '',
     required String env,
+    bool skipClean = true,
   }) async {
     await Build.getDistributor();
+    final skipCleanArgument = skipClean ? " --skip-clean" : "";
     await Build.exec(
       name: name,
       Build.getExecutable(
-        "dart pub global run flutter_distributor:main package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
+        "dart pub global run flutter_distributor:main package$skipCleanArgument --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
       ),
     );
   }
@@ -549,8 +551,11 @@ class BuildCommand extends Command {
     if (arch == null && target != Target.android) {
       throw "Invalid arch parameter";
     }
+    if (target == Target.windows && arch != Arch.amd64) {
+      throw UnsupportedError("Windows MSIX builds currently support amd64 only");
+    }
 
-    final corePaths = await Build.buildCore(
+    await Build.buildCore(
       target: target,
       arch: arch,
       mode: mode,
@@ -562,16 +567,23 @@ class BuildCommand extends Command {
 
     switch (target) {
       case Target.windows:
-        final token = target != Target.android
-            ? await Build.calcSha256(corePaths.first)
-            : null;
-        Build.buildHelper(target, token!);
+        final helper = File(
+          join(
+            Build.outDir,
+            target.name,
+            "FlClashHelperService${target.executableExtensionName}",
+          ),
+        );
+        if (await helper.exists()) {
+          await helper.delete();
+        }
         _buildDistributor(
           target: target,
-          targets: "exe,zip",
+          targets: "msix",
           args:
-              " --description $archName --build-dart-define=CORE_SHA256=$token",
+              " --description $archName --build-dart-define=MSIX_BUILD=true",
           env: env,
+          skipClean: false,
         );
         return;
       case Target.linux:

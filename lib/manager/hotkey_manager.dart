@@ -56,7 +56,10 @@ class _HotKeyManagerState extends ConsumerState<HotKeyManager> {
     await hotKeyManager.unregisterAll();
     final hotkeyActionHandles = hotKeyActions.where(
       (hotKeyAction) {
-        return hotKeyAction.key != null && hotKeyAction.modifiers.isNotEmpty;
+        return hotKeyAction.key != null &&
+            hotKeyAction.modifiers.isNotEmpty &&
+            (buildCapabilities.supportsTun ||
+                hotKeyAction.action != HotAction.tun);
       },
     ).map<Future>(
       (hotKeyAction) async {

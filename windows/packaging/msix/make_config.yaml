@@ -1,0 +1,8 @@
+display_name: Flclash Lite
+publisher_display_name: chen08209
+identity_name: Flclash.Desktop.Lite
+msix_version: 2.6.1.0
+logo_path: assets/images/icon.png
+capabilities: internetClient,privateNetworkClientServer
+architecture: x64
+install_certificate: "false"
