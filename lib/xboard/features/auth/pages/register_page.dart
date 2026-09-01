@@ -1,6 +1,7 @@
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/legal/legal_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isSendingEmailCode = false;
+  bool _acceptedLegal = false;
   
   @override
   void dispose() {
@@ -35,6 +37,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
   Future<void> _register() async {
+    if (!_acceptedLegal) {
+      XBoardNotification.showError(
+        '请先同意用户协议与隐私政策 / Please accept the Terms and Privacy Policy',
+      );
+      return;
+    }
+
     // 获取配置
     final configAsync = ref.read(configProvider);
     final config = configAsync.value;
@@ -394,7 +403,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           prefixIcon: Icons.card_giftcard_outlined,
                           enabled: true,
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 20),
+                        LegalLinks(
+                          checked: _acceptedLegal,
+                          onChecked: (value) {
+                            setState(() => _acceptedLegal = value ?? false);
+                          },
+                        ),
+                        const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
                           height: 48,
@@ -410,7 +426,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   ),
                                 )
                               : ElevatedButton(
-                                  onPressed: _register,
+                                  onPressed: _acceptedLegal ? _register : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: colorScheme.primary,
                                     foregroundColor: colorScheme.onPrimary,

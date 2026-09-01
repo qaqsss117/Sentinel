@@ -23,6 +23,7 @@ import 'models/models.dart';
 import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart'; // 导入远程任务管理器
 
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'; // 导入域名服务
+import 'legal/legal_pages.dart';
 
 // 定义一个全局变量来持有 RemoteTaskManager 实例，方便在整个应用生命周期中访问和管理
 RemoteTaskManager? remoteTaskManager;
@@ -30,6 +31,9 @@ RemoteTaskManager? remoteTaskManager;
 Future<void> main() async {
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized(); // 确保 Flutter 绑定已初始化
+
+  // 在任何联网服务初始化前取得用户对当前版本协议的明确同意。
+  await ensureLegalConsent();
 
   // 首先初始化XBoard配置模块和域名服务（必须在RemoteTaskManager之前）
   await _initializeXBoardServices();

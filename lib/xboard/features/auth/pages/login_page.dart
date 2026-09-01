@@ -3,6 +3,7 @@ import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/legal/legal_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -305,6 +306,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 )
                               : Text(appLocalizations.xboardLogin),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      const LegalLinks(
+                        prefix: '登录即表示您同意 / By signing in, you agree to',
                       ),
                       const SizedBox(height: 24),
                       Row(
