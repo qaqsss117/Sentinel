@@ -36,6 +36,13 @@ class OnlineSupportInfo extends ConfigEntry {
     return json;
   }
 
+  /// Crisp Web Chat SDK 使用的网站 ID。
+  String? get crispWebsiteId {
+    final uri = Uri.tryParse(url);
+    final websiteId = uri?.queryParameters['website_id']?.trim();
+    return websiteId == null || websiteId.isEmpty ? null : websiteId;
+  }
+
   /// 验证URL格式
   bool validate() {
     return _isValidHttpUrl(url);
