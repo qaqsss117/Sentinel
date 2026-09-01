@@ -749,58 +749,47 @@
   },
   "updateCheckServerTemporarilyUnavailable": "Сервер временно недоступен, попробуйте позже",
   "onlineSupportTitle": "Онлайн поддержка",
-  "onlineSupportConnected": "Успешно подключено к системе поддержки",
-  "onlineSupportConnecting": "Подключение...",
-  "onlineSupportDisconnected": "Отключено",
-  "onlineSupportConnectionError": "Ошибка подключения",
-  "onlineSupportNoMessages": "Пока нет сообщений, отправьте сообщение для начала консультации",
+  "ticketNew": "Новая заявка",
+  "ticketHistory": "История заявок",
+  "ticketNoTickets": "Заявок пока нет",
+  "ticketNoTicketsDescription": "Создайте заявку, чтобы начать разговор со службой поддержки.",
+  "ticketStatusOpen": "В работе",
+  "ticketStatusClosed": "Закрыта",
+  "ticketSupportReplied": "Поддержка ответила",
+  "ticketWaitingSupport": "Ожидание ответа поддержки",
+  "ticketClose": "Закрыть заявку",
+  "ticketCloseConfirm": "После закрытия ответить будет невозможно. Закрыть эту заявку?",
+  "ticketClosed": "Заявка закрыта",
+  "ticketClosedHint": "Эта заявка закрыта, новые ответы недоступны.",
+  "ticketCreated": "Заявка создана",
+  "ticketSubject": "Тема",
+  "ticketPriority": "Приоритет",
+  "ticketPriorityLow": "Низкий",
+  "ticketPriorityNormal": "Обычный",
+  "ticketPriorityHigh": "Высокий",
+  "ticketFirstMessage": "Опишите проблему",
+  "ticketCreate": "Создать",
+  "ticketSubjectRequired": "Введите тему",
+  "ticketMessageRequired": "Опишите проблему",
+  "ticketLoadFailed": "Не удалось загрузить заявки: {error}",
+  "@ticketLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketActionFailed": "Не удалось выполнить действие: {error}",
+  "@ticketActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "onlineSupportInputHint": "Пожалуйста, введите ваш вопрос...",
-  "onlineSupportSendImage": "Отправить изображение",
-  "onlineSupportClearHistory": "Очистить историю",
-  "onlineSupportClearHistoryConfirm": "Вы уверены, что хотите очистить всю историю чата? Это действие нельзя отменить.",
   "onlineSupportCancel": "Отмена",
-  "onlineSupportConfirm": "Подтвердить",
-  "onlineSupportSelectImages": "Выбрать изображения",
-  "onlineSupportClickToSelect": "Нажмите для выбора изображений",
-  "onlineSupportSupportedFormats": "Поддерживает JPG, PNG, GIF, WebP, BMP\nМакс 10МБ",
-  "onlineSupportAddMore": "Добавить еще",
   "onlineSupportSend": "Отправить",
-  "onlineSupportSelectImagesFailed": "Не удалось выбрать изображения: {error}",
-  "@onlineSupportSelectImagesFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportUploadFailed": "Загрузка не удалась: {error}",
-  "@onlineSupportUploadFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportApiConfigNotFound": "Конфигурация API онлайн поддержки не найдена, проверьте настройки",
-  "onlineSupportUnsupportedHttpMethod": "Неподдерживаемый HTTP метод: {method}",
-  "@onlineSupportUnsupportedHttpMethod": {
-    "placeholders": {
-      "method": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportSendMessageFailed": "Не удалось отправить сообщение: Невозможно получить токен аутентификации",
-  "onlineSupportTokenNotFound": "Токен аутентификации не найден",
-  "onlineSupportGetMessagesFailed": "Не удалось получить сообщения: {statusCode}",
-  "@onlineSupportGetMessagesFailed": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
   "contactSupport": "Связаться с поддержкой",
-  "configurationError": "Ошибка конфигурации приложения, обратитесь в службу поддержки",
-  "onlineSupportWebSocketConfigNotFound": "Конфигурация WebSocket онлайн поддержки не найдена, проверьте настройки"
+  "configurationError": "Ошибка конфигурации приложения, обратитесь в службу поддержки"
 }

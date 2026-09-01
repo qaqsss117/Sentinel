@@ -979,59 +979,47 @@
   },
   "updateCheckServerTemporarilyUnavailable": "服务器暂时不可用，请稍后重试",
   "onlineSupportTitle": "在线客服",
-  "onlineSupportConnected": "成功连接客服系统",
-  "onlineSupportConnecting": "连接中...",
-  "onlineSupportDisconnected": "已断开",
-  "onlineSupportConnectionError": "连接错误",
-  "onlineSupportNoMessages": "暂无消息，发送消息开始咨询",
+  "ticketNew": "新建工单",
+  "ticketHistory": "工单记录",
+  "ticketNoTickets": "暂无工单",
+  "ticketNoTicketsDescription": "创建工单后即可在这里与客服沟通。",
+  "ticketStatusOpen": "处理中",
+  "ticketStatusClosed": "已关闭",
+  "ticketSupportReplied": "客服已回复",
+  "ticketWaitingSupport": "等待客服回复",
+  "ticketClose": "关闭工单",
+  "ticketCloseConfirm": "关闭后将无法继续回复，确定关闭此工单吗？",
+  "ticketClosed": "工单已关闭",
+  "ticketClosedHint": "此工单已关闭，无法继续回复。",
+  "ticketCreated": "工单创建成功",
+  "ticketSubject": "问题标题",
+  "ticketPriority": "优先级",
+  "ticketPriorityLow": "低",
+  "ticketPriorityNormal": "普通",
+  "ticketPriorityHigh": "高",
+  "ticketFirstMessage": "请描述您遇到的问题",
+  "ticketCreate": "创建",
+  "ticketSubjectRequired": "请输入问题标题",
+  "ticketMessageRequired": "请输入问题描述",
+  "ticketLoadFailed": "加载工单失败：{error}",
+  "@ticketLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketActionFailed": "操作失败：{error}",
+  "@ticketActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "onlineSupportInputHint": "请输入您的问题...",
-  "onlineSupportSendImage": "发送图片",
-  "onlineSupportClearHistory": "清除历史记录",
-  "onlineSupportClearHistoryConfirm": "确定要清除所有聊天历史记录吗？此操作不可恢复。",
   "onlineSupportCancel": "取消",
-  "onlineSupportConfirm": "确定",
-  "onlineSupportSelectImages": "选择图片",
-  "onlineSupportClickToSelect": "点击选择图片",
-  "onlineSupportSupportedFormats": "支持 JPG, PNG, GIF, WebP, BMP\n最大 10MB",
-  "onlineSupportAddMore": "添加更多",
   "onlineSupportSend": "发送",
-  "onlineSupportSelectImagesFailed": "选择图片失败: {error}",
-  "@onlineSupportSelectImagesFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportUploadFailed": "上传失败: {error}",
-  "@onlineSupportUploadFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportApiConfigNotFound": "在线客服API配置未找到，请检查配置",
-  "onlineSupportUnsupportedHttpMethod": "不支持的HTTP方法: {method}",
-  "@onlineSupportUnsupportedHttpMethod": {
-    "placeholders": {
-      "method": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportSendMessageFailed": "发送消息失败: 无法获取认证token",
-  "onlineSupportTokenNotFound": "未找到认证token",
-  "onlineSupportGetMessagesFailed": "获取消息失败: {statusCode}",
-  "@onlineSupportGetMessagesFailed": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
   "contactSupport": "联系客服",
-  "configurationError": "应用配置异常，请联系客服",
-  "onlineSupportWebSocketConfigNotFound": "在线客服WebSocket配置未找到，请检查配置",
-  "newMessageFromSupport": "客服新消息"
+  "configurationError": "应用配置异常，请联系客服"
 }

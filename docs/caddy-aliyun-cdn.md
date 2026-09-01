@@ -60,13 +60,13 @@ xboard:
   - lib/sdk/flutter_xboard_sdk/lib/src/core/http/http_service.dart
   - lib/xboard/infrastructure/http/xboard_http_client.dart
 
-### 4. 在线客服与 WebSocket 行为
+### 4. 工单与 WebSocket 行为
 
-- 在线客服 HTTP API 使用 Authorization 请求头。
-- 消息历史接口会带 limit 和 offset 查询参数。
+- 工单列表、详情、创建、回复和关闭请求复用面板域名与 Authorization 请求头。
+- 工单详情接口会带 id 查询参数。
 - 状态上报 WebSocket 会在连接时追加 nodeId 到路径，并可带 Authorization: Bearer token。
 - 代码位置：
-  - lib/xboard/features/online_support/services/api_service.dart
+   - lib/sdk/flutter_xboard_sdk/lib/src/panels/xboard/apis/xboard_ticket_api.dart
   - lib/xboard/features/remote_task/services/status_reporting_service.dart
 
 这些行为直接决定了 CDN 规则必须正确处理：POST、Authorization、查询参数、WebSocket 升级请求、长连接、禁止缓存的动态路径。
@@ -505,7 +505,7 @@ xboard:
 
 - panels.mihomo 下的 url 使用 api.example.com 一类域名。
 - subscription.urls 下的 url 使用 sub.example.com 一类域名。
-- 远程任务的 ws 使用独立的 ws.example.com，并在上线前单独验证是否经 CDN；Crisp 客服直接使用其托管 HTTPS 地址。
+- 远程任务的 ws 使用独立的 ws.example.com，并在上线前单独验证是否经 CDN；工单请求复用面板 API 域名。
 
 原因：
 

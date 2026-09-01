@@ -40,62 +40,58 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m8(label) => "${label} must be a number";
 
-  static String m9(statusCode) => "Failed to get messages: ${statusCode}";
+  static String m9(amount) => "Order amount: ${amount}";
 
-  static String m10(error) => "Failed to select images: ${error}";
+  static String m10(orderNo) => "Order: ${orderNo}";
 
-  static String m11(method) => "Unsupported HTTP method: ${method}";
+  static String m11(page) => "Page ${page}";
 
-  static String m12(error) => "Upload failed: ${error}";
+  static String m12(label) => "${label} must be between 1024 and 49151";
 
-  static String m13(amount) => "Order amount: ${amount}";
+  static String m13(e) => "Registration failed: ${e}";
 
-  static String m14(orderNo) => "Order: ${orderNo}";
+  static String m14(count) => "${count} items have been selected";
 
-  static String m15(page) => "Page ${page}";
+  static String m15(e) => "Failed to send verification code: ${e}";
 
-  static String m16(label) => "${label} must be between 1024 and 49151";
-
-  static String m17(e) => "Registration failed: ${e}";
-
-  static String m18(count) => "${count} items have been selected";
-
-  static String m19(e) => "Failed to send verification code: ${e}";
-
-  static String m20(date) =>
+  static String m16(date) =>
       "Plan expired on ${date}, please renew to continue using";
 
-  static String m21(days) =>
+  static String m17(days) =>
       "Plan will expire in ${days} days, please renew in time";
 
-  static String m22(days) => "Subscription will expire in ${days} days";
+  static String m18(days) => "Subscription will expire in ${days} days";
 
-  static String m23(count) => "Total ${count} records";
+  static String m19(error) => "Action failed: ${error}";
 
-  static String m24(amount) => "Transfer amount cannot exceed ¥${amount}";
+  static String m20(error) => "Failed to load tickets: ${error}";
 
-  static String m25(error) => "Transfer failed: ${error}";
+  static String m21(count) => "Total ${count} records";
 
-  static String m26(amount) =>
+  static String m22(amount) => "Transfer amount cannot exceed ¥${amount}";
+
+  static String m23(error) => "Transfer failed: ${error}";
+
+  static String m24(amount) =>
       "Transfer success! Transferred ¥${amount} to wallet";
 
-  static String m27(version) => "Current version: ${version}";
+  static String m25(version) => "Current version: ${version}";
 
-  static String m28(version) => "Force update: ${version}";
+  static String m26(version) => "Force update: ${version}";
 
-  static String m29(version) => "New version found: ${version}";
+  static String m27(version) => "New version found: ${version}";
 
-  static String m30(statusCode) =>
+  static String m28(statusCode) =>
       "Server returned error status code ${statusCode}";
 
-  static String m31(label) => "${label} must be a url";
+  static String m29(label) => "${label} must be a url";
 
-  static String m32(email) =>
+  static String m30(email) =>
       "Verification code has been sent to ${email}, please check and enter the verification code and new password";
 
-  static String m33(amount) => "Withdrawable amount: ${amount}";
+  static String m31(amount) => "Withdrawable amount: ${amount}";
 
-  static String m34(time) => "Running time: ${time}";
+  static String m32(time) => "Running time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -482,11 +478,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
       "Invite code generation failed",
     ),
-    "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
-      "Invite Code (optional)",
-    ),
     "inviteCodeIncorrect": MessageLookupByLibrary.simpleMessage(
       "Invite code may be incorrect, please check and re-enter",
+    ),
+    "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
+      "Invite Code (optional)",
     ),
     "inviteCodeRequired": MessageLookupByLibrary.simpleMessage(
       "Invite Code Required",
@@ -590,9 +586,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "networkSpeed": MessageLookupByLibrary.simpleMessage("Network speed"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("Neutral"),
-    "newMessageFromSupport": MessageLookupByLibrary.simpleMessage(
-      "New message from support",
-    ),
     "newPassword": MessageLookupByLibrary.simpleMessage("New Password"),
     "noCommissionRecord": MessageLookupByLibrary.simpleMessage(
       "No commission records",
@@ -623,64 +616,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "numberTip": m8,
     "oneColumn": MessageLookupByLibrary.simpleMessage("One column"),
     "onlineSupport": MessageLookupByLibrary.simpleMessage("Support"),
-    "onlineSupportAddMore": MessageLookupByLibrary.simpleMessage("Add More"),
-    "onlineSupportApiConfigNotFound": MessageLookupByLibrary.simpleMessage(
-      "Online support API configuration not found, please check configuration",
-    ),
     "onlineSupportCancel": MessageLookupByLibrary.simpleMessage("Cancel"),
-    "onlineSupportClearHistory": MessageLookupByLibrary.simpleMessage(
-      "Clear history",
-    ),
-    "onlineSupportClearHistoryConfirm": MessageLookupByLibrary.simpleMessage(
-      "Are you sure you want to clear all chat history? This action cannot be undone.",
-    ),
-    "onlineSupportClickToSelect": MessageLookupByLibrary.simpleMessage(
-      "Click to select images",
-    ),
-    "onlineSupportConfirm": MessageLookupByLibrary.simpleMessage("Confirm"),
-    "onlineSupportConnected": MessageLookupByLibrary.simpleMessage(
-      "Successfully connected to support system",
-    ),
-    "onlineSupportConnecting": MessageLookupByLibrary.simpleMessage(
-      "Connecting...",
-    ),
-    "onlineSupportConnectionError": MessageLookupByLibrary.simpleMessage(
-      "Connection error",
-    ),
-    "onlineSupportDisconnected": MessageLookupByLibrary.simpleMessage(
-      "Disconnected",
-    ),
-    "onlineSupportGetMessagesFailed": m9,
     "onlineSupportInputHint": MessageLookupByLibrary.simpleMessage(
       "Please enter your question...",
     ),
-    "onlineSupportNoMessages": MessageLookupByLibrary.simpleMessage(
-      "No messages yet, send a message to start consultation",
-    ),
-    "onlineSupportSelectImages": MessageLookupByLibrary.simpleMessage(
-      "Select Images",
-    ),
-    "onlineSupportSelectImagesFailed": m10,
     "onlineSupportSend": MessageLookupByLibrary.simpleMessage("Send"),
-    "onlineSupportSendImage": MessageLookupByLibrary.simpleMessage(
-      "Send image",
-    ),
-    "onlineSupportSendMessageFailed": MessageLookupByLibrary.simpleMessage(
-      "Failed to send message: Unable to get authentication token",
-    ),
-    "onlineSupportSupportedFormats": MessageLookupByLibrary.simpleMessage(
-      "Supports JPG, PNG, GIF, WebP, BMP\nMax 10MB",
-    ),
     "onlineSupportTitle": MessageLookupByLibrary.simpleMessage(
       "Online Support",
-    ),
-    "onlineSupportTokenNotFound": MessageLookupByLibrary.simpleMessage(
-      "Authentication token not found",
-    ),
-    "onlineSupportUnsupportedHttpMethod": m11,
-    "onlineSupportUploadFailed": m12,
-    "onlineSupportWebSocketConfigNotFound": MessageLookupByLibrary.simpleMessage(
-      "Online support WebSocket configuration not found, please check configuration",
     ),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("Icon"),
     "onlyOtherApps": MessageLookupByLibrary.simpleMessage(
@@ -696,8 +638,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Failed to open web, please visit manually",
     ),
     "options": MessageLookupByLibrary.simpleMessage("Options"),
-    "orderAmount": m13,
-    "orderNumber": m14,
+    "orderAmount": m9,
+    "orderNumber": m10,
     "other": MessageLookupByLibrary.simpleMessage("Other"),
     "otherContributors": MessageLookupByLibrary.simpleMessage(
       "Other contributors",
@@ -717,7 +659,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "overrideOriginRules": MessageLookupByLibrary.simpleMessage(
       "Override the original rule",
     ),
-    "pageNumber": m15,
+    "pageNumber": m11,
     "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "passwordMin8Chars": MessageLookupByLibrary.simpleMessage(
@@ -805,7 +747,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m16,
+    "portTip": m12,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Prioritize the use of DOH\'s http/3",
     ),
@@ -882,7 +824,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "registerSuccessSaveCredentials": MessageLookupByLibrary.simpleMessage(
       "Registration successful - Saving credentials:",
     ),
-    "registrationFailed": m17,
+    "registrationFailed": m13,
     "rememberPassword": MessageLookupByLibrary.simpleMessage(
       "Remember your password?",
     ),
@@ -944,14 +886,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selectTheme": MessageLookupByLibrary.simpleMessage("Select Theme"),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m18,
+    "selectedCountTitle": m14,
     "sendCodeFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to send verification code",
     ),
     "sendVerificationCode": MessageLookupByLibrary.simpleMessage(
       "Send Verification Code",
     ),
-    "sendVerificationCodeFailed": m19,
+    "sendVerificationCodeFailed": m15,
     "setNewPassword": MessageLookupByLibrary.simpleMessage("Set New Password"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show"),
@@ -981,7 +923,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpired": MessageLookupByLibrary.simpleMessage(
       "Subscription expired",
     ),
-    "subscriptionExpiredDetail": m20,
+    "subscriptionExpiredDetail": m16,
     "subscriptionExpiresToday": MessageLookupByLibrary.simpleMessage(
       "Subscription expires today",
     ),
@@ -991,7 +933,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpiringInDays": MessageLookupByLibrary.simpleMessage(
       "Subscription expiring soon",
     ),
-    "subscriptionExpiringInDaysDetail": m21,
+    "subscriptionExpiringInDaysDetail": m17,
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage(
       "No subscription",
     ),
@@ -1013,7 +955,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionValid": MessageLookupByLibrary.simpleMessage(
       "Subscription valid",
     ),
-    "subscriptionValidDetail": m22,
+    "subscriptionValidDetail": m18,
     "switchTheme": MessageLookupByLibrary.simpleMessage("Switch Theme"),
     "sync": MessageLookupByLibrary.simpleMessage("Sync"),
     "system": MessageLookupByLibrary.simpleMessage("System"),
@@ -1041,6 +983,46 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("Theme mode"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("Three columns"),
+    "ticketActionFailed": m19,
+    "ticketClose": MessageLookupByLibrary.simpleMessage("Close Ticket"),
+    "ticketCloseConfirm": MessageLookupByLibrary.simpleMessage(
+      "You will not be able to reply after closing this ticket. Close it now?",
+    ),
+    "ticketClosed": MessageLookupByLibrary.simpleMessage("Ticket closed"),
+    "ticketClosedHint": MessageLookupByLibrary.simpleMessage(
+      "This ticket is closed and cannot receive new replies.",
+    ),
+    "ticketCreate": MessageLookupByLibrary.simpleMessage("Create"),
+    "ticketCreated": MessageLookupByLibrary.simpleMessage("Ticket created"),
+    "ticketFirstMessage": MessageLookupByLibrary.simpleMessage(
+      "Describe the issue",
+    ),
+    "ticketHistory": MessageLookupByLibrary.simpleMessage("Ticket History"),
+    "ticketLoadFailed": m20,
+    "ticketMessageRequired": MessageLookupByLibrary.simpleMessage(
+      "Describe the issue",
+    ),
+    "ticketNew": MessageLookupByLibrary.simpleMessage("New Ticket"),
+    "ticketNoTickets": MessageLookupByLibrary.simpleMessage("No tickets yet"),
+    "ticketNoTicketsDescription": MessageLookupByLibrary.simpleMessage(
+      "Create a ticket to start a conversation with support.",
+    ),
+    "ticketPriority": MessageLookupByLibrary.simpleMessage("Priority"),
+    "ticketPriorityHigh": MessageLookupByLibrary.simpleMessage("High"),
+    "ticketPriorityLow": MessageLookupByLibrary.simpleMessage("Low"),
+    "ticketPriorityNormal": MessageLookupByLibrary.simpleMessage("Normal"),
+    "ticketStatusClosed": MessageLookupByLibrary.simpleMessage("Closed"),
+    "ticketStatusOpen": MessageLookupByLibrary.simpleMessage("In progress"),
+    "ticketSubject": MessageLookupByLibrary.simpleMessage("Subject"),
+    "ticketSubjectRequired": MessageLookupByLibrary.simpleMessage(
+      "Enter a subject",
+    ),
+    "ticketSupportReplied": MessageLookupByLibrary.simpleMessage(
+      "Support replied",
+    ),
+    "ticketWaitingSupport": MessageLookupByLibrary.simpleMessage(
+      "Waiting for support",
+    ),
     "tight": MessageLookupByLibrary.simpleMessage("Tight"),
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "tip": MessageLookupByLibrary.simpleMessage("tip"),
@@ -1049,20 +1031,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "tools": MessageLookupByLibrary.simpleMessage("Tools"),
     "totalCommission": MessageLookupByLibrary.simpleMessage("Earnings"),
     "totalInvites": MessageLookupByLibrary.simpleMessage("Invites"),
-    "totalRecords": m23,
+    "totalRecords": m21,
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxy Port"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Traffic usage"),
     "transfer": MessageLookupByLibrary.simpleMessage("Transfer"),
     "transferAmount": MessageLookupByLibrary.simpleMessage("Transfer Amount"),
-    "transferAmountExceeded": m24,
-    "transferFailed": m25,
+    "transferAmountExceeded": m22,
+    "transferFailed": m23,
     "transferNote": MessageLookupByLibrary.simpleMessage(
       "Transferred balance can be used for in-app purchases",
     ),
     "transferSuccess": MessageLookupByLibrary.simpleMessage(
       "Transfer Success!",
     ),
-    "transferSuccessMsg": m26,
+    "transferSuccessMsg": m24,
     "transferToWallet": MessageLookupByLibrary.simpleMessage(
       "Transfer to Wallet",
     ),
@@ -1086,19 +1068,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateCheckAllServersUnavailable": MessageLookupByLibrary.simpleMessage(
       "All configured update servers are unavailable",
     ),
-    "updateCheckCurrentVersion": m27,
-    "updateCheckForceUpdate": m28,
+    "updateCheckCurrentVersion": m25,
+    "updateCheckForceUpdate": m26,
     "updateCheckMustUpdate": MessageLookupByLibrary.simpleMessage(
       "Must Update",
     ),
-    "updateCheckNewVersionFound": m29,
+    "updateCheckNewVersionFound": m27,
     "updateCheckNoServerUrlsConfigured": MessageLookupByLibrary.simpleMessage(
       "No update server URLs configured, please check configuration",
     ),
     "updateCheckReleaseNotes": MessageLookupByLibrary.simpleMessage(
       "Release Notes:",
     ),
-    "updateCheckServerError": m30,
+    "updateCheckServerError": m28,
     "updateCheckServerTemporarilyUnavailable":
         MessageLookupByLibrary.simpleMessage(
           "Server temporarily unavailable, please try again later",
@@ -1115,7 +1097,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain profile through URL",
     ),
-    "urlTip": m31,
+    "urlTip": m29,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "userCenter": MessageLookupByLibrary.simpleMessage("User Center"),
@@ -1132,7 +1114,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verificationCodeSentCheckEmail": MessageLookupByLibrary.simpleMessage(
       "Verification code sent, please check your email",
     ),
-    "verificationCodeSentTo": m32,
+    "verificationCodeSentTo": m30,
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("Vibrant"),
     "view": MessageLookupByLibrary.simpleMessage("View"),
     "viewHistory": MessageLookupByLibrary.simpleMessage("View History"),
@@ -1161,7 +1143,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "withdrawCommission": MessageLookupByLibrary.simpleMessage(
       "Withdraw Commission",
     ),
-    "withdrawableAmount": m33,
+    "withdrawableAmount": m31,
     "withdrawalAvailable": MessageLookupByLibrary.simpleMessage(
       "Available commission can be withdrawn",
     ),
@@ -1570,7 +1552,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReturnAfterPaymentAutoDetect": MessageLookupByLibrary.simpleMessage(
       "3. Return to app after payment, system will detect automatically",
     ),
-    "xboardRunningTime": m34,
+    "xboardRunningTime": m32,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),

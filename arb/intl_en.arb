@@ -1011,59 +1011,47 @@
   },
   "updateCheckServerTemporarilyUnavailable": "Server temporarily unavailable, please try again later",
   "onlineSupportTitle": "Online Support",
-  "onlineSupportConnected": "Successfully connected to support system",
-  "onlineSupportConnecting": "Connecting...",
-  "onlineSupportDisconnected": "Disconnected",
-  "onlineSupportConnectionError": "Connection error",
-  "onlineSupportNoMessages": "No messages yet, send a message to start consultation",
+  "ticketNew": "New Ticket",
+  "ticketHistory": "Ticket History",
+  "ticketNoTickets": "No tickets yet",
+  "ticketNoTicketsDescription": "Create a ticket to start a conversation with support.",
+  "ticketStatusOpen": "In progress",
+  "ticketStatusClosed": "Closed",
+  "ticketSupportReplied": "Support replied",
+  "ticketWaitingSupport": "Waiting for support",
+  "ticketClose": "Close Ticket",
+  "ticketCloseConfirm": "You will not be able to reply after closing this ticket. Close it now?",
+  "ticketClosed": "Ticket closed",
+  "ticketClosedHint": "This ticket is closed and cannot receive new replies.",
+  "ticketCreated": "Ticket created",
+  "ticketSubject": "Subject",
+  "ticketPriority": "Priority",
+  "ticketPriorityLow": "Low",
+  "ticketPriorityNormal": "Normal",
+  "ticketPriorityHigh": "High",
+  "ticketFirstMessage": "Describe the issue",
+  "ticketCreate": "Create",
+  "ticketSubjectRequired": "Enter a subject",
+  "ticketMessageRequired": "Describe the issue",
+  "ticketLoadFailed": "Failed to load tickets: {error}",
+  "@ticketLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketActionFailed": "Action failed: {error}",
+  "@ticketActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "onlineSupportInputHint": "Please enter your question...",
-  "onlineSupportSendImage": "Send image",
-  "onlineSupportClearHistory": "Clear history",
-  "onlineSupportClearHistoryConfirm": "Are you sure you want to clear all chat history? This action cannot be undone.",
   "onlineSupportCancel": "Cancel",
-  "onlineSupportConfirm": "Confirm",
-  "onlineSupportSelectImages": "Select Images",
-  "onlineSupportClickToSelect": "Click to select images",
-  "onlineSupportSupportedFormats": "Supports JPG, PNG, GIF, WebP, BMP\nMax 10MB",
-  "onlineSupportAddMore": "Add More",
   "onlineSupportSend": "Send",
-  "onlineSupportSelectImagesFailed": "Failed to select images: {error}",
-  "@onlineSupportSelectImagesFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportUploadFailed": "Upload failed: {error}",
-  "@onlineSupportUploadFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportApiConfigNotFound": "Online support API configuration not found, please check configuration",
-  "onlineSupportUnsupportedHttpMethod": "Unsupported HTTP method: {method}",
-  "@onlineSupportUnsupportedHttpMethod": {
-    "placeholders": {
-      "method": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportSendMessageFailed": "Failed to send message: Unable to get authentication token",
-  "onlineSupportTokenNotFound": "Authentication token not found",
-  "onlineSupportGetMessagesFailed": "Failed to get messages: {statusCode}",
-  "@onlineSupportGetMessagesFailed": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
   "contactSupport": "Support",
-  "configurationError": "Application configuration error, please contact support",
-  "onlineSupportWebSocketConfigNotFound": "Online support WebSocket configuration not found, please check configuration",
-  "newMessageFromSupport": "New message from support"
+  "configurationError": "Application configuration error, please contact support"
 }

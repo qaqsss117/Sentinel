@@ -221,21 +221,11 @@ remote_config:
 
 ### 在线客服系统
 
-**配置示例：**
-
-```json
-"onlineSupport": [
-  {
-    "url": "https://go.crisp.chat/chat/embed/?website_id=YOUR_CRISP_WEBSITE_ID",
-    "description": "Crisp 在线客服"
-  }
-]
-```
-
 **功能特性：**
-- 使用 Crisp 托管聊天页面
-- 无需部署客服 API 或 WebSocket 服务
-- 未配置客服时不影响客户端启动
+- 使用 Xboard 原生工单接口和当前登录会话
+- 以聊天形式展示工单消息，支持回复、刷新和关闭工单
+- 支持查看历史工单，且同一时间只创建一个未关闭工单
+- 无需配置独立客服地址或 WebSocket 服务
 
 ### 设备上报与远程任务（实验性功能）
 

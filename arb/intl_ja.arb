@@ -749,58 +749,47 @@
   },
   "updateCheckServerTemporarilyUnavailable": "サーバーが一時的に利用できません。しばらくしてから再試行してください",
   "onlineSupportTitle": "オンラインサポート",
-  "onlineSupportConnected": "サポートシステムに正常に接続しました",
-  "onlineSupportConnecting": "接続中...",
-  "onlineSupportDisconnected": "切断されました",
-  "onlineSupportConnectionError": "接続エラー",
-  "onlineSupportNoMessages": "メッセージがありません。メッセージを送信して相談を開始してください",
+  "ticketNew": "新規チケット",
+  "ticketHistory": "チケット履歴",
+  "ticketNoTickets": "チケットはありません",
+  "ticketNoTicketsDescription": "チケットを作成してサポートとの会話を開始できます。",
+  "ticketStatusOpen": "対応中",
+  "ticketStatusClosed": "終了",
+  "ticketSupportReplied": "サポートから返信済み",
+  "ticketWaitingSupport": "サポートの返信待ち",
+  "ticketClose": "チケットを終了",
+  "ticketCloseConfirm": "終了後は返信できません。このチケットを終了しますか？",
+  "ticketClosed": "チケットを終了しました",
+  "ticketClosedHint": "このチケットは終了しているため、返信できません。",
+  "ticketCreated": "チケットを作成しました",
+  "ticketSubject": "件名",
+  "ticketPriority": "優先度",
+  "ticketPriorityLow": "低",
+  "ticketPriorityNormal": "通常",
+  "ticketPriorityHigh": "高",
+  "ticketFirstMessage": "問題の内容を入力してください",
+  "ticketCreate": "作成",
+  "ticketSubjectRequired": "件名を入力してください",
+  "ticketMessageRequired": "問題の内容を入力してください",
+  "ticketLoadFailed": "チケットの読み込みに失敗しました: {error}",
+  "@ticketLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ticketActionFailed": "操作に失敗しました: {error}",
+  "@ticketActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "onlineSupportInputHint": "ご質問を入力してください...",
-  "onlineSupportSendImage": "画像を送信",
-  "onlineSupportClearHistory": "履歴をクリア",
-  "onlineSupportClearHistoryConfirm": "すべてのチャット履歴をクリアしてもよろしいですか？この操作は元に戻せません。",
   "onlineSupportCancel": "キャンセル",
-  "onlineSupportConfirm": "確認",
-  "onlineSupportSelectImages": "画像を選択",
-  "onlineSupportClickToSelect": "クリックして画像を選択",
-  "onlineSupportSupportedFormats": "JPG、PNG、GIF、WebP、BMP対応\n最大10MB",
-  "onlineSupportAddMore": "さらに追加",
   "onlineSupportSend": "送信",
-  "onlineSupportSelectImagesFailed": "画像の選択に失敗しました: {error}",
-  "@onlineSupportSelectImagesFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportUploadFailed": "アップロードに失敗しました: {error}",
-  "@onlineSupportUploadFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportApiConfigNotFound": "オンラインサポートAPI設定が見つかりません。設定を確認してください",
-  "onlineSupportUnsupportedHttpMethod": "サポートされていないHTTPメソッド: {method}",
-  "@onlineSupportUnsupportedHttpMethod": {
-    "placeholders": {
-      "method": {
-        "type": "String"
-      }
-    }
-  },
-  "onlineSupportSendMessageFailed": "メッセージの送信に失敗しました: 認証トークンを取得できません",
-  "onlineSupportTokenNotFound": "認証トークンが見つかりません",
-  "onlineSupportGetMessagesFailed": "メッセージの取得に失敗しました: {statusCode}",
-  "@onlineSupportGetMessagesFailed": {
-    "placeholders": {
-      "statusCode": {
-        "type": "int"
-      }
-    }
-  },
   "contactSupport": "サポートに連絡",
-  "configurationError": "アプリケーション設定エラー、サポートにお問い合わせください",
-  "onlineSupportWebSocketConfigNotFound": "オンラインサポートWebSocket設定が見つかりません。設定を確認してください"
+  "configurationError": "アプリケーション設定エラー、サポートにお問い合わせください"
 }

@@ -52,29 +52,6 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
 
-# flutter_inappwebview_windows requires the standalone NuGet CLI. Keep Windows
-# builds self-contained when it is not installed globally.
-find_program(NUGET_EXECUTABLE nuget)
-if(NOT NUGET_EXECUTABLE)
-  set(NUGET_DIR "${CMAKE_BINARY_DIR}/tools/nuget")
-  set(NUGET_EXECUTABLE "${NUGET_DIR}/nuget.exe")
-  if(NOT EXISTS "${NUGET_EXECUTABLE}")
-    file(MAKE_DIRECTORY "${NUGET_DIR}")
-    file(DOWNLOAD
-      "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
-      "${NUGET_EXECUTABLE}"
-      STATUS NUGET_DOWNLOAD_STATUS
-      TLS_VERIFY ON
-    )
-    list(GET NUGET_DOWNLOAD_STATUS 0 NUGET_DOWNLOAD_ERROR)
-    if(NOT NUGET_DOWNLOAD_ERROR EQUAL 0)
-      list(GET NUGET_DOWNLOAD_STATUS 1 NUGET_DOWNLOAD_MESSAGE)
-      message(FATAL_ERROR "Failed to download nuget.exe: ${NUGET_DOWNLOAD_MESSAGE}")
-    endif()
-  endif()
-  list(PREPEND CMAKE_PROGRAM_PATH "${NUGET_DIR}")
-endif()
-
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)

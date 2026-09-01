@@ -4,7 +4,6 @@ import '../models/config_entry.dart';
 import '../models/proxy_info.dart';
 import '../models/websocket_info.dart';
 import '../models/update_info.dart';
-import '../models/online_support_info.dart';
 import '../models/subscription_info.dart';
 import '../fetchers/remote_config_manager.dart';
 import '../../core/core.dart';
@@ -13,7 +12,6 @@ import '../services/panel_service.dart';
 import '../services/proxy_service.dart';
 import '../services/websocket_service.dart';
 import '../services/update_service.dart';
-import '../services/online_support_service.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('xboard_config_accessor.dart');
@@ -46,7 +44,6 @@ class XBoardConfigAccessor {
   ProxyService? _proxyService;
   WebSocketService? _webSocketService;
   UpdateService? _updateService;
-  OnlineSupportService? _onlineSupportService;
 
   // 事件流
   final StreamController<ParsedConfiguration> _configStreamController = 
@@ -203,11 +200,6 @@ class XBoardConfigAccessor {
     return _updateService?.getAllUpdateSources() ?? [];
   }
 
-  /// 获取在线客服配置列表
-  List<OnlineSupportInfo> getOnlineSupportConfigs() {
-    return _onlineSupportService?.getAllConfigs() ?? [];
-  }
-
   /// 获取订阅配置信息
   SubscriptionInfo? getSubscriptionInfo() {
     return _currentConfig?.subscription;
@@ -257,16 +249,6 @@ class XBoardConfigAccessor {
     return _updateService?.getFirstUpdateUrl();
   }
 
-  /// 获取第一个在线客服API URL
-  String? getFirstOnlineSupportApiUrl() {
-    return _onlineSupportService?.getApiBaseUrl();
-  }
-
-  /// 获取第一个在线客服WebSocket URL
-  String? getFirstOnlineSupportWsUrl() {
-    return _onlineSupportService?.getWebSocketBaseUrl();
-  }
-
   /// 获取第一个订阅URL
   String? getFirstSubscriptionUrl() {
     return _currentConfig?.firstSubscriptionUrl;
@@ -292,7 +274,6 @@ class XBoardConfigAccessor {
         'proxies': 0,
         'webSockets': 0,
         'updates': 0,
-        'onlineSupport': 0,
         'subscriptionUrls': 0,
       };
     }
@@ -302,7 +283,6 @@ class XBoardConfigAccessor {
       'proxies': _currentConfig!.proxies.length,
       'webSockets': _currentConfig!.webSockets.length,
       'updates': _currentConfig!.updates.length,
-      'onlineSupport': _currentConfig!.onlineSupport.length,
       'subscriptionUrls': _currentConfig!.subscription?.urls.length ?? 0,
       'subscriptionEncryptUrls': _currentConfig!.subscription?.encryptUrls.length ?? 0,
       'currentProvider': _currentProvider,
@@ -318,7 +298,6 @@ class XBoardConfigAccessor {
       'proxy': _proxyService?.getProxyStats() ?? {},
       'webSocket': _webSocketService?.getWebSocketStats() ?? {},
       'update': _updateService?.getUpdateStats() ?? {},
-      'onlineSupport': _onlineSupportService?.getConfigStats() ?? {},
     };
   }
 
@@ -336,7 +315,6 @@ class XBoardConfigAccessor {
       _proxyService = ProxyService(_currentConfig!.proxies);
       _webSocketService = WebSocketService(_currentConfig!.webSockets);
       _updateService = UpdateService(_currentConfig!.updates);
-      _onlineSupportService = OnlineSupportService(_currentConfig!.onlineSupport);
 
       await _updateState(ConfigAccessorState.ready);
 

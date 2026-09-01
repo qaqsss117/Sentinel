@@ -60,11 +60,10 @@ class ConfigValidator {
         !json.containsKey('proxy') && 
         !json.containsKey('ws') && 
         !json.containsKey('update') &&
-        !json.containsKey('onlineSupport') &&
         !json.containsKey('subscription')) {
       errors.add(ValidationError(
         field: 'root',
-        message: 'Configuration must contain at least one of: panels, proxy, ws, update, onlineSupport, subscription',
+        message: 'Configuration must contain at least one of: panels, proxy, ws, update, subscription',
         type: ValidationErrorType.missingField,
       ));
       return errors;
@@ -80,11 +79,6 @@ class ConfigValidator {
       if (json.containsKey(key)) {
         errors.addAll(_validateServiceList(json[key], key));
       }
-    }
-
-    // 验证在线客服配置
-    if (json.containsKey('onlineSupport')) {
-      errors.addAll(_validateOnlineSupportList(json['onlineSupport']));
     }
 
     // 验证订阅配置 - 暂时跳过，使用基本验证
@@ -218,76 +212,6 @@ class ConfigValidator {
     return errors;
   }
 
-  /// 验证在线客服配置列表
-  List<ValidationError> _validateOnlineSupportList(dynamic onlineSupportList) {
-    final errors = <ValidationError>[];
-
-    if (onlineSupportList is! List) {
-      errors.add(ValidationError(
-        field: 'onlineSupport',
-        message: 'onlineSupport must be an array',
-        type: ValidationErrorType.invalidType,
-      ));
-      return errors;
-    }
-
-    final list = onlineSupportList;
-    for (int i = 0; i < list.length; i++) {
-      final item = list[i];
-      if (item is! Map<String, dynamic>) {
-        errors.add(ValidationError(
-          field: 'onlineSupport[$i]',
-          message: 'Online support item must be an object',
-          type: ValidationErrorType.invalidType,
-        ));
-        continue;
-      }
-
-      final itemMap = item;
-      
-      // 验证必填字段
-      if (!itemMap.containsKey('url') || itemMap['url'] is! String) {
-        errors.add(ValidationError(
-          field: 'onlineSupport[$i].url',
-          message: 'Online support item must have a valid url field',
-          type: ValidationErrorType.missingField,
-        ));
-      }
-
-      if (!itemMap.containsKey('description') || itemMap['description'] is! String) {
-        errors.add(ValidationError(
-          field: 'onlineSupport[$i].description',
-          message: 'Online support item must have a valid description field',
-          type: ValidationErrorType.missingField,
-        ));
-      }
-
-      // 验证URL格式
-      if (itemMap['url'] is String) {
-        final supportUrl = itemMap['url'] as String;
-        if (!_isValidHttpUrl(supportUrl)) {
-          errors.add(ValidationError(
-            field: 'onlineSupport[$i].url',
-            message: 'url must be a valid HTTP/HTTPS URL',
-            type: ValidationErrorType.invalidFormat,
-          ));
-        }
-      }
-    }
-
-    return errors;
-  }
-
-  /// 检查是否为有效的HTTP URL
-  bool _isValidHttpUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
-  }
-
 }
 
 /// 配置解析器
@@ -347,7 +271,6 @@ class ConfigurationParser {
         remoteResult.containsKey('proxy') || 
         remoteResult.containsKey('ws') || 
         remoteResult.containsKey('update') ||
-        remoteResult.containsKey('onlineSupport') ||
         remoteResult.containsKey('subscription')) {
       return remoteResult;
     }
@@ -367,7 +290,7 @@ class ConfigurationParser {
         };
         
         // 复制其他可能存在的字段
-        for (final key in ['proxy', 'ws', 'update', 'onlineSupport', 'subscription']) {
+        for (final key in ['proxy', 'ws', 'update', 'subscription']) {
           if (remoteResult.containsKey(key)) {
             convertedConfig[key] = remoteResult[key];
           }
@@ -405,7 +328,7 @@ class ConfigurationParser {
       }
 
       // 合并其他列表字段  
-      for (final key in ['proxy', 'ws', 'update', 'onlineSupport']) {
+      for (final key in ['proxy', 'ws', 'update']) {
         if (config.containsKey(key)) {
           final existingList = (merged[key] as List?) ?? [];
           final newList = config[key] as List;

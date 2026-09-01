@@ -33,38 +33,33 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m8(label) => "${label} должно быть числом";
 
-  static String m9(statusCode) =>
-      "Не удалось получить сообщения: ${statusCode}";
+  static String m12(label) => "${label} должен быть числом от 1024 до 49151";
 
-  static String m10(error) => "Не удалось выбрать изображения: ${error}";
+  static String m14(count) => "Выбрано ${count} элементов";
 
-  static String m11(method) => "Неподдерживаемый HTTP метод: ${method}";
-
-  static String m12(error) => "Загрузка не удалась: ${error}";
-
-  static String m16(label) => "${label} должен быть числом от 1024 до 49151";
-
-  static String m18(count) => "Выбрано ${count} элементов";
-
-  static String m20(date) =>
+  static String m16(date) =>
       "План истёк ${date}, пожалуйста продлите для продолжения использования";
 
-  static String m21(days) =>
+  static String m17(days) =>
       "План истёк через ${days} дней, пожалуйста продлите вовремя";
 
-  static String m22(days) => "Подписка истёк через ${days} дней";
+  static String m18(days) => "Подписка истёк через ${days} дней";
 
-  static String m27(version) => "Текущая версия: ${version}";
+  static String m19(error) => "Не удалось выполнить действие: ${error}";
 
-  static String m28(version) => "Принудительное обновление: ${version}";
+  static String m20(error) => "Не удалось загрузить заявки: ${error}";
 
-  static String m29(version) => "Найдена новая версия: ${version}";
+  static String m25(version) => "Текущая версия: ${version}";
 
-  static String m30(statusCode) => "Сервер вернул код ошибки ${statusCode}";
+  static String m26(version) => "Принудительное обновление: ${version}";
 
-  static String m31(label) => "${label} должен быть URL";
+  static String m27(version) => "Найдена новая версия: ${version}";
 
-  static String m34(time) => "Время работы: ${time}";
+  static String m28(statusCode) => "Сервер вернул код ошибки ${statusCode}";
+
+  static String m29(label) => "${label} должен быть URL";
+
+  static String m32(time) => "Время работы: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -504,66 +499,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "numberTip": m8,
     "oneColumn": MessageLookupByLibrary.simpleMessage("Один столбец"),
     "onlineSupport": MessageLookupByLibrary.simpleMessage("Онлайн поддержка"),
-    "onlineSupportAddMore": MessageLookupByLibrary.simpleMessage(
-      "Добавить еще",
-    ),
-    "onlineSupportApiConfigNotFound": MessageLookupByLibrary.simpleMessage(
-      "Конфигурация API онлайн поддержки не найдена, проверьте настройки",
-    ),
     "onlineSupportCancel": MessageLookupByLibrary.simpleMessage("Отмена"),
-    "onlineSupportClearHistory": MessageLookupByLibrary.simpleMessage(
-      "Очистить историю",
-    ),
-    "onlineSupportClearHistoryConfirm": MessageLookupByLibrary.simpleMessage(
-      "Вы уверены, что хотите очистить всю историю чата? Это действие нельзя отменить.",
-    ),
-    "onlineSupportClickToSelect": MessageLookupByLibrary.simpleMessage(
-      "Нажмите для выбора изображений",
-    ),
-    "onlineSupportConfirm": MessageLookupByLibrary.simpleMessage("Подтвердить"),
-    "onlineSupportConnected": MessageLookupByLibrary.simpleMessage(
-      "Успешно подключено к системе поддержки",
-    ),
-    "onlineSupportConnecting": MessageLookupByLibrary.simpleMessage(
-      "Подключение...",
-    ),
-    "onlineSupportConnectionError": MessageLookupByLibrary.simpleMessage(
-      "Ошибка подключения",
-    ),
-    "onlineSupportDisconnected": MessageLookupByLibrary.simpleMessage(
-      "Отключено",
-    ),
-    "onlineSupportGetMessagesFailed": m9,
     "onlineSupportInputHint": MessageLookupByLibrary.simpleMessage(
       "Пожалуйста, введите ваш вопрос...",
     ),
-    "onlineSupportNoMessages": MessageLookupByLibrary.simpleMessage(
-      "Пока нет сообщений, отправьте сообщение для начала консультации",
-    ),
-    "onlineSupportSelectImages": MessageLookupByLibrary.simpleMessage(
-      "Выбрать изображения",
-    ),
-    "onlineSupportSelectImagesFailed": m10,
     "onlineSupportSend": MessageLookupByLibrary.simpleMessage("Отправить"),
-    "onlineSupportSendImage": MessageLookupByLibrary.simpleMessage(
-      "Отправить изображение",
-    ),
-    "onlineSupportSendMessageFailed": MessageLookupByLibrary.simpleMessage(
-      "Не удалось отправить сообщение: Невозможно получить токен аутентификации",
-    ),
-    "onlineSupportSupportedFormats": MessageLookupByLibrary.simpleMessage(
-      "Поддерживает JPG, PNG, GIF, WebP, BMP\nМакс 10МБ",
-    ),
     "onlineSupportTitle": MessageLookupByLibrary.simpleMessage(
       "Онлайн поддержка",
-    ),
-    "onlineSupportTokenNotFound": MessageLookupByLibrary.simpleMessage(
-      "Токен аутентификации не найден",
-    ),
-    "onlineSupportUnsupportedHttpMethod": m11,
-    "onlineSupportUploadFailed": m12,
-    "onlineSupportWebSocketConfigNotFound": MessageLookupByLibrary.simpleMessage(
-      "Конфигурация WebSocket онлайн поддержки не найдена, проверьте настройки",
     ),
     "onlyIcon": MessageLookupByLibrary.simpleMessage("Только иконка"),
     "onlyOtherApps": MessageLookupByLibrary.simpleMessage(
@@ -620,7 +562,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Введите другой порт",
     ),
-    "portTip": m16,
+    "portTip": m12,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Приоритетное использование HTTP/3 для DOH",
     ),
@@ -749,7 +691,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "seconds": MessageLookupByLibrary.simpleMessage("Секунд"),
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать все"),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m18,
+    "selectedCountTitle": m14,
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "shrink": MessageLookupByLibrary.simpleMessage("Сжать"),
@@ -778,7 +720,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpired": MessageLookupByLibrary.simpleMessage(
       "Подписка истекла",
     ),
-    "subscriptionExpiredDetail": m20,
+    "subscriptionExpiredDetail": m16,
     "subscriptionExpiresToday": MessageLookupByLibrary.simpleMessage(
       "Подписка истекает сегодня",
     ),
@@ -788,7 +730,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpiringInDays": MessageLookupByLibrary.simpleMessage(
       "Подписка скоро истекает",
     ),
-    "subscriptionExpiringInDaysDetail": m21,
+    "subscriptionExpiringInDaysDetail": m17,
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage(
       "Нет подписки",
     ),
@@ -810,7 +752,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionValid": MessageLookupByLibrary.simpleMessage(
       "Подписка действительна",
     ),
-    "subscriptionValidDetail": m22,
+    "subscriptionValidDetail": m18,
     "sync": MessageLookupByLibrary.simpleMessage("Синхронизация"),
     "system": MessageLookupByLibrary.simpleMessage("Система"),
     "systemApp": MessageLookupByLibrary.simpleMessage("Системное приложение"),
@@ -837,6 +779,46 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("Режим темы"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("Три столбца"),
+    "ticketActionFailed": m19,
+    "ticketClose": MessageLookupByLibrary.simpleMessage("Закрыть заявку"),
+    "ticketCloseConfirm": MessageLookupByLibrary.simpleMessage(
+      "После закрытия ответить будет невозможно. Закрыть эту заявку?",
+    ),
+    "ticketClosed": MessageLookupByLibrary.simpleMessage("Заявка закрыта"),
+    "ticketClosedHint": MessageLookupByLibrary.simpleMessage(
+      "Эта заявка закрыта, новые ответы недоступны.",
+    ),
+    "ticketCreate": MessageLookupByLibrary.simpleMessage("Создать"),
+    "ticketCreated": MessageLookupByLibrary.simpleMessage("Заявка создана"),
+    "ticketFirstMessage": MessageLookupByLibrary.simpleMessage(
+      "Опишите проблему",
+    ),
+    "ticketHistory": MessageLookupByLibrary.simpleMessage("История заявок"),
+    "ticketLoadFailed": m20,
+    "ticketMessageRequired": MessageLookupByLibrary.simpleMessage(
+      "Опишите проблему",
+    ),
+    "ticketNew": MessageLookupByLibrary.simpleMessage("Новая заявка"),
+    "ticketNoTickets": MessageLookupByLibrary.simpleMessage("Заявок пока нет"),
+    "ticketNoTicketsDescription": MessageLookupByLibrary.simpleMessage(
+      "Создайте заявку, чтобы начать разговор со службой поддержки.",
+    ),
+    "ticketPriority": MessageLookupByLibrary.simpleMessage("Приоритет"),
+    "ticketPriorityHigh": MessageLookupByLibrary.simpleMessage("Высокий"),
+    "ticketPriorityLow": MessageLookupByLibrary.simpleMessage("Низкий"),
+    "ticketPriorityNormal": MessageLookupByLibrary.simpleMessage("Обычный"),
+    "ticketStatusClosed": MessageLookupByLibrary.simpleMessage("Закрыта"),
+    "ticketStatusOpen": MessageLookupByLibrary.simpleMessage("В работе"),
+    "ticketSubject": MessageLookupByLibrary.simpleMessage("Тема"),
+    "ticketSubjectRequired": MessageLookupByLibrary.simpleMessage(
+      "Введите тему",
+    ),
+    "ticketSupportReplied": MessageLookupByLibrary.simpleMessage(
+      "Поддержка ответила",
+    ),
+    "ticketWaitingSupport": MessageLookupByLibrary.simpleMessage(
+      "Ожидание ответа поддержки",
+    ),
     "tight": MessageLookupByLibrary.simpleMessage("Плотный"),
     "time": MessageLookupByLibrary.simpleMessage("Время"),
     "tip": MessageLookupByLibrary.simpleMessage("подсказка"),
@@ -868,19 +850,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateCheckAllServersUnavailable": MessageLookupByLibrary.simpleMessage(
       "Все настроенные серверы обновлений недоступны",
     ),
-    "updateCheckCurrentVersion": m27,
-    "updateCheckForceUpdate": m28,
+    "updateCheckCurrentVersion": m25,
+    "updateCheckForceUpdate": m26,
     "updateCheckMustUpdate": MessageLookupByLibrary.simpleMessage(
       "Необходимо обновить",
     ),
-    "updateCheckNewVersionFound": m29,
+    "updateCheckNewVersionFound": m27,
     "updateCheckNoServerUrlsConfigured": MessageLookupByLibrary.simpleMessage(
       "URL серверов обновлений не настроены, проверьте конфигурацию",
     ),
     "updateCheckReleaseNotes": MessageLookupByLibrary.simpleMessage(
       "Примечания к выпуску:",
     ),
-    "updateCheckServerError": m30,
+    "updateCheckServerError": m28,
     "updateCheckServerTemporarilyUnavailable":
         MessageLookupByLibrary.simpleMessage(
           "Сервер временно недоступен, попробуйте позже",
@@ -899,7 +881,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Получить профиль через URL",
     ),
-    "urlTip": m31,
+    "urlTip": m29,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системные hosts",
@@ -1119,7 +1101,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardInvalidResponseFormat": MessageLookupByLibrary.simpleMessage(
       "Неверный формат ответа от сервера",
     ),
-    "inviteCodeIncorrect": MessageLookupByLibrary.simpleMessage("Код приглашения может быть неверным, проверьте и введите снова"),
     "xboardInviteCode": MessageLookupByLibrary.simpleMessage("Код приглашения"),
     "xboardKeepSubscriptionLinkSafe": MessageLookupByLibrary.simpleMessage(
       "Храните ссылку на подписку в безопасности и не делитесь ею с другими",
@@ -1251,9 +1232,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPaymentMethodVerified": MessageLookupByLibrary.simpleMessage(
       "Способ оплаты подтверждён",
     ),
-    "xboardPaymentMethodVerifiedPreparing": MessageLookupByLibrary.simpleMessage(
-      "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
-    ),
+    "xboardPaymentMethodVerifiedPreparing":
+        MessageLookupByLibrary.simpleMessage(
+          "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
+        ),
     "xboardPaymentPageAutoOpened": MessageLookupByLibrary.simpleMessage(
       "1. Страница оплаты была открыта автоматически",
     ),
@@ -1353,7 +1335,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReturnAfterPaymentAutoDetect": MessageLookupByLibrary.simpleMessage(
       "3. Вернитесь в приложение после оплаты, система автоматически определит",
     ),
-    "xboardRunningTime": m34,
+    "xboardRunningTime": m32,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Безопасное шифрование",
     ),

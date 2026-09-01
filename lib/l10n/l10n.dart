@@ -1,6 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -6754,53 +6755,213 @@ class AppLocalizations {
     );
   }
 
-  /// `Successfully connected to support system`
-  String get onlineSupportConnected {
+  /// `New Ticket`
+  String get ticketNew {
+    return Intl.message('New Ticket', name: 'ticketNew', desc: '', args: []);
+  }
+
+  /// `Ticket History`
+  String get ticketHistory {
     return Intl.message(
-      'Successfully connected to support system',
-      name: 'onlineSupportConnected',
+      'Ticket History',
+      name: 'ticketHistory',
       desc: '',
       args: [],
     );
   }
 
-  /// `Connecting...`
-  String get onlineSupportConnecting {
+  /// `No tickets yet`
+  String get ticketNoTickets {
     return Intl.message(
-      'Connecting...',
-      name: 'onlineSupportConnecting',
+      'No tickets yet',
+      name: 'ticketNoTickets',
       desc: '',
       args: [],
     );
   }
 
-  /// `Disconnected`
-  String get onlineSupportDisconnected {
+  /// `Create a ticket to start a conversation with support.`
+  String get ticketNoTicketsDescription {
     return Intl.message(
-      'Disconnected',
-      name: 'onlineSupportDisconnected',
+      'Create a ticket to start a conversation with support.',
+      name: 'ticketNoTicketsDescription',
       desc: '',
       args: [],
     );
   }
 
-  /// `Connection error`
-  String get onlineSupportConnectionError {
+  /// `In progress`
+  String get ticketStatusOpen {
     return Intl.message(
-      'Connection error',
-      name: 'onlineSupportConnectionError',
+      'In progress',
+      name: 'ticketStatusOpen',
       desc: '',
       args: [],
     );
   }
 
-  /// `No messages yet, send a message to start consultation`
-  String get onlineSupportNoMessages {
+  /// `Closed`
+  String get ticketStatusClosed {
     return Intl.message(
-      'No messages yet, send a message to start consultation',
-      name: 'onlineSupportNoMessages',
+      'Closed',
+      name: 'ticketStatusClosed',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Support replied`
+  String get ticketSupportReplied {
+    return Intl.message(
+      'Support replied',
+      name: 'ticketSupportReplied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting for support`
+  String get ticketWaitingSupport {
+    return Intl.message(
+      'Waiting for support',
+      name: 'ticketWaitingSupport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close Ticket`
+  String get ticketClose {
+    return Intl.message(
+      'Close Ticket',
+      name: 'ticketClose',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You will not be able to reply after closing this ticket. Close it now?`
+  String get ticketCloseConfirm {
+    return Intl.message(
+      'You will not be able to reply after closing this ticket. Close it now?',
+      name: 'ticketCloseConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket closed`
+  String get ticketClosed {
+    return Intl.message(
+      'Ticket closed',
+      name: 'ticketClosed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This ticket is closed and cannot receive new replies.`
+  String get ticketClosedHint {
+    return Intl.message(
+      'This ticket is closed and cannot receive new replies.',
+      name: 'ticketClosedHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket created`
+  String get ticketCreated {
+    return Intl.message(
+      'Ticket created',
+      name: 'ticketCreated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subject`
+  String get ticketSubject {
+    return Intl.message('Subject', name: 'ticketSubject', desc: '', args: []);
+  }
+
+  /// `Priority`
+  String get ticketPriority {
+    return Intl.message('Priority', name: 'ticketPriority', desc: '', args: []);
+  }
+
+  /// `Low`
+  String get ticketPriorityLow {
+    return Intl.message('Low', name: 'ticketPriorityLow', desc: '', args: []);
+  }
+
+  /// `Normal`
+  String get ticketPriorityNormal {
+    return Intl.message(
+      'Normal',
+      name: 'ticketPriorityNormal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `High`
+  String get ticketPriorityHigh {
+    return Intl.message('High', name: 'ticketPriorityHigh', desc: '', args: []);
+  }
+
+  /// `Describe the issue`
+  String get ticketFirstMessage {
+    return Intl.message(
+      'Describe the issue',
+      name: 'ticketFirstMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create`
+  String get ticketCreate {
+    return Intl.message('Create', name: 'ticketCreate', desc: '', args: []);
+  }
+
+  /// `Enter a subject`
+  String get ticketSubjectRequired {
+    return Intl.message(
+      'Enter a subject',
+      name: 'ticketSubjectRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Describe the issue`
+  String get ticketMessageRequired {
+    return Intl.message(
+      'Describe the issue',
+      name: 'ticketMessageRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to load tickets: {error}`
+  String ticketLoadFailed(String error) {
+    return Intl.message(
+      'Failed to load tickets: $error',
+      name: 'ticketLoadFailed',
+      desc: '',
+      args: [error],
+    );
+  }
+
+  /// `Action failed: {error}`
+  String ticketActionFailed(String error) {
+    return Intl.message(
+      'Action failed: $error',
+      name: 'ticketActionFailed',
+      desc: '',
+      args: [error],
     );
   }
 
@@ -6809,36 +6970,6 @@ class AppLocalizations {
     return Intl.message(
       'Please enter your question...',
       name: 'onlineSupportInputHint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Send image`
-  String get onlineSupportSendImage {
-    return Intl.message(
-      'Send image',
-      name: 'onlineSupportSendImage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Clear history`
-  String get onlineSupportClearHistory {
-    return Intl.message(
-      'Clear history',
-      name: 'onlineSupportClearHistory',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Are you sure you want to clear all chat history? This action cannot be undone.`
-  String get onlineSupportClearHistoryConfirm {
-    return Intl.message(
-      'Are you sure you want to clear all chat history? This action cannot be undone.',
-      name: 'onlineSupportClearHistoryConfirm',
       desc: '',
       args: [],
     );
@@ -6854,129 +6985,9 @@ class AppLocalizations {
     );
   }
 
-  /// `Confirm`
-  String get onlineSupportConfirm {
-    return Intl.message(
-      'Confirm',
-      name: 'onlineSupportConfirm',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Select Images`
-  String get onlineSupportSelectImages {
-    return Intl.message(
-      'Select Images',
-      name: 'onlineSupportSelectImages',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Click to select images`
-  String get onlineSupportClickToSelect {
-    return Intl.message(
-      'Click to select images',
-      name: 'onlineSupportClickToSelect',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Supports JPG, PNG, GIF, WebP, BMP\nMax 10MB`
-  String get onlineSupportSupportedFormats {
-    return Intl.message(
-      'Supports JPG, PNG, GIF, WebP, BMP\nMax 10MB',
-      name: 'onlineSupportSupportedFormats',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add More`
-  String get onlineSupportAddMore {
-    return Intl.message(
-      'Add More',
-      name: 'onlineSupportAddMore',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Send`
   String get onlineSupportSend {
     return Intl.message('Send', name: 'onlineSupportSend', desc: '', args: []);
-  }
-
-  /// `Failed to select images: {error}`
-  String onlineSupportSelectImagesFailed(String error) {
-    return Intl.message(
-      'Failed to select images: $error',
-      name: 'onlineSupportSelectImagesFailed',
-      desc: '',
-      args: [error],
-    );
-  }
-
-  /// `Upload failed: {error}`
-  String onlineSupportUploadFailed(String error) {
-    return Intl.message(
-      'Upload failed: $error',
-      name: 'onlineSupportUploadFailed',
-      desc: '',
-      args: [error],
-    );
-  }
-
-  /// `Online support API configuration not found, please check configuration`
-  String get onlineSupportApiConfigNotFound {
-    return Intl.message(
-      'Online support API configuration not found, please check configuration',
-      name: 'onlineSupportApiConfigNotFound',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Unsupported HTTP method: {method}`
-  String onlineSupportUnsupportedHttpMethod(String method) {
-    return Intl.message(
-      'Unsupported HTTP method: $method',
-      name: 'onlineSupportUnsupportedHttpMethod',
-      desc: '',
-      args: [method],
-    );
-  }
-
-  /// `Failed to send message: Unable to get authentication token`
-  String get onlineSupportSendMessageFailed {
-    return Intl.message(
-      'Failed to send message: Unable to get authentication token',
-      name: 'onlineSupportSendMessageFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Authentication token not found`
-  String get onlineSupportTokenNotFound {
-    return Intl.message(
-      'Authentication token not found',
-      name: 'onlineSupportTokenNotFound',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Failed to get messages: {statusCode}`
-  String onlineSupportGetMessagesFailed(int statusCode) {
-    return Intl.message(
-      'Failed to get messages: $statusCode',
-      name: 'onlineSupportGetMessagesFailed',
-      desc: '',
-      args: [statusCode],
-    );
   }
 
   /// `Support`
@@ -6989,26 +7000,6 @@ class AppLocalizations {
     return Intl.message(
       'Application configuration error, please contact support',
       name: 'configurationError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Online support WebSocket configuration not found, please check configuration`
-  String get onlineSupportWebSocketConfigNotFound {
-    return Intl.message(
-      'Online support WebSocket configuration not found, please check configuration',
-      name: 'onlineSupportWebSocketConfigNotFound',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `New message from support`
-  String get newMessageFromSupport {
-    return Intl.message(
-      'New message from support',
-      name: 'newMessageFromSupport',
       desc: '',
       args: [],
     );

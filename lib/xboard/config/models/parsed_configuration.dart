@@ -2,7 +2,6 @@ import 'panel_configuration.dart';
 import 'proxy_info.dart';
 import 'websocket_info.dart';
 import 'update_info.dart';
-import 'online_support_info.dart';
 import 'subscription_info.dart';
 
 /// 解析后的配置数据
@@ -14,7 +13,6 @@ class ParsedConfiguration {
   final List<ProxyInfo> proxies;
   final List<WebSocketInfo> webSockets;
   final List<UpdateInfo> updates;
-  final List<OnlineSupportInfo> onlineSupport;
   final SubscriptionInfo? subscription;
   final DateTime parsedAt;
   final String sourceHash;
@@ -26,7 +24,6 @@ class ParsedConfiguration {
     required this.proxies,
     required this.webSockets,
     required this.updates,
-    required this.onlineSupport,
     this.subscription,
     required this.parsedAt,
     required this.sourceHash,
@@ -48,7 +45,6 @@ class ParsedConfiguration {
     final proxyList = json['proxy'] as List<dynamic>? ?? [];
     final wsList = json['ws'] as List<dynamic>? ?? [];
     final updateList = json['update'] as List<dynamic>? ?? [];
-    final onlineSupportList = json['onlineSupport'] as List<dynamic>? ?? [];
     final subscriptionData = json['subscription'] as Map<String, dynamic>?;
 
     return ParsedConfiguration(
@@ -62,9 +58,6 @@ class ParsedConfiguration {
           .toList(),
       updates: updateList
           .map((item) => UpdateInfo.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      onlineSupport: onlineSupportList
-          .map((item) => OnlineSupportInfo.fromJson(item as Map<String, dynamic>))
           .toList(),
       subscription: subscriptionData != null ? SubscriptionInfo.fromJson(subscriptionData) : null,
       parsedAt: DateTime.now(),
@@ -93,16 +86,6 @@ class ParsedConfiguration {
     return updates.isNotEmpty ? updates.first.url : null;
   }
 
-  /// 获取第一个可用的在线客服API URL
-  String? get firstOnlineSupportApiUrl {
-    return onlineSupport.isNotEmpty ? onlineSupport.first.apiBaseUrl : null;
-  }
-
-  /// 获取第一个可用的在线客服WebSocket URL
-  String? get firstOnlineSupportWsUrl {
-    return onlineSupport.isNotEmpty ? onlineSupport.first.wsBaseUrl : null;
-  }
-
   /// 获取第一个可用的订阅URL
   String? get firstSubscriptionUrl {
     return subscription?.firstUrl;
@@ -125,7 +108,6 @@ class ParsedConfiguration {
       'proxy': proxies.map((e) => e.toJson()).toList(),
       'ws': webSockets.map((e) => e.toJson()).toList(),
       'update': updates.map((e) => e.toJson()).toList(),
-      'onlineSupport': onlineSupport.map((e) => e.toJson()).toList(),
       if (subscription != null) 'subscription': subscription!.toJson(),
       'parsedAt': parsedAt.toIso8601String(),
       'sourceHash': sourceHash,
@@ -137,7 +119,6 @@ class ParsedConfiguration {
   String toString() {
     return 'ParsedConfiguration(panels: $panels, proxies: ${proxies.length}, '
            'ws: ${webSockets.length}, updates: ${updates.length}, '
-           'onlineSupport: ${onlineSupport.length}, '
            'subscription: ${subscription != null ? subscription!.urls.length : 0})';
   }
 }
