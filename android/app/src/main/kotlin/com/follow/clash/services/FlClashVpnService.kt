@@ -12,6 +12,7 @@ import android.os.RemoteException
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.follow.clash.GlobalState
+import com.follow.clash.R
 import com.follow.clash.extensions.getIpv4RouteAddress
 import com.follow.clash.extensions.getIpv6RouteAddress
 import com.follow.clash.extensions.toCIDR
@@ -106,7 +107,7 @@ class FlClashVpnService : VpnService(), BaseServiceInterface {
                     }
                 }
             }
-            setSession("FlClash")
+            setSession(getString(R.string.app_name))
             setBlocking(false)
             if (Build.VERSION.SDK_INT >= 29) {
                 setMetered(false)

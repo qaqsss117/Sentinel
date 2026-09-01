@@ -1,4 +1,4 @@
-display_name: Flclash
+display_name: 哨兵VPN
 
 packager: chen08209
 packagerEmail: chen08209@gmail.com
@@ -11,12 +11,12 @@ essential: false
 icon: ./assets/images/icon.png
 
 keywords:
-  - Flclash
+  - SentinelVPN
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: Flclash
+generic_name: 哨兵VPN
 
 group: Applications/Internet
 

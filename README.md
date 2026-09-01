@@ -1,6 +1,6 @@
 <div align="center">
 
-# Orange
+# 哨兵VPN / SentinelVPN
 
 [![许可证](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
 [![Telegram群组](https://img.shields.io/badge/Telegram-加入群组-blue?style=flat-square&logo=telegram)](https://t.me/V2Hiidify)
@@ -15,7 +15,7 @@
 
 ## 📖 项目简介
 
-Orange 是基于 [FlClash v0.8.85](https://github.com/chen08209/FlClash) 的增强版本，深度集成了 **XBoard v20250905-b144770** 面板支持。本项目采用模块化设计理念，将所有 XBoard 相关功能封装在独立的 `lib/xboard` 模块中，最大限度减少与上游 FlClash 的代码冲突，便于后续跟进上游更新。
+哨兵VPN（SentinelVPN）是基于 [FlClash v0.8.85](https://github.com/chen08209/FlClash) 的增强版本，深度集成了 **XBoard v20250905-b144770** 面板支持。本项目采用模块化设计理念，将所有 XBoard 相关功能封装在独立的 `lib/xboard` 模块中，最大限度减少与上游 FlClash 的代码冲突，便于后续跟进上游更新。
 
 ### 🎯 核心设计理念
 
@@ -198,6 +198,6 @@ Orange 是基于 [FlClash v0.8.85](https://github.com/chen08209/FlClash) 的增�
 
 <div align="center">
 
-**© 2025 Orange. All Rights Reserved.**
+**© 2025 SentinelVPN. All Rights Reserved.**
 
 </div>

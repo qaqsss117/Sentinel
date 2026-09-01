@@ -54,7 +54,7 @@ fun Service.createFlClashNotificationBuilder(): Deferred<NotificationCompat.Buil
             )
         ) {
             setSmallIcon(R.drawable.ic)
-            setContentTitle("FlClash")
+            setContentTitle(getString(R.string.app_name))
             setContentIntent(pendingIntent)
             setCategory(NotificationCompat.CATEGORY_SERVICE)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -76,7 +76,9 @@ fun Service.startForeground(notification: Notification) {
         var channel = manager?.getNotificationChannel(GlobalState.NOTIFICATION_CHANNEL)
         if (channel == null) {
             channel = NotificationChannel(
-                GlobalState.NOTIFICATION_CHANNEL, "SERVICE_CHANNEL", NotificationManager.IMPORTANCE_LOW
+                GlobalState.NOTIFICATION_CHANNEL,
+                getString(R.string.app_name),
+                NotificationManager.IMPORTANCE_LOW
             )
             manager?.createNotificationChannel(channel)
         }

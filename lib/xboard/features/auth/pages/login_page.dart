@@ -122,7 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         } else {
           final userState = ref.read(xboardUserProvider);
           if (userState.errorMessage != null) {
-            // 使用 FlClash 的原生 Toast 通知（自动消失）
+            // 使用哨兵VPN的原生 Toast 通知（自动消失）
             XBoardNotification.showError(userState.errorMessage!);
           }
         }

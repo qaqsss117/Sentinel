@@ -17,6 +17,7 @@ class Window {
       protocol.register("clash");
       protocol.register("clashmeta");
       protocol.register("flclash");
+      protocol.register("sentinelvpn");
     }
     await windowManager.ensureInitialized();
     

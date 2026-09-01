@@ -8,8 +8,8 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter/material.dart';
 
-const appName = "Flclash";
-const appNameEn = "Flclash"; // 用于 HTTP User-Agent 的英文名称
+const appName = "哨兵VPN";
+const appNameEn = "SentinelVPN"; // 用于 HTTP User-Agent 的英文名称
 const appHelperService = "FlClashHelperService";
 const coreName = "clash.meta";
 const browserUa =

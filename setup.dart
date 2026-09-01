@@ -132,7 +132,7 @@ class Build {
         ),
       ];
 
-  static String get appName => "Flclash";
+  static String get appName => "SentinelVPN";
 
   static String get coreName => "FlClashCore";
 

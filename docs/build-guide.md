@@ -165,7 +165,7 @@ dart setup.dart android
 dart setup.dart windows --arch amd64
 ```
 
-**构建输出：** `dist/Flclash-<version>-windows-amd64.msix`
+**构建输出：** `dist/SentinelVPN-<version>-windows-amd64.msix`
 
 当前 MSIX 配置仅支持 AMD64，传入其他 Windows 架构会直接报错，避免生成架构标记不正确的安装包。
 
@@ -193,7 +193,7 @@ dart setup.dart macos --arch amd64   # Intel 芯片
 dart setup.dart macos --arch arm64   # Apple Silicon
 ```
 
-**构建输出：** `build/macos/Build/Products/Release/Orange.app`
+**构建输出：** `build/macos/Build/Products/Release/SentinelVPN.app`
 
 ---
 

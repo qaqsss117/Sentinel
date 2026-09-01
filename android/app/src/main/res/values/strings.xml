@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fl_clash">FlClash</string>
+    <string name="app_name">哨兵VPN</string>
+    <string name="app_name_debug">哨兵VPN Debug</string>
+    <string name="fl_clash">哨兵VPN</string>
 </resources>
