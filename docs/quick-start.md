@@ -6,7 +6,7 @@
 
 ### 第一步：修改并托管 `remote.config.example.json`
 
-**只需要配置一个面板地址、客服地址（目前客服系统还没开源，先随意填写）和代理地址（强烈建议配置以支持过墙）。**
+**只需要配置一个面板地址、Crisp 客服地址和代理地址（强烈建议配置以支持过墙）。**
 
 > ℹ️ **提示**：项目中的 `assets/config/remote.config.example.json` 是完整配置示例。对于最小配置，请参考下方简化示例，删除不需要的字段。
 
@@ -23,10 +23,8 @@
     },
     "onlineSupport": [
         {
-            "url": "https://chat.example.com",
-            "description": "在线客服",
-            "apiBaseUrl": "https://chat.example.com",
-            "wsBaseUrl": "wss://chat.example.com"
+            "url": "https://go.crisp.chat/chat/embed/?website_id=YOUR_CRISP_WEBSITE_ID",
+            "description": "Crisp 在线客服"
         }
     ],
     "proxy": [
@@ -43,7 +41,7 @@
 - `panelType`: 面板类型，支持 `xboard` 和 `v2board`。
 - `panels.mihomo`: 面板列表。`mihomo` 是提供商名称，**必须与本地配置文件 `xboard.config.yaml` 中的 `provider` 字段值完全一致**。
 - `proxy`: **强烈建议配置**。目前仅支持 `s5` (SOCKS5) 代理，用于帮助面板和订阅地址绕过网络限制。
-- `onlineSupport`: 客服系统配置（必填，但地址可随意填写）。
+- `onlineSupport`: 可选的 Crisp 客服配置。将 `YOUR_CRISP_WEBSITE_ID` 替换为 Crisp 工作区的网站 ID；不配置时客户端仍可正常启动。
 
 ---
 

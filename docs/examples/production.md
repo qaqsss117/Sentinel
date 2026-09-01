@@ -13,10 +13,8 @@
                 "url": "https://panel1.example.com",
                 "description": "主面板-香港"
             },
-            {
-                "url": "https://panel2.example.com",
-                "description": "备用面板-新加坡"
-            },
+                "url": "https://go.crisp.chat/chat/embed/?website_id=YOUR_CRISP_WEBSITE_ID",
+                "description": "Crisp 在线客服"
             {
                 "url": "https://panel3.example.com",
                 "description": "备用面板-日本"

@@ -223,19 +223,19 @@ remote_config:
 
 **配置示例：**
 
-```yaml
-onlineSupport:
-  - url: https://chat.example.com
-    description: "在线客服API服务"
-    apiBaseUrl: https://chat.example.com
-    wsBaseUrl: wss://chat.example.com
+```json
+"onlineSupport": [
+  {
+    "url": "https://go.crisp.chat/chat/embed/?website_id=YOUR_CRISP_WEBSITE_ID",
+    "description": "Crisp 在线客服"
+  }
+]
 ```
 
 **功能特性：**
-- 实时聊天支持
-- WebSocket 长连接
-- 消息推送通知
-- 客服工单系统
+- 使用 Crisp 托管聊天页面
+- 无需部署客服 API 或 WebSocket 服务
+- 未配置客服时不影响客户端启动
 
 ### 设备上报与远程任务（实验性功能）
 

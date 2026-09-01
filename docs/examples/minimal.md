@@ -17,10 +17,8 @@
     },
     "onlineSupport": [
         {
-            "url": "https://chat.example.com",
-            "description": "在线客服",
-            "apiBaseUrl": "https://chat.example.com",
-            "wsBaseUrl": "wss://chat.example.com"
+            "url": "https://go.crisp.chat/chat/embed/?website_id=YOUR_CRISP_WEBSITE_ID",
+            "description": "Crisp 在线客服"
         }
     ]
 }

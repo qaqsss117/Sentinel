@@ -505,7 +505,7 @@ xboard:
 
 - panels.mihomo 下的 url 使用 api.example.com 一类域名。
 - subscription.urls 下的 url 使用 sub.example.com 一类域名。
-- ws 和 onlineSupport.wsBaseUrl 使用独立的 ws.example.com，并在上线前单独验证是否经 CDN。
+- 远程任务的 ws 使用独立的 ws.example.com，并在上线前单独验证是否经 CDN；Crisp 客服直接使用其托管 HTTPS 地址。
 
 原因：
 

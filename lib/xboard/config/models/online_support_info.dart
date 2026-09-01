@@ -38,41 +38,18 @@ class OnlineSupportInfo extends ConfigEntry {
 
   /// 验证URL格式
   bool validate() {
-    return _isValidUrl(apiBaseUrl) && _isValidUrl(wsBaseUrl) && 
-           _isValidHttpUrl(apiBaseUrl) && _isValidWebSocketUrl(wsBaseUrl);
+    return _isValidHttpUrl(url);
   }
 
   /// 获取验证错误信息
   List<String> getValidationErrors() {
     final errors = <String>[];
 
-    if (apiBaseUrl.isEmpty) {
-      errors.add('API base URL cannot be empty');
-    } else if (!_isValidUrl(apiBaseUrl)) {
-      errors.add('Invalid API base URL format: $apiBaseUrl');
-    } else if (!_isValidHttpUrl(apiBaseUrl)) {
-      errors.add('API base URL must use http or https protocol: $apiBaseUrl');
-    }
-
-    if (wsBaseUrl.isEmpty) {
-      errors.add('WebSocket base URL cannot be empty');
-    } else if (!_isValidUrl(wsBaseUrl)) {
-      errors.add('Invalid WebSocket base URL format: $wsBaseUrl');
-    } else if (!_isValidWebSocketUrl(wsBaseUrl)) {
-      errors.add('WebSocket base URL must use ws or wss protocol: $wsBaseUrl');
+    if (!_isValidHttpUrl(url)) {
+      errors.add('Support URL must use http or https protocol: $url');
     }
 
     return errors;
-  }
-
-  /// 检查是否为有效URL
-  bool _isValidUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return uri.hasScheme && uri.host.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
   }
 
   /// 检查是否为有效的HTTP URL
@@ -85,18 +62,8 @@ class OnlineSupportInfo extends ConfigEntry {
     }
   }
 
-  /// 检查是否为有效的WebSocket URL
-  bool _isValidWebSocketUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return uri.scheme == 'ws' || uri.scheme == 'wss';
-    } catch (e) {
-      return false;
-    }
-  }
-
   @override
   String toString() {
-    return 'OnlineSupportInfo(apiBaseUrl: $apiBaseUrl, wsBaseUrl: $wsBaseUrl)';
+    return 'OnlineSupportInfo(url: $url)';
   }
 }

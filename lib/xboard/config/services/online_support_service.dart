@@ -21,18 +21,18 @@ class OnlineSupportService {
   /// 获取API基础URL
   String? getApiBaseUrl() {
     final config = getFirstAvailableConfig();
-    return config?.apiBaseUrl;
+    return config?.apiBaseUrl.isNotEmpty == true ? config!.apiBaseUrl : null;
   }
 
   /// 获取WebSocket基础URL
   String? getWebSocketBaseUrl() {
     final config = getFirstAvailableConfig();
-    return config?.wsBaseUrl;
+    return config?.wsBaseUrl.isNotEmpty == true ? config!.wsBaseUrl : null;
   }
 
   /// 检查是否有可用的配置
   bool hasAvailableConfig() {
-    return _configs.isNotEmpty;
+    return _configs.any((config) => config.validate());
   }
 
   /// 获取配置统计信息

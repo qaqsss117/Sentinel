@@ -262,40 +262,13 @@ class ConfigValidator {
         ));
       }
 
-      if (!itemMap.containsKey('apiBaseUrl') || itemMap['apiBaseUrl'] is! String) {
-        errors.add(ValidationError(
-          field: 'onlineSupport[$i].apiBaseUrl',
-          message: 'Online support item must have a valid apiBaseUrl field',
-          type: ValidationErrorType.missingField,
-        ));
-      }
-
-      if (!itemMap.containsKey('wsBaseUrl') || itemMap['wsBaseUrl'] is! String) {
-        errors.add(ValidationError(
-          field: 'onlineSupport[$i].wsBaseUrl',
-          message: 'Online support item must have a valid wsBaseUrl field',
-          type: ValidationErrorType.missingField,
-        ));
-      }
-
       // 验证URL格式
-      if (itemMap.containsKey('apiBaseUrl') && itemMap['apiBaseUrl'] is String) {
-        final apiUrl = itemMap['apiBaseUrl'] as String;
-        if (!_isValidHttpUrl(apiUrl)) {
+      if (itemMap['url'] is String) {
+        final supportUrl = itemMap['url'] as String;
+        if (!_isValidHttpUrl(supportUrl)) {
           errors.add(ValidationError(
-            field: 'onlineSupport[$i].apiBaseUrl',
-            message: 'apiBaseUrl must be a valid HTTP/HTTPS URL',
-            type: ValidationErrorType.invalidFormat,
-          ));
-        }
-      }
-
-      if (itemMap.containsKey('wsBaseUrl') && itemMap['wsBaseUrl'] is String) {
-        final wsUrl = itemMap['wsBaseUrl'] as String;
-        if (!_isValidWebSocketUrl(wsUrl)) {
-          errors.add(ValidationError(
-            field: 'onlineSupport[$i].wsBaseUrl',
-            message: 'wsBaseUrl must be a valid WebSocket URL',
+            field: 'onlineSupport[$i].url',
+            message: 'url must be a valid HTTP/HTTPS URL',
             type: ValidationErrorType.invalidFormat,
           ));
         }
@@ -315,15 +288,6 @@ class ConfigValidator {
     }
   }
 
-  /// 检查是否为有效的WebSocket URL
-  bool _isValidWebSocketUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return (uri.scheme == 'ws' || uri.scheme == 'wss') && uri.host.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
-  }
 }
 
 /// 配置解析器
