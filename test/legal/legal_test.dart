@@ -85,7 +85,8 @@ void main() {
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
 
     await tester.tap(button);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     expect(accepted, isTrue);
   });
 

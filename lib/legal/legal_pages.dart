@@ -49,22 +49,6 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(document.title),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: false, label: Text('中文')),
-                ButtonSegment(value: true, label: Text('English')),
-              ],
-              selected: {_english},
-              showSelectedIcon: false,
-              onSelectionChanged: (selection) {
-                setState(() => _english = selection.first);
-              },
-            ),
-          ),
-        ],
       ),
       body: SelectionArea(
         child: ListView(
@@ -75,6 +59,21 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment(value: false, label: Text('中文')),
+                        ButtonSegment(value: true, label: Text('English')),
+                      ],
+                      selected: {_english},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (selection) {
+                        setState(() => _english = selection.first);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     document.effectiveDate,
                     style: Theme.of(context).textTheme.labelLarge,

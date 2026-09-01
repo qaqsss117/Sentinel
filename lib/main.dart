@@ -23,6 +23,7 @@ import 'models/models.dart';
 import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart'; // 导入远程任务管理器
 
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'; // 导入域名服务
+import 'legal/legal_consent_store.dart';
 import 'legal/legal_pages.dart';
 
 // 定义一个全局变量来持有 RemoteTaskManager 实例，方便在整个应用生命周期中访问和管理
@@ -137,6 +138,9 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
 Future<void> _service(List<String> flags) async {
   globalState.isService = true;
   WidgetsFlutterBinding.ensureInitialized();
+  if (!await LegalConsentStore.isAccepted()) {
+    exit(0);
+  }
   final quickStart = flags.contains("quick");
   final clashLibHandler = ClashLibHandler();
   await globalState.init();
