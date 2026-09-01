@@ -1,0 +1,4 @@
+storeFile=sentinel-release.jks
+storePassword=REPLACE_WITH_SECRET
+keyAlias=sentinel-release
+keyPassword=REPLACE_WITH_SECRET

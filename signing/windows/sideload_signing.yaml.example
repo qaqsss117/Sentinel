@@ -1,0 +1,7 @@
+# For MSIX distribution outside Microsoft Store only.
+store: "false"
+certificate_path: signing/windows/sideload.pfx
+certificate_password: REPLACE_WITH_SECRET
+publisher: REPLACE_WITH_CERTIFICATE_SUBJECT
+sign_msix: "true"
+install_certificate: "false"

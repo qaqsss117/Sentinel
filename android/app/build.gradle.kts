@@ -6,21 +6,32 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val localPropertiesFile = rootProject.file("local.properties")
-val localProperties = Properties().apply {
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { load(it) }
+val signingDirectory = rootProject.file("../signing/android")
+val signingPropertiesFile = File(signingDirectory, "signing.properties")
+val signingProperties = Properties().apply {
+    if (signingPropertiesFile.exists()) {
+        signingPropertiesFile.inputStream().use { load(it) }
     }
 }
-
-val mStoreFile: File = file("keystore.jks")
-val mStorePassword: String? = localProperties.getProperty("storePassword")
-val mKeyAlias: String? = localProperties.getProperty("keyAlias")
-val mKeyPassword: String? = localProperties.getProperty("keyPassword")
-val isRelease = mStoreFile.exists()
+val mStoreFile: File? = signingProperties.getProperty("storeFile")
+    ?.let { File(signingDirectory, it) }
+val mStorePassword: String? = signingProperties.getProperty("storePassword")
+val mKeyAlias: String? = signingProperties.getProperty("keyAlias")
+val mKeyPassword: String? = signingProperties.getProperty("keyPassword")
+val isReleaseSigningConfigured = mStoreFile?.exists() == true
         && mStorePassword != null
         && mKeyAlias != null
         && mKeyPassword != null
+val isReleaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.contains("Release", ignoreCase = true)
+}
+
+if (isReleaseBuildRequested && !isReleaseSigningConfigured) {
+    throw GradleException(
+        "Android release signing is not configured. " +
+            "Run: dart run tool/generate_android_signing.dart"
+    )
+}
 
 android {
     namespace = "com.follow.clash"
@@ -45,7 +56,7 @@ android {
     }
 
     signingConfigs {
-        if (isRelease) {
+        if (isReleaseSigningConfigured) {
             create("release") {
                 storeFile = mStoreFile
                 storePassword = mStorePassword
@@ -65,8 +76,9 @@ android {
             isMinifyEnabled = true
             isDebuggable = false
 
-            // 强制使用 debug 签名，不使用 release 签名
-            signingConfig = signingConfigs.getByName("debug")
+            if (isReleaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

@@ -1,0 +1,7 @@
+# Copy exact, case-sensitive values from Partner Center app identity details.
+publisher_display_name: REPLACE_WITH_PROPERTIES_PUBLISHER_DISPLAY_NAME
+identity_name: REPLACE_WITH_PACKAGE_IDENTITY_NAME
+publisher: REPLACE_WITH_PACKAGE_IDENTITY_PUBLISHER
+store: "true"
+sign_msix: "false"
+install_certificate: "false"

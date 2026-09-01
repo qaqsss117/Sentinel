@@ -72,3 +72,17 @@ assets/config/xboard.config.yaml
 
 # 忽略证书文件
 assets/cer/
+
+# Packaging signing material and private configuration
+/signing/android/signing.properties
+/signing/android/*.jks
+/signing/android/*.keystore
+/signing/android/*.pem
+/signing/windows/store_identity.yaml
+/signing/windows/sideload_signing.yaml
+/signing/windows/*.pfx
+/signing/windows/*.p12
+/signing/windows/*.cer
+/signing/apple/*.p12
+/signing/apple/*.cer
+/signing/apple/*.mobileprovision
