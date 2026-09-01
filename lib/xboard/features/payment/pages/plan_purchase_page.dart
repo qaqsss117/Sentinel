@@ -472,10 +472,15 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       } else {
         throw Exception('支付失败: 余额支付未成功 (data=$paymentData)');
       }
-    } else if (paymentData != null && paymentData is String && paymentData.isNotEmpty) {
-      // 付费订单，data 是支付URL（String）
+    } else if (paymentData is String && paymentData.isNotEmpty) {
       PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
-      await _launchPaymentUrl(paymentData, tradeNo);
+      if (paymentType == 1) {
+        PaymentWaitingManager.updatePaymentQrCode(paymentData);
+      } else if (paymentType == 0) {
+        await _launchPaymentUrl(paymentData, tradeNo);
+      } else {
+        throw Exception('支付失败: 未知的支付类型 $paymentType');
+      }
     } else {
       throw Exception('支付失败: 未获取到有效的支付数据 (type=$paymentType, data=$paymentData)');
     }

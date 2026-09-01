@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:fl_clash/common/common.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../models/payment_step.dart';
 
 // 初始化文件级日志器
@@ -33,6 +33,7 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
   late Animation<double> _pulseAnimation;
   Timer? _paymentCheckTimer;
   String? _currentTradeNo;
+  String? _paymentQrCode;
   @override
   void initState() {
     super.initState();
@@ -89,9 +90,10 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
       });
     }
   }
-  void updatePaymentUrl(String paymentUrl) {
+  void updatePaymentQrCode(String data) {
     if (mounted) {
       setState(() {
+        _paymentQrCode = data;
       });
     }
   }
@@ -238,6 +240,9 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
   }
   @override
   Widget build(BuildContext context) {
+    final showPaymentQrCode =
+        _currentStep == PaymentStep.waitingPayment && _paymentQrCode != null;
+
     return Material(
       color: Colors.black.withOpacity(0.5),
       child: FadeTransition(
@@ -251,7 +256,7 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedBuilder(
+                if (!showPaymentQrCode) AnimatedBuilder(
                   animation: _pulseAnimation,
                   builder: (context, child) {
                     return Transform.scale(
@@ -288,7 +293,9 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _getStepDescription(_currentStep),
+                  showPaymentQrCode
+                      ? '请截图后扫码支付'
+                      : _getStepDescription(_currentStep),
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -296,6 +303,21 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                   ),
                   textAlign: TextAlign.center,
                 ),
+                if (showPaymentQrCode) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    color: Colors.white,
+                    child: QrImageView(
+                      data: _paymentQrCode!,
+                      version: QrVersions.auto,
+                      size: (MediaQuery.sizeOf(context).width - 112)
+                          .clamp(160.0, 240.0),
+                      backgroundColor: Colors.white,
+                      errorCorrectionLevel: QrErrorCorrectLevel.M,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (_currentStep == PaymentStep.paymentSuccess)
                   Icon(
@@ -303,7 +325,7 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                     size: 48,
                     color: Colors.green,
                   )
-                else
+                else if (!showPaymentQrCode)
                   SizedBox(
                     width: 32,
                     height: 32,
@@ -396,8 +418,8 @@ class PaymentWaitingManager {
   static void updateTradeNo(String tradeNo) {
     _overlayKey?.currentState?.updateTradeNo(tradeNo);
   }
-  static void updatePaymentUrl(String paymentUrl) {
-    _overlayKey?.currentState?.updatePaymentUrl(paymentUrl);
+  static void updatePaymentQrCode(String data) {
+    _overlayKey?.currentState?.updatePaymentQrCode(data);
   }
   static void hide() {
     _overlayEntry?.remove();

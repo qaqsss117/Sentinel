@@ -359,7 +359,7 @@ Map<String, dynamic>? _mapPaymentResult(PaymentResultModel result) {
       'data': true, // Balance payment success
     },
     redirect: (url, method, headers) => {
-      'type': 0, // Redirect
+      'type': method == 'qr_code' ? 1 : 0,
       'data': url,
     },
     failed: (message, errorCode, extra) => null, // Or throw?
