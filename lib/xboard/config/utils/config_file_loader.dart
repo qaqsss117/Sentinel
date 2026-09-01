@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:yaml/yaml.dart';
 import '../core/config_settings.dart';
 import '../../core/core.dart';
@@ -128,15 +129,22 @@ class ConfigFileLoader {
   /// 从 assets/config/xboard.config.yaml 加载扩展配置
   static Future<Map<String, dynamic>> loadExtendedConfig() async {
     try {
-      final yamlString = await rootBundle.loadString(configPath);
-      final yamlDoc = loadYaml(yamlString);
-      final configMap = _yamlToMap(yamlDoc);
-      
-      return configMap['xboard'] as Map<String, dynamic>? ?? {};
+      return await loadRequiredExtendedConfig();
     } catch (e) {
       _logger.error('加载扩展配置失败', e);
       return {};
     }
+  }
+
+  static Future<Map<String, dynamic>> loadRequiredExtendedConfig() async {
+    final yamlString = await rootBundle.loadString(configPath);
+    final yamlDoc = loadYaml(yamlString);
+    final configMap = _yamlToMap(yamlDoc);
+    final xboard = configMap['xboard'];
+    if (xboard is! Map<String, dynamic>) {
+      throw const FormatException('Missing xboard configuration');
+    }
+    return xboard;
   }
 }
 
@@ -217,16 +225,31 @@ extension ConfigFileLoaderHelper on ConfigFileLoader {
       return {};
     }
   }
-  
-  /// 获取解密密钥
-  static Future<String> getDecryptKey() async {
-    try {
-      final config = await ConfigFileLoader.loadExtendedConfig();
-      final subscription = config['subscription'] as Map<String, dynamic>? ?? {};
-      return subscription['decrypt_key'] as String? ?? '';
-    } catch (e) {
-      return '';
+
+  /// 获取必需的应用层加密网关配置。任何缺失或关闭状态都会中止初始化。
+  static Future<EncryptedGatewayConfig> getEncryptedGatewayConfig() async {
+    final config = await ConfigFileLoader.loadRequiredExtendedConfig();
+    final security = config['security'];
+    if (security is! Map<String, dynamic>) {
+      throw ConfigException('Missing XBoard security configuration');
     }
+    final gateway = security['encrypted_gateway'];
+    if (gateway is! Map<String, dynamic>) {
+      throw ConfigException('Missing encrypted gateway configuration');
+    }
+    if (gateway['enabled'] != true) {
+      throw ConfigException('Encrypted gateway must be enabled');
+    }
+
+    return EncryptedGatewayConfig(
+      path: gateway['path'] as String? ?? '',
+      keyId: gateway['key_id'] as int? ?? -1,
+      serverPublicKey: gateway['server_public_key'] as String? ?? '',
+      allowedClockSkew: Duration(
+        seconds: gateway['clock_skew_seconds'] as int? ?? 120,
+      ),
+      maxEnvelopeSize: gateway['max_envelope_size'] as int? ?? 4 * 1024 * 1024,
+    );
   }
   
   /// 获取 User-Agent 配置

@@ -7,10 +7,8 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:fl_clash/xboard/features/subscription/services/encrypted_subscription_service.dart';
-import 'package:fl_clash/xboard/features/subscription/services/subscription_downloader.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/utils.dart';
 import 'package:fl_clash/xboard/core/core.dart';
-import 'package:fl_clash/xboard/config/utils/config_file_loader.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_service.dart');
@@ -121,32 +119,13 @@ class XBoardProfileImportService {
   }
   Future<Profile> _downloadAndValidateProfile(String url) async {
     try {
-      _logger.info('开始下载配置: $url');
-      
-      // 先检查用户配置是否禁用了加密订阅
-      final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();
-      
-      // 用户启用加密，检查URL是否需要使用加密订阅服务
-      if (preferEncrypt && SubscriptionUrlHelper.shouldUseEncryptedService(url)) {
-        _logger.info('🔐 检测到加密订阅URL且用户启用加密，使用加密解密服务');
-        return await _downloadEncryptedProfile(url);
-      }
-      
-      // 使用 XBoard 订阅下载服务
-      _logger.info('📄 使用 XBoard 订阅下载服务（并发竞速）');
-      final profile = await SubscriptionDownloader.downloadSubscription(
-        url,
-        enableRacing: true,
-      ).timeout(
+      _logger.info('通过加密网关下载订阅配置');
+      return await _downloadEncryptedProfile(url).timeout(
         downloadTimeout,
         onTimeout: () {
           throw TimeoutException('下载超时', downloadTimeout);
         },
       );
-      
-      _logger.info('配置下载和验证成功: ${profile.label ?? profile.id}');
-      return profile;
-      
     } on TimeoutException catch (e) {
       throw Exception('下载超时: ${e.message}');
     } on SocketException catch (e) {
@@ -165,24 +144,14 @@ class XBoardProfileImportService {
   Future<Profile> _downloadEncryptedProfile(String url) async {
     try {
       _logger.info('📦 开始下载加密订阅配置流程');
-      _logger.debug('🔗 目标URL: $url');
 
-      // 从本地配置读取订阅偏好设置（竞速自动跟随加密选项）
-      final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();
-      
-      _logger.info('📝 本地配置: preferEncrypt=$preferEncrypt (竞速: ${preferEncrypt ? "启用" : "禁用"})');
-
-      // 优先从登录数据获取token，如果失败再从URL解析
+      // 优先从登录数据获取 token；URL 仅用于提取 token，不会作为请求目标。
       String? token;
       SubscriptionResult result;
       
       try {
         _logger.debug('🔑 尝试从登录数据获取token');
-        result = await EncryptedSubscriptionService.getSubscriptionSmart(
-          null,
-          preferEncrypt: preferEncrypt,
-          enableRace: preferEncrypt, // 竞速自动等于加密选项
-        );
+        result = await EncryptedSubscriptionService.getSubscriptionSmart(null);
 
         if (!result.success) {
           // 如果从登录数据获取失败，尝试从URL提取token
@@ -193,28 +162,19 @@ class XBoardProfileImportService {
           }
 
           _logger.debug('🔑 从URL提取到token: ${token.substring(0, 8)}...');
-          result = await EncryptedSubscriptionService.getSubscriptionSmart(
-            token,
-            preferEncrypt: preferEncrypt,
-            enableRace: preferEncrypt, // 竞速自动等于加密选项
-          );
+          result = await EncryptedSubscriptionService.getSubscriptionSmart(token);
         } else {
           _logger.info('✅ 成功从登录数据获取订阅');
         }
       } catch (e) {
-        // 最后的fallback：从URL提取token
-        _logger.warning('⚠️ 登录方式失败，fallback到URL解析', e);
+        _logger.warning('⚠️ 登录数据不可用，改从URL提取token', e);
         token = SubscriptionUrlHelper.extractTokenFromUrl(url);
         if (token == null) {
           throw Exception('所有token获取方式都失败: $url');
         }
 
-        _logger.debug('🔄 Fallback - 从URL提取到token: ${token.substring(0, 8)}...');
-        result = await EncryptedSubscriptionService.getSubscriptionSmart(
-          token,
-          preferEncrypt: preferEncrypt,
-          enableRace: preferEncrypt, // 竞速自动等于加密选项
-        );
+        _logger.debug('🔄 从URL提取到token: ${token.substring(0, 8)}...');
+        result = await EncryptedSubscriptionService.getSubscriptionSmart(token);
       }
 
       if (!result.success) {
@@ -242,7 +202,7 @@ class XBoardProfileImportService {
 
       // 创建Profile并保存解密的配置内容
       _logger.debug('💾 开始保存解密的配置内容到Profile...');
-      final profile = Profile.normal(url: url);
+      final profile = Profile.normal().copyWith(autoUpdate: false);
       final profileWithContent = await profile.saveFileWithString(result.content!);
       _logger.info('✅ 配置内容已成功保存并通过ClashMeta核心验证');
       

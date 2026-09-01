@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
@@ -74,6 +73,7 @@ Future<XBoardSDK> xboardSdk(Ref ref) async {
       panelType: panelType,
       proxyUrl: proxyUrl,
       httpConfig: httpConfig,
+      requireEncryptedGateway: true,
     );
     
     _logger.info('[XBoardSdkProvider] SDK初始化成功');
@@ -98,7 +98,9 @@ Future<HttpConfig> _loadHttpConfig() async {
       UserAgentScenario.apiEncrypted,
     );
     
-    // 从配置文件获取混淆前缀
+    final encryptedGateway = await ConfigFileLoaderHelper.getEncryptedGatewayConfig();
+
+    // 从配置文件获取旧版混淆前缀
     final obfuscationPrefix = await ConfigFileLoaderHelper.getObfuscationPrefix();
     
     // 从配置文件获取证书配置
@@ -108,6 +110,7 @@ Future<HttpConfig> _loadHttpConfig() async {
     
     // 构建 HttpConfig
     return HttpConfig(
+      encryptedGateway: encryptedGateway,
       userAgent: userAgent,
       obfuscationPrefix: obfuscationPrefix,
       enableAutoDeobfuscation: obfuscationPrefix != null,
@@ -115,7 +118,7 @@ Future<HttpConfig> _loadHttpConfig() async {
       enableCertificatePinning: certEnabled && certPath != null,
     );
   } catch (e) {
-    _logger.error('[XBoardSdkProvider] 加载HTTP配置失败，使用默认配置', e);
-    return HttpConfig.defaultConfig();
+    _logger.error('[XBoardSdkProvider] 加载HTTP安全配置失败，拒绝明文降级', e);
+    rethrow;
   }
 }
