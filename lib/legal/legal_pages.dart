@@ -155,7 +155,7 @@ class _LegalBootstrapApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '哨兵VPN / SentinelVPN',
+      title: '哨兵加速器 / SentinelVPN',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF176B5B)),
         useMaterial3: true,
@@ -238,7 +238,7 @@ class _LegalConsentPageState extends State<LegalConsentPage> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    '使用哨兵VPN前，请阅读并同意下列文件。我们会处理账户、设备、订阅、交易、网络连接和诊断信息以提供及保护服务。协议内容存储在客户端内，可离线查看。\n\nBefore using SentinelVPN, please review and accept the documents below. We process account, device, subscription, transaction, network connection, and diagnostic data to provide and secure the service. The documents are built into the client and can be viewed offline.',
+                    '使用哨兵加速器前，请阅读并同意下列文件。我们会处理账户、设备、订阅、交易、网络连接和诊断信息以提供及保护服务。协议内容存储在客户端内，可离线查看。\n\nBefore using SentinelVPN, please review and accept the documents below. We process account, device, subscription, transaction, network connection, and diagnostic data to provide and secure the service. The documents are built into the client and can be viewed offline.',
                   ),
                   const SizedBox(height: 16),
                   LegalLinks(

@@ -1,4 +1,4 @@
-display_name: 哨兵VPN
+display_name: 哨兵加速器
 package_name: sentinelvpn
 maintainer:
   name: chen08209
@@ -20,7 +20,7 @@ keywords:
   - ClashMeta
   - Proxy
 
-generic_name: 哨兵VPN
+generic_name: 哨兵加速器
 
 categories:
   - Network

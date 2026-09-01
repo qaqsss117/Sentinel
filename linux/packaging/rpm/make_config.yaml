@@ -1,4 +1,4 @@
-display_name: 哨兵VPN
+display_name: 哨兵加速器
 
 packager: chen08209
 packagerEmail: chen08209@gmail.com
@@ -16,7 +16,7 @@ keywords:
   - ClashMeta
   - Proxy
 
-generic_name: 哨兵VPN
+generic_name: 哨兵加速器
 
 group: Applications/Internet
 

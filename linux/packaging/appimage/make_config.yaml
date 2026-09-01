@@ -1,4 +1,4 @@
-display_name: 哨兵VPN
+display_name: 哨兵加速器
 
 icon: ./assets/images/icon.png
 
@@ -8,7 +8,7 @@ keywords:
   - ClashMeta
   - Proxy
 
-generic_name: 哨兵VPN
+generic_name: 哨兵加速器
 
 categories:
   - Network

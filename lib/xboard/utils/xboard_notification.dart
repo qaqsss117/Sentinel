@@ -4,7 +4,7 @@ import 'package:fl_clash/state.dart';
 
 /// XBoard 通知工具类
 /// 
-/// 使用哨兵VPN的底部中间 SnackBar 通知（自动消失）
+/// 使用哨兵加速器的底部中间 SnackBar 通知（自动消失）
 class XBoardNotification {
   XBoardNotification._();
 
