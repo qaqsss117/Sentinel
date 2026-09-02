@@ -386,13 +386,12 @@ class Build {
       workingDirectory: distributorDir,
     );
     await exec(
-      name: "upgrade distributor",
-      Build.getExecutable("flutter pub upgrade"),
-      workingDirectory: distributorDir,
-    );
-    await exec(
       name: "get distributor",
       Build.getExecutable("dart pub global activate -s path $distributorDir"),
+      environment: {
+        "PUB_HOSTED_URL": "https://pub.dev",
+        "FLUTTER_STORAGE_BASE_URL": "https://storage.googleapis.com",
+      },
     );
   }
 
@@ -525,6 +524,10 @@ class BuildCommand extends Command {
       Build.getExecutable(
         "dart pub global run flutter_distributor:main package$skipCleanArgument --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
       ),
+      environment: {
+        "PUB_HOSTED_URL": "https://pub.dev",
+        "FLUTTER_STORAGE_BASE_URL": "https://storage.googleapis.com",
+      },
     );
   }
 

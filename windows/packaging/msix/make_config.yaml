@@ -4,5 +4,6 @@ identity_name: Flclash.Desktop.Lite
 msix_version: 2.6.1.0
 logo_path: assets/images/icon.png
 capabilities: internetClient,privateNetworkClientServer
+languages: en-us,zh-cn,ja-jp,ru-ru
 architecture: x64
 install_certificate: "false"
