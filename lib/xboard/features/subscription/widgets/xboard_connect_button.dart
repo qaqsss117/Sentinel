@@ -2,6 +2,8 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -22,7 +24,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   @override
   void initState() {
     super.initState();
-    isStart = globalState.appState.runTime != null;
+    isStart = ref.read(runTimeProvider) != null;
     _controller = AnimationController(
       vsync: this,
       value: isStart ? 1 : 0,
@@ -48,12 +50,28 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     _controller.dispose();
     super.dispose();
   }
+  bool get _isSubscriptionReady {
+    final subscription = ref.read(subscriptionInfoProvider);
+    final currentProfile = ref.read(currentProfileProvider);
+    final importState = ref.read(profileImportProvider);
+    return subscription?.subscribeUrl.isNotEmpty == true &&
+        currentProfile?.subscriptionInfo != null &&
+        !importState.isImporting;
+  }
   handleSwitchStart() {
+    if (!isStart && !_isSubscriptionReady) {
+      return;
+    }
     isStart = !isStart;
     updateController();
     debouncer.call(
       FunctionTag.updateStatus,
       () {
+        if (isStart && !_isSubscriptionReady) {
+          isStart = false;
+          updateController();
+          return;
+        }
         globalState.appController.updateStatus(isStart);
       },
       duration: commonDuration,
@@ -71,27 +89,41 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(startButtonSelectorStateProvider);
+    final subscription = ref.watch(subscriptionInfoProvider);
+    final currentProfile = ref.watch(currentProfileProvider);
+    final importState = ref.watch(profileImportProvider);
     if (!state.isInit || !state.hasProfile) {
       return Container();
     }
+    final isSubscriptionReady =
+        subscription?.subscribeUrl.isNotEmpty == true &&
+        currentProfile?.subscriptionInfo != null &&
+        !importState.isImporting;
+    final isEnabled = isStart || isSubscriptionReady;
     if (widget.isFloating) {
-      return _buildFloatingButton(context);
+      return _buildFloatingButton(context, isEnabled: isEnabled);
     } else {
-      return _buildInlineButton(context);
+      return _buildInlineButton(context, isEnabled: isEnabled);
     }
   }
-  Widget _buildFloatingButton(BuildContext context) {
+  Widget _buildFloatingButton(BuildContext context, {required bool isEnabled}) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // 暗黑模式使用浅色背景配黑色文字
     final startColor = isDark ? Colors.green.shade200 : Colors.green.shade600;
     final stopColor = isDark ? Colors.blue.shade200 : colorScheme.primary;
+    final backgroundColor = isEnabled
+        ? (isStart ? startColor : stopColor)
+        : colorScheme.surfaceContainerHighest;
+    final foregroundColor = isEnabled
+        ? (isDark ? Colors.black : Colors.white)
+        : colorScheme.onSurfaceVariant;
     
     return Theme(
       data: Theme.of(context).copyWith(
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: isStart ? startColor : stopColor,
-          foregroundColor: isDark ? Colors.black : Colors.white,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
           sizeConstraints: const BoxConstraints(
             minWidth: 56,
             maxWidth: 200,
@@ -116,9 +148,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             clipBehavior: Clip.antiAlias,
             materialTapTargetSize: MaterialTapTargetSize.padded,
             heroTag: "xboard_connect_button",
-            onPressed: () {
-              handleSwitchStart();
-            },
+            onPressed: isEnabled ? handleSwitchStart : null,
             icon: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
               progress: _animation,
@@ -133,13 +163,12 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           builder: (_, ref, __) {
             final runTime = ref.watch(runTimeProvider);
             final text = utils.getTimeText(runTime);
-            final isDark = Theme.of(context).brightness == Brightness.dark;
             return Text(
               text,
               maxLines: 1,
               overflow: TextOverflow.visible,
               style: Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
-                color: isDark ? Colors.black : Colors.white,
+                color: foregroundColor,
               ),
             );
           },
@@ -147,12 +176,18 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       ),
     );
   }
-  Widget _buildInlineButton(BuildContext context) {
+  Widget _buildInlineButton(BuildContext context, {required bool isEnabled}) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // 暗黑模式使用浅色背景配黑色文字
     final startColor = isDark ? Colors.green.shade200 : Colors.green.shade600;
     final stopColor = isDark ? Colors.blue.shade200 : colorScheme.primary;
+    final backgroundColor = isEnabled
+        ? (isStart ? startColor : stopColor)
+        : colorScheme.surfaceContainerHighest;
+    final foregroundColor = isEnabled
+        ? (isDark ? Colors.black : Colors.white)
+        : colorScheme.onSurfaceVariant;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -161,15 +196,13 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         builder: (_, child) {
           return Container(
             decoration: BoxDecoration(
-              color: isStart ? startColor : stopColor,
+              color: backgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () {
-                  handleSwitchStart();
-                },
+                onTap: isEnabled ? handleSwitchStart : null,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
@@ -180,7 +213,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                         icon: AnimatedIcons.play_pause,
                         progress: _animation,
                         size: 24,
-                        color: isDark ? Colors.black : Colors.white,
+                        color: foregroundColor,
                       ),
                       const SizedBox(width: 10),
                       Column(
@@ -191,7 +224,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                               ? AppLocalizations.of(context).xboardStopProxy
                               : AppLocalizations.of(context).xboardStartProxy,
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: isDark ? Colors.black : Colors.white,
+                              color: foregroundColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
