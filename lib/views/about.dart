@@ -107,12 +107,13 @@ class AboutView extends ConsumerWidget {
       separated: false,
       title: appLocalizations.more,
       items: [
-        ListItem(
-          title: Text(appLocalizations.checkUpdate),
-          onTap: () {
-            _checkUpdate(context, ref);
-          },
-        ),
+        if (buildCapabilities.supportsExternalUpdateCheck)
+          ListItem(
+            title: Text(appLocalizations.checkUpdate),
+            onTap: () {
+              _checkUpdate(context, ref);
+            },
+          ),
         ListItem(
           leading: const Icon(Icons.description_outlined),
           title: const Text('用户协议 / Terms of Service'),

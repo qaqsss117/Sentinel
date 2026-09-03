@@ -132,6 +132,10 @@ class ApplicationState extends ConsumerState<Application> {
 
   /// 检查应用更新
   void _checkForUpdates() {
+    if (!buildCapabilities.supportsExternalUpdateCheck) {
+      debugPrint('[Application] 当前分发渠道由应用商店管理更新，跳过');
+      return;
+    }
     // 延迟5秒后检查更新，确保应用完全启动
     Future.delayed(const Duration(seconds: 5), () async {
       if (!ref.read(appSettingProvider).autoCheckUpdate) {

@@ -39,6 +39,10 @@ punctuation, then build normally:
 dart setup.dart windows --arch amd64
 ```
 
+Store builds embed `STORE_BUILD=true`. The client then skips XBoard update
+requests and hides both manual and automatic external update controls so that
+updates are managed exclusively by Microsoft Store.
+
 The MSIX packager automatically loads that private file, sets Store mode, and
 leaves the upload package unsigned for Microsoft Store signing.
 
@@ -51,7 +55,8 @@ Remove-Item Env:SENTINEL_MSIX_CONFIG
 ```
 
 Outside Microsoft Store, the MSIX must be signed with your own trusted PFX.
-Use `windows/sideload_signing.yaml.example` as the private configuration.
+Use `windows/sideload_signing.yaml.example` as the private configuration. Its
+`store: "false"` setting keeps external update checks available.
 
 ## Apple platforms
 

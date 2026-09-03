@@ -22,4 +22,22 @@ void main() {
     expect(capabilities.resolveTunEnabled(true), isTrue);
     expect(capabilities.resolveTunEnabled(false), isFalse);
   });
+
+  test('Microsoft Store builds defer updates to the Store', () {
+    const capabilities = BuildCapabilities(
+      isMsix: true,
+      isStoreBuild: true,
+    );
+
+    expect(capabilities.supportsExternalUpdateCheck, isFalse);
+  });
+
+  test('sideload MSIX builds keep external update checks', () {
+    const capabilities = BuildCapabilities(
+      isMsix: true,
+      isStoreBuild: false,
+    );
+
+    expect(capabilities.supportsExternalUpdateCheck, isTrue);
+  });
 }

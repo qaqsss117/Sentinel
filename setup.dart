@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart';
 import 'package:crypto/crypto.dart';
+import 'package:yaml/yaml.dart';
 
 enum Target {
   windows,
@@ -417,6 +418,22 @@ class Build {
 class BuildCommand extends Command {
   Target target;
 
+  bool _isStoreMsixBuild() {
+    final configPath = Platform.environment["SENTINEL_MSIX_CONFIG"];
+    if (configPath == null) {
+      return true;
+    }
+    final configFile = File(configPath);
+    if (!configFile.existsSync()) {
+      return true;
+    }
+    final config = loadYaml(configFile.readAsStringSync());
+    if (config is! YamlMap) {
+      return true;
+    }
+    return config["store"]?.toString().toLowerCase() != "false";
+  }
+
   BuildCommand({
     required this.target,
   }) {
@@ -570,6 +587,7 @@ class BuildCommand extends Command {
 
     switch (target) {
       case Target.windows:
+        final isStoreBuild = _isStoreMsixBuild();
         final helper = File(
           join(
             Build.outDir,
@@ -584,7 +602,9 @@ class BuildCommand extends Command {
           target: target,
           targets: "msix",
           args:
-              " --description $archName --build-dart-define=MSIX_BUILD=true",
+              " --description $archName"
+              " --build-dart-define=MSIX_BUILD=true"
+              " --build-dart-define=STORE_BUILD=$isStoreBuild",
           env: env,
           skipClean: false,
         );

@@ -281,7 +281,8 @@ class ApplicationSettingView extends StatelessWidget {
       OpenLogsItem(),
       CloseConnectionsItem(),
       UsageItem(),
-      AutoCheckUpdateItem(),
+      if (buildCapabilities.supportsExternalUpdateCheck)
+        AutoCheckUpdateItem(),
     ];
     return ListView.separated(
       itemBuilder: (_, index) {
