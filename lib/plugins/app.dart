@@ -63,9 +63,13 @@ class App {
     });
   }
 
-  Future<bool> openFile(String path) async {
+  Future<bool> openFile(
+    String path, {
+    String mimeType = 'text/plain',
+  }) async {
     return await methodChannel.invokeMethod<bool>("openFile", {
           "path": path,
+          "mimeType": mimeType,
         }) ??
         false;
   }

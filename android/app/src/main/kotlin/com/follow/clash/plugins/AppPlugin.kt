@@ -212,8 +212,8 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
             "openFile" -> {
                 val path = call.argument<String>("path")!!
-                openFile(path)
-                result.success(true)
+                val mimeType = call.argument<String>("mimeType") ?: "text/plain"
+                result.success(openFile(path, mimeType))
             }
 
             else -> {
@@ -222,7 +222,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         }
     }
 
-    private fun openFile(path: String) {
+    private fun openFile(path: String, mimeType: String): Boolean {
         val file = File(path)
         val uri = FileProvider.getUriForFile(
             FlClashApplication.getAppContext(),
@@ -232,11 +232,12 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
         val intent = Intent(Intent.ACTION_VIEW).setDataAndType(
             uri,
-            "text/plain"
+            mimeType
         )
 
         val flags =
             Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        intent.addFlags(flags)
 
         val resInfoList = FlClashApplication.getAppContext().packageManager.queryIntentActivities(
             intent, PackageManager.MATCH_DEFAULT_ONLY
@@ -252,9 +253,12 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         }
 
         try {
-            activityRef?.get()?.startActivity(intent)
+            val activity = activityRef?.get() ?: return false
+            activity.startActivity(intent)
+            return true
         } catch (e: Exception) {
             println(e)
+            return false
         }
     }
 

@@ -1,13 +1,35 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/common/common.dart';
 import '../models/update_check_state.dart';
-class UpdateDialog extends ConsumerWidget {
+import '../services/update_installer.dart';
+
+class UpdateDialog extends ConsumerStatefulWidget {
   final UpdateCheckState state;
   const UpdateDialog({super.key, required this.state});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends ConsumerState<UpdateDialog> {
+  final UpdateInstaller _installer = UpdateInstaller();
+  bool _isDownloading = false;
+  double? _downloadProgress;
+
+  UpdateCheckState get state => widget.state;
+
+  @override
+  void dispose() {
+    _installer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -88,25 +110,34 @@ class UpdateDialog extends ConsumerWidget {
               ),
             ),
           ],
+          if (_isDownloading) ...[
+            const SizedBox(height: 16),
+            LinearProgressIndicator(value: _downloadProgress),
+          ],
         ],
       ),
       actions: [
         if (!state.forceUpdate)
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed:
+                _isDownloading ? null : () => Navigator.of(context).pop(),
             child: Text(appLocalizations.updateCheckUpdateLater),
           ),
         ElevatedButton.icon(
-          onPressed: () {
-            if (state.updateUrl != null) {
-              _launchUrl(state.updateUrl!);
-            }
-            if (!state.forceUpdate) {
-              Navigator.of(context).pop();
-            }
-          },
-          icon: const Icon(Icons.download, size: 18),
-          label: Text(state.forceUpdate ? appLocalizations.updateCheckMustUpdate : appLocalizations.updateCheckUpdateNow),
+          onPressed: _isDownloading ? null : _handleUpdate,
+          icon: _isDownloading
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.download, size: 18),
+          label: Text(
+            _isDownloading && _downloadProgress != null
+                ? '${(_downloadProgress! * 100).round()}%'
+                : state.forceUpdate
+                    ? appLocalizations.updateCheckMustUpdate
+                    : appLocalizations.updateCheckUpdateNow,
+          ),
           style: state.forceUpdate 
               ? ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
@@ -117,6 +148,60 @@ class UpdateDialog extends ConsumerWidget {
       ],
     );
   }
+
+  Future<void> _handleUpdate() async {
+    final url = state.updateUrl;
+    if (url == null || url.isEmpty) {
+      return;
+    }
+
+    if (!Platform.isAndroid) {
+      await _launchUrl(url);
+      if (mounted && !state.forceUpdate) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = null;
+    });
+    try {
+      await _installer.downloadAndInstall(
+        url: url,
+        version: state.latestVersion ?? 'latest',
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() => _downloadProgress = progress);
+          }
+        },
+      );
+      if (!mounted) {
+        return;
+      }
+      if (state.forceUpdate) {
+        setState(() {
+          _isDownloading = false;
+          _downloadProgress = null;
+        });
+      } else {
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isDownloading = false;
+        _downloadProgress = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('下载更新失败: $error')),
+      );
+    }
+  }
+
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
