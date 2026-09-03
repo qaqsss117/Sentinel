@@ -15,7 +15,6 @@ import 'package:fl_clash/widgets/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'common/common.dart';
 import 'models/models.dart';
@@ -465,59 +464,6 @@ class AppController {
     );
   }
 
-  autoCheckUpdate() async {
-    if (!_ref.read(appSettingProvider).autoCheckUpdate) return;
-    final res = await request.checkForUpdate();
-    checkUpdateResultHandle(data: res);
-  }
-
-  checkUpdateResultHandle({
-    Map<String, dynamic>? data,
-    bool handleError = false,
-  }) async {
-    if (globalState.isPre) {
-      return;
-    }
-    if (data != null) {
-      final tagName = data['tag_name'];
-      final body = data['body'];
-      final submits = utils.parseReleaseBody(body);
-      final textTheme = context.textTheme;
-      final res = await globalState.showMessage(
-        title: appLocalizations.discoverNewVersion,
-        message: TextSpan(
-          text: "$tagName \n",
-          style: textTheme.headlineSmall,
-          children: [
-            TextSpan(
-              text: "\n",
-              style: textTheme.bodyMedium,
-            ),
-            for (final submit in submits)
-              TextSpan(
-                text: "- $submit \n",
-                style: textTheme.bodyMedium,
-              ),
-          ],
-        ),
-        confirmText: appLocalizations.goDownload,
-      );
-      if (res != true) {
-        return;
-      }
-      launchUrl(
-        Uri.parse("https://github.com/$repository/releases/latest"),
-      );
-    } else if (handleError) {
-      globalState.showMessage(
-        title: appLocalizations.checkUpdate,
-        message: TextSpan(
-          text: appLocalizations.checkUpdateError,
-        ),
-      );
-    }
-  }
-
   _handlePreference() async {
     if (await preferences.isInit) {
       return;
@@ -558,7 +504,6 @@ class AppController {
       _ref.read(appSettingProvider).autoLaunch,
     );
     autoUpdateProfiles();
-    autoCheckUpdate();
     if (!_ref.read(appSettingProvider).silentLaunch) {
       window?.show();
     } else {

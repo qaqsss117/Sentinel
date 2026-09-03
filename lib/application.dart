@@ -134,6 +134,10 @@ class ApplicationState extends ConsumerState<Application> {
   void _checkForUpdates() {
     // 延迟5秒后检查更新，确保应用完全启动
     Future.delayed(const Duration(seconds: 5), () async {
+      if (!ref.read(appSettingProvider).autoCheckUpdate) {
+        debugPrint('[Application] 已关闭自动检查更新，跳过');
+        return;
+      }
       try {
         debugPrint('[Application] 开始自动检查更新...');
         final updateNotifier = ref.read(updateCheckProvider.notifier);
