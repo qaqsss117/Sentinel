@@ -565,7 +565,6 @@ class AppController {
       window?.hide();
     }
     await _handlePreference();
-    await _handlerDisclaimer();
     _ref.read(initProvider.notifier).value = true;
   }
 
@@ -654,17 +653,6 @@ class AppController {
           ),
         ) ??
         false;
-  }
-
-  _handlerDisclaimer() async {
-    if (_ref.read(appSettingProvider).disclaimerAccepted) {
-      return;
-    }
-    final isDisclaimerAccepted = await showDisclaimer();
-    if (!isDisclaimerAccepted) {
-      await handleExit();
-    }
-    return;
   }
 
   Future<void> importProfileInBackground(String url) async {
