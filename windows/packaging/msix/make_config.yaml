@@ -7,3 +7,4 @@ capabilities: internetClient,privateNetworkClientServer
 languages: en-us,zh-cn,ja-jp,ru-ru
 architecture: x64
 install_certificate: "false"
+desktop_shortcut_name: 哨兵加速器
