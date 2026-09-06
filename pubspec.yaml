@@ -76,6 +76,7 @@ dependencies:
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
 dev_dependencies:
+  cryptography: ^2.9.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0

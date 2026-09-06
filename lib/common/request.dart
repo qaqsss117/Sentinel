@@ -8,6 +8,7 @@ import 'package:dio/io.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:flutter/cupertino.dart';
 
 class Request {
@@ -35,20 +36,24 @@ class Request {
   }
 
   Future<Response> getFileResponseForUrl(String url) async {
+    final userAgent = await UserAgentConfig.get(UserAgentScenario.subscription);
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.bytes,
+        headers: {'User-Agent': userAgent},
       ),
     );
     return response;
   }
 
   Future<Response> getTextResponseForUrl(String url) async {
+    final userAgent = await UserAgentConfig.get(UserAgentScenario.subscription);
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.plain,
+        headers: {'User-Agent': userAgent},
       ),
     );
     return response;

@@ -12,8 +12,10 @@ class EncryptedSubscriptionService {
     bool enableRace = true,
   }) async {
     try {
-      final subscriptionData = await XBoardSDK.instance.subscription.getSubscription();
-      final token = subscriptionData.token ??
+      final subscriptionData = await XBoardSDK.instance.subscription
+          .getSubscription();
+      final token =
+          subscriptionData.token ??
           _extractTokenFromSubscriptionUrl(subscriptionData.subscribeUrl);
       if (token == null || token.isEmpty) {
         return SubscriptionResult.failure('订阅凭证无效');
@@ -36,21 +38,18 @@ class EncryptedSubscriptionService {
     }
 
     try {
-      final userAgent = await UserAgentConfig.get(UserAgentScenario.subscription);
+      final userAgent = await UserAgentConfig.get(
+        UserAgentScenario.subscription,
+      );
       final path = Uri(
         path: '/api/v1/client/subscribe',
-        queryParameters: {
-          'token': token,
-          'flag': 'flclash',
-        },
+        queryParameters: {'token': token, 'flag': userAgent.toLowerCase()},
       ).toString();
-      final response = await XBoardSDK.instance.httpService.getEncryptedRawRequest(
-        path,
-        headers: {
-          'Accept': '*/*',
-          'User-Agent': userAgent,
-        },
-      );
+      final response = await XBoardSDK.instance.httpService
+          .getEncryptedRawRequest(
+            path,
+            headers: {'Accept': '*/*', 'User-Agent': userAgent},
+          );
       final content = utf8.decode(response.body, allowMalformed: false);
       if (content.trim().isEmpty) {
         return SubscriptionResult.failure('订阅内容为空');
@@ -132,17 +131,17 @@ class SubscriptionResult {
   factory SubscriptionResult.success({
     required String content,
     String? subscriptionUserInfo,
-  }) =>
-      SubscriptionResult._(
-        success: true,
-        content: content,
-        encryptionUsed: true,
-        subscriptionUserInfo: subscriptionUserInfo,
-      );
+  }) => SubscriptionResult._(
+    success: true,
+    content: content,
+    encryptionUsed: true,
+    subscriptionUserInfo: subscriptionUserInfo,
+  );
 
   factory SubscriptionResult.failure(String error) =>
       SubscriptionResult._(success: false, error: error);
 
   @override
-  String toString() => 'SubscriptionResult(success: $success, encryption: $encryptionUsed)';
+  String toString() =>
+      'SubscriptionResult(success: $success, encryption: $encryptionUsed)';
 }
