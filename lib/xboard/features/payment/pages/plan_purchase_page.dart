@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/services.dart';
@@ -442,29 +443,35 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   Future<void> _submitPayment(String tradeNo, DomainPaymentMethod method) async {
     _logger.debug('[支付] 提交支付: $tradeNo, 方式: ${method.id}');
-      PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
-      PaymentWaitingManager.updateStep(PaymentStep.verifyPayment);
+    PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
+    PaymentWaitingManager.updateStep(PaymentStep.verifyPayment);
 
     final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-      final paymentResult = await paymentNotifier.submitPayment(
-        tradeNo: tradeNo,
+    final paymentResult = await paymentNotifier.submitPayment(
+      tradeNo: tradeNo,
       method: method.id.toString(),
-      );
-      
+      paymentMode: switch (defaultTargetPlatform) {
+        TargetPlatform.windows => 'qrcode',
+        TargetPlatform.android => 'url',
+        _ => null,
+      },
+    );
+
     if (paymentResult == null) {
       throw Exception('支付失败: 支付请求返回空结果');
     }
-      
+
     if (!mounted) return;
-        
+
     final paymentType = paymentResult['type'] as int? ?? 0;
     final paymentData = paymentResult['data'];
-        
+
     _logger.debug('[支付] type=$paymentType, data=$paymentData (${paymentData.runtimeType})');
-        
+
     // type: -1 余额支付成功（data 是 bool）
-    // type: 0 跳转支付（data 是 String）
-    // type: 1 二维码支付（data 是 String）
+    // type 与 Xboard 一致；展示方式还取决于客户端平台。
+    // type: 0 二维码支付（data 是 String）
+    // type: 1 跳转支付（data 是 String）
     if (paymentType == -1) {
       // 免费订单/余额支付，data 是 bool
       if (paymentData == true) {
@@ -473,13 +480,19 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         throw Exception('支付失败: 余额支付未成功 (data=$paymentData)');
       }
     } else if (paymentData is String && paymentData.isNotEmpty) {
-      PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
-      if (paymentType == 1) {
-        PaymentWaitingManager.updatePaymentQrCode(paymentData);
-      } else if (paymentType == 0) {
-        await _launchPaymentUrl(paymentData, tradeNo);
-      } else {
+      if (paymentType != 0 && paymentType != 1) {
         throw Exception('支付失败: 未知的支付类型 $paymentType');
+      }
+      final showQrCode = switch (defaultTargetPlatform) {
+        TargetPlatform.windows => true,
+        TargetPlatform.android => false,
+        _ => paymentType == 0,
+      };
+      PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
+      if (showQrCode) {
+        PaymentWaitingManager.updatePaymentQrCode(paymentData);
+      } else {
+        await _launchPaymentUrl(paymentData, tradeNo);
       }
     } else {
       throw Exception('支付失败: 未获取到有效的支付数据 (type=$paymentType, data=$paymentData)');

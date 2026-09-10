@@ -186,10 +186,11 @@ class XBoardPaymentNotifier extends Notifier<void> {
   /// 提交支付
   /// 
   /// 返回支付结果，包含 type 和 data
-  /// type: -1 表示余额支付成功, 0 表示跳转支付, 1 表示二维码支付
+  /// type: -1 表示余额支付成功, 0 表示二维码支付, 1 表示跳转支付
   Future<Map<String, dynamic>?> submitPayment({
     required String tradeNo,
     required String method,
+    String? paymentMode,
   }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
@@ -208,6 +209,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final paymentResultModel = await XBoardSDK.instance.order.checkoutOrder(
         tradeNo,
         method,
+        paymentMode: paymentMode,
       );
 
       ref.read(paymentProcessStateProvider.notifier).state = const PaymentProcessState(
@@ -359,7 +361,8 @@ Map<String, dynamic>? _mapPaymentResult(PaymentResultModel result) {
       'data': true, // Balance payment success
     },
     redirect: (url, method, headers) => {
-      'type': method == 'qr_code' ? 1 : 0,
+      // 与 Xboard 协议保持一致：0 为二维码，1 为跳转链接。
+      'type': method == 'qr_code' ? 0 : 1,
       'data': url,
     },
     failed: (message, errorCode, extra) => null, // Or throw?

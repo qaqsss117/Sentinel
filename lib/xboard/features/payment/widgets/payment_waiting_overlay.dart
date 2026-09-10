@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -294,7 +295,9 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                 const SizedBox(height: 16),
                 Text(
                   showPaymentQrCode
-                      ? '请截图后扫码支付'
+                      ? (defaultTargetPlatform == TargetPlatform.windows
+                          ? '请使用手机扫码支付'
+                          : '请截图后扫码支付')
                       : _getStepDescription(_currentStep),
                   style: TextStyle(
                     fontSize: 14,
@@ -308,13 +311,15 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                   Container(
                     padding: const EdgeInsets.all(12),
                     color: Colors.white,
-                    child: QrImageView(
-                      data: _paymentQrCode!,
-                      version: QrVersions.auto,
-                      size: (MediaQuery.sizeOf(context).width - 112)
+                    child: SizedBox.square(
+                      dimension: (MediaQuery.sizeOf(context).width - 112)
                           .clamp(160.0, 240.0),
-                      backgroundColor: Colors.white,
-                      errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      child: QrImageView(
+                        data: _paymentQrCode!,
+                        version: QrVersions.auto,
+                        backgroundColor: Colors.white,
+                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      ),
                     ),
                   ),
                 ],
@@ -413,13 +418,28 @@ class PaymentWaitingManager {
     Overlay.of(context).insert(_overlayEntry!);
   }
   static void updateStep(PaymentStep step) {
-    _overlayKey?.currentState?.updateStep(step);
+    _updateOverlay((state) => state.updateStep(step));
   }
   static void updateTradeNo(String tradeNo) {
-    _overlayKey?.currentState?.updateTradeNo(tradeNo);
+    _updateOverlay((state) => state.updateTradeNo(tradeNo));
   }
   static void updatePaymentQrCode(String data) {
-    _overlayKey?.currentState?.updatePaymentQrCode(data);
+    _updateOverlay((state) => state.updatePaymentQrCode(data));
+  }
+  static void _updateOverlay(void Function(_PaymentWaitingOverlayState) update) {
+    final key = _overlayKey;
+    if (key == null) return;
+    final state = key.currentState;
+    if (state != null) {
+      update(state);
+      return;
+    }
+    // 快速支付响应可能早于 Overlay 首帧，挂载后再应用，避免丢失二维码和轮询状态。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_overlayKey != key) return;
+      final mountedState = key.currentState;
+      if (mountedState != null) update(mountedState);
+    });
   }
   static void hide() {
     _overlayEntry?.remove();
