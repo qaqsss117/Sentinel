@@ -457,16 +457,17 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       },
     );
 
-    if (paymentResult == null) {
-      throw Exception('支付失败: 支付请求返回空结果');
-    }
-
     if (!mounted) return;
+
+    if (paymentResult == null) {
+      final error = ref.read(userUIStateProvider).errorMessage;
+      throw Exception(error ?? '支付失败: 支付请求返回空结果');
+    }
 
     final paymentType = paymentResult['type'] as int? ?? 0;
     final paymentData = paymentResult['data'];
 
-    _logger.debug('[支付] type=$paymentType, data=$paymentData (${paymentData.runtimeType})');
+    _logger.debug('[支付] type=$paymentType, dataType=${paymentData.runtimeType}');
 
     // type: -1 余额支付成功（data 是 bool）
     // type 与 Xboard 一致；展示方式还取决于客户端平台。
@@ -488,6 +489,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         TargetPlatform.android => false,
         _ => paymentType == 0,
       };
+      if (defaultTargetPlatform == TargetPlatform.android && paymentType == 0) {
+        // 扫码原文即使是 HTTPS，也不代表它能在手机浏览器中支付。
+        throw Exception('支付网关未返回可直接打开的支付链接，请联系管理员检查手机支付通道');
+      }
       PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
       if (showQrCode) {
         PaymentWaitingManager.updatePaymentQrCode(paymentData);
@@ -529,23 +534,27 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     try {
       if (!mounted) return;
 
+      final uri = Uri.tryParse(url);
+      if (uri == null || !uri.hasScheme) {
+        throw Exception('支付链接无效，请联系管理员检查支付通道');
+      }
+      final isWebUrl = uri.scheme == 'http' || uri.scheme == 'https';
+      if (isWebUrl) {
         await Clipboard.setData(ClipboardData(text: url));
-        final uri = Uri.parse(url);
-
-        if (!await canLaunchUrl(uri)) {
-          throw Exception('无法打开支付链接');
-        }
-
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-
-        if (!launched) {
-          throw Exception('无法启动外部浏览器');
       }
 
-      _logger.debug('[支付] 支付页面已在浏览器中打开: $tradeNo');
+      // 原样交给系统：HTTPS 打开浏览器，钱包 scheme 唤起对应 App。
+      // canLaunchUrl 的包可见性检查可能误报，使用实际启动结果。
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        throw Exception(
+          isWebUrl
+              ? '无法打开支付页面，请检查浏览器'
+              : '无法打开支付应用，请确认已安装微信或支付宝',
+        );
+      }
+
+      _logger.debug('[支付] 已请求系统打开支付链接: $tradeNo');
     } catch (e) {
       if (mounted) {
         PaymentWaitingManager.hide();

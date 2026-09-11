@@ -202,7 +202,7 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
       case PaymentStep.verifyPayment:
         return AppLocalizations.of(context).xboardPaymentMethodVerifiedPreparing;
       case PaymentStep.waitingPayment:
-        return '支付页面已打开，支付链接已复制到剪贴板。如果没有自动跳转，请手动粘贴到浏览器打开。';
+        return '请在打开的支付页面或支付应用中完成付款，然后返回此处查看支付结果。';
       case PaymentStep.paymentSuccess:
         return AppLocalizations.of(context).xboardCongratulationsSubscriptionActivated;
     }

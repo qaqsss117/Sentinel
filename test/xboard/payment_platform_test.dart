@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
@@ -24,11 +25,12 @@ class _AuthenticatedUser extends XBoardUserAuthNotifier {
 
 class _PaymentServer implements HttpClientAdapter {
   final Map<String, dynamic> checkoutResponse;
+  final int checkoutStatus;
   RequestOptions? checkout;
   bool created = false;
   int orderChecks = 0;
 
-  _PaymentServer(this.checkoutResponse);
+  _PaymentServer(this.checkoutResponse, {this.checkoutStatus = 200});
 
   @override
   Future<ResponseBody> fetch(
@@ -65,7 +67,7 @@ class _PaymentServer implements HttpClientAdapter {
     }
     return ResponseBody.fromString(
       jsonEncode(response),
-      200,
+      options.path == '/api/v1/user/order/checkout' ? checkoutStatus : 200,
       headers: {
         'content-type': ['application/json'],
       },
@@ -110,10 +112,18 @@ void main() {
     WidgetTester tester,
     TargetPlatform platform,
     int type,
-    String data,
-  ) async {
-    // 收银台 URL 可由服务端直接生成，覆盖响应快于弹窗首帧的情况。
-    server = _PaymentServer({'type': type, 'data': data});
+    String data, {
+    String? checkoutError,
+    bool launchSucceeds = true,
+    bool canLaunch = true,
+  }) async {
+    // 即时响应覆盖支付数据早于弹窗首帧到达的情况。
+    server = _PaymentServer(
+      checkoutError == null
+          ? {'type': type, 'data': data}
+          : {'message': checkoutError},
+      checkoutStatus: checkoutError == null ? 200 : 400,
+    );
     XBoardSDK.instance.httpService.dio.httpClientAdapter = server;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
@@ -124,8 +134,12 @@ void main() {
         });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(launcherChannel, (call) async {
-          if (call.method == 'launch') launches.add(call);
-          return true;
+          if (call.method == 'canLaunch') return canLaunch;
+          if (call.method == 'launch') {
+            launches.add(call);
+            return launchSucceeds;
+          }
+          return false;
         });
     debugDefaultTargetPlatformOverride = platform;
     await tester.pumpWidget(
@@ -134,16 +148,17 @@ void main() {
           xboardUserAuthProvider.overrideWith(_AuthenticatedUser.new),
           xboardSdkProvider.overrideWith((ref) async => XBoardSDK.instance),
         ],
-        child: const MaterialApp(
-          localizationsDelegates: [
+        child: MaterialApp(
+          navigatorKey: globalState.navigatorKey,
+          localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
           ],
-          supportedLocales: [Locale('zh', 'CN')],
-          locale: Locale('zh', 'CN'),
-          home: PlanPurchasePage(
+          supportedLocales: const [Locale('zh', 'CN')],
+          locale: const Locale('zh', 'CN'),
+          home: const PlanPurchasePage(
             plan: DomainPlan(
               id: 1,
               name: '测试套餐',
@@ -195,11 +210,17 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       debugDefaultTargetPlatformOverride = null;
     });
+  }
 
-    testWidgets('Android opens the URL for Xboard type $type', (tester) async {
-      // type=0 的 HTTPS 二维码链接也应在 Android 上交给浏览器打开。
-      const data = 'https://pay.example/checkout';
-      await purchase(tester, TargetPlatform.android, type, data);
+  for (final data in [
+    'https://pay.example/checkout?token=a%2Bb%26c',
+    'weixin://dl/business/?ticket=test-ticket',
+    'alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fpay.example',
+  ]) {
+    testWidgets('Android launches the ${Uri.parse(data).scheme} payment URL', (
+      tester,
+    ) async {
+      await purchase(tester, TargetPlatform.android, 1, data, canLaunch: false);
       for (var i = 0; i < 20 && launches.isEmpty; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -210,7 +231,7 @@ void main() {
       expect(launches.single.arguments['url'], data);
       expect(launches.single.arguments['useWebView'], isFalse);
       expect(launches.single.arguments['useSafariVC'], isFalse);
-      expect(clipboard, data);
+      expect(clipboard, data.startsWith('https:') ? data : isNull);
       final checks = server.orderChecks;
       await tester.pump(const Duration(seconds: 3));
       expect(server.orderChecks, greaterThan(checks));
@@ -219,4 +240,58 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
   }
+
+  for (final data in [
+    'weixin://wxpay/bizpayurl?pr=test',
+    'https://qr.example/payment',
+  ]) {
+    testWidgets('Android rejects ${Uri.parse(data).scheme} QR payloads', (
+      tester,
+    ) async {
+      await purchase(tester, TargetPlatform.android, 0, data);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(launches, isEmpty);
+      expect(find.byType(QrImageView), findsNothing);
+      expect(find.textContaining('请联系管理员检查手机支付通道'), findsOneWidget);
+      PaymentWaitingManager.hide();
+      await tester.pumpWidget(const SizedBox.shrink());
+      debugDefaultTargetPlatformOverride = null;
+    });
+  }
+
+  testWidgets(
+    'Android displays the gateway error without launching a browser',
+    (tester) async {
+      await purchase(
+        tester,
+        TargetPlatform.android,
+        1,
+        '',
+        checkoutError: '当前通道不支持手机支付',
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(launches, isEmpty);
+      expect(find.textContaining('当前通道不支持手机支付'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
+
+  testWidgets('Android explains when no wallet can handle the link', (
+    tester,
+  ) async {
+    await purchase(
+      tester,
+      TargetPlatform.android,
+      1,
+      'weixin://dl/business/?ticket=test-ticket',
+      launchSucceeds: false,
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(launches, hasLength(1));
+    expect(find.textContaining('请确认已安装微信或支付宝'), findsOneWidget);
+    expect(find.byType(PaymentWaitingOverlay), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    debugDefaultTargetPlatformOverride = null;
+  });
 }
