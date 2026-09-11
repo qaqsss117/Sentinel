@@ -150,7 +150,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final textTheme = Theme.of(context).textTheme;
       final initState = ref.watch(initializationProvider);
       final userState = ref.watch(xboardUserProvider);
-  
+
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -165,7 +165,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           ],
         ),
-        extendBodyBehindAppBar: true,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -177,168 +176,193 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ],
             ),
           ),
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding = constraints.maxWidth < 600
+                    ? 24.0
+                    : 48.0;
+                final isCompactHeight = constraints.maxHeight < 600;
+
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                      vertical: isCompactHeight ? 16 : 24,
+                    ),
+                    child: ConstrainedBox(
+                      // Use the available window width, with a readable limit on large screens.
+                      constraints: const BoxConstraints(maxWidth: 720),
+                      child: Form(
+                        key: _formKey,
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: colorScheme.primary.withValues(alpha: 0.1),
+                            Center(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: colorScheme.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.vpn_key_outlined,
+                                      size: 48,
+                                      color: colorScheme.primary,
+                                    ),
+                                  ),
+                                  SizedBox(height: isCompactHeight ? 16 : 24),
+                                  Text(
+                                    _appTitle,
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.displaySmall?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _appWebsite,
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.titleMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: Icon(
-                                Icons.vpn_key_outlined,
-                                size: 48,
-                                color: colorScheme.primary,
+                            ),
+                            SizedBox(height: isCompactHeight ? 24 : 48),
+                            XBInputField(
+                              controller: _emailController,
+                              labelText: appLocalizations.xboardEmail,
+                              hintText: appLocalizations.xboardEmail,
+                              prefixIcon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return appLocalizations.xboardEmail;
+                                }
+                                if (!value.contains('@')) {
+                                  return appLocalizations.xboardEmail;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            XBInputField(
+                              controller: _passwordController,
+                              labelText: appLocalizations.xboardPassword,
+                              hintText: appLocalizations.xboardPassword,
+                              prefixIcon: Icons.lock_outlined,
+                              obscureText: !_isPasswordVisible,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return appLocalizations.xboardPassword;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _rememberPassword,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberPassword = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _rememberPassword = !_rememberPassword;
+                                      });
+                                    },
+                                    child: Text(
+                                      appLocalizations.xboardRememberPassword,
+                                      style: textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
+                            SizedBox(
+                              height: 48,
+                              child: FilledButton(
+                                onPressed:
+                                    initState.isReady && !userState.isLoading
+                                    ? _login
+                                    : null,
+                                child: userState.isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(appLocalizations.xboardLogin),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const LegalLinks(
+                              prefix: '登录即表示您同意 / By signing in, you agree to',
                             ),
                             const SizedBox(height: 24),
-                            Text(
-                              _appTitle,
-                              style: textTheme.displaySmall?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _appWebsite,
-                              style: textTheme.titleMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                            OverflowBar(
+                              alignment: MainAxisAlignment.spaceBetween,
+                              overflowAlignment: OverflowBarAlignment.center,
+                              children: [
+                                TextButton(
+                                  onPressed: _navigateToForgotPassword,
+                                  child: Text(
+                                    appLocalizations.xboardForgotPassword,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _navigateToRegister,
+                                  child: Text(appLocalizations.xboardRegister),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 48),
-                      XBInputField(
-                        controller: _emailController,
-                        labelText: appLocalizations.xboardEmail,
-                        hintText: appLocalizations.xboardEmail,
-                        prefixIcon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return appLocalizations.xboardEmail;
-                          }
-                          if (!value.contains('@')) {
-                            return appLocalizations.xboardEmail;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      XBInputField(
-                        controller: _passwordController,
-                        labelText: appLocalizations.xboardPassword,
-                        hintText: appLocalizations.xboardPassword,
-                        prefixIcon: Icons.lock_outlined,
-                        obscureText: !_isPasswordVisible,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return appLocalizations.xboardPassword;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: Checkbox(
-                              value: _rememberPassword,
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberPassword = value ?? false;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _rememberPassword = !_rememberPassword;
-                              });
-                            },
-                            child: Text(
-                              appLocalizations.xboardRememberPassword,
-                              style: textTheme.bodyMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        height: 48,
-                        child: FilledButton(
-                          onPressed: initState.isReady && !userState.isLoading ? _login : null,
-                          child: userState.isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : Text(appLocalizations.xboardLogin),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const LegalLinks(
-                        prefix: '登录即表示您同意 / By signing in, you agree to',
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: _navigateToForgotPassword,
-                            child: Text(
-                              appLocalizations.xboardForgotPassword,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _navigateToRegister,
-                            child: Text(
-                              appLocalizations.xboardRegister,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
       );
     }
-    
+
     /// 构建初始化状态指示器
     Widget _buildInitializationIndicator(InitializationState initState) {
       Color statusColor;
