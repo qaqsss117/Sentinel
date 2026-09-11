@@ -202,7 +202,6 @@ class XBoardPaymentNotifier extends Notifier<void> {
     ref.read(paymentProcessStateProvider.notifier).state = const PaymentProcessState(
       isProcessingPayment: true,
     );
-    ref.read(userUIStateProvider.notifier).state = const UIState();
     try {
       _logger.info('提交支付: tradeNo=$tradeNo, method=$method');
 
@@ -220,7 +219,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final paymentResult = _mapPaymentResult(paymentResultModel);
       if (paymentResult != null) {
         await loadPendingOrders();
-        _logger.info('支付提交成功，类型: ${paymentResult['type']}');
+        _logger.info('支付提交成功，结果: $paymentResult');
         return paymentResult;
       }
       return null;
@@ -366,7 +365,7 @@ Map<String, dynamic>? _mapPaymentResult(PaymentResultModel result) {
       'type': method == 'qr_code' ? 0 : 1,
       'data': url,
     },
-    failed: (message, errorCode, extra) => throw Exception(message),
+    failed: (message, errorCode, extra) => null, // Or throw?
     canceled: (message) => null,
   );
 }
