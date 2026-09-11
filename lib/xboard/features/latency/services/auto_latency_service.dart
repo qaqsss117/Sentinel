@@ -12,15 +12,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final _logger = FileLogger('auto_latency_service.dart');
 
 class AutoLatencyService {
-  static final AutoLatencyService _instance = AutoLatencyService._internal();
-  factory AutoLatencyService() => _instance;
-  AutoLatencyService._internal();
+  AutoLatencyService({
+    Future<void> Function(List<Proxy>, String?)? delayTest,
+    Future<void> Function(Proxy, String?)? proxyDelayTest,
+  }) : _delayTest = delayTest ?? ((nodes, url) async {
+         await proxies_common.delayTest(nodes, url);
+       }),
+       _proxyDelayTest = proxyDelayTest ?? ((node, url) async {
+         await proxies_common.proxyDelayTest(node, url);
+       });
+
+  final Future<void> Function(List<Proxy>, String?) _delayTest;
+  final Future<void> Function(Proxy, String?) _proxyDelayTest;
   Timer? _periodicTimer;
   String? _lastTestedProxy;
   DateTime? _lastTestTime;
   bool _isServiceActive = false;
   WidgetRef? _ref;
   final Map<String, DateTime> _proxyTestCache = {};
+  bool _isGroupTestRunning = false;
+  int _serviceGeneration = 0;
   static const int _cacheMinutes = 2;
   static const int _periodicIntervalMinutes = 5;
   
@@ -41,6 +52,7 @@ class AutoLatencyService {
     }
   }
   void dispose() {
+    _serviceGeneration++;
     _periodicTimer?.cancel();
     _periodicTimer = null;
     _nodeChangeTimer?.cancel();
@@ -129,7 +141,7 @@ class AutoLatencyService {
       
       _logger.info('开始测试节点延迟: ${currentProxy.name}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.proxyDelayTest(currentProxy, testUrl);
+      await _proxyDelayTest(currentProxy, testUrl);
       _lastTestedProxy = currentProxy.name;
       _lastTestTime = DateTime.now();
       _proxyTestCache[currentProxy.name] = DateTime.now();
@@ -157,36 +169,81 @@ class AutoLatencyService {
       
       _logger.info('开始测试指定节点延迟: ${proxy.name}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.proxyDelayTest(proxy, testUrl);
+      await _proxyDelayTest(proxy, testUrl);
       _proxyTestCache[proxy.name] = DateTime.now();
       _logger.info('指定节点延迟测试完成: ${proxy.name}');
     } catch (e) {
       _logger.error('指定节点延迟测试失败', e);
     }
   }
-  Future<void> testCurrentGroupNodes({int maxNodes = 5}) async {
-    if (!_ensureServiceActive()) {
+  Future<void> testCurrentGroupNodes({int batchSize = 5}) async {
+    if (batchSize < 1) {
+      throw ArgumentError.value(batchSize, 'batchSize', 'must be positive');
+    }
+    if (_isGroupTestRunning || !_ensureServiceActive()) {
       return;
     }
     if (!_isRefValid()) {
       _logger.warning('Ref已失效，跳过批量延迟测试');
       return;
     }
+    _isGroupTestRunning = true;
+    final generation = _serviceGeneration;
     try {
       final currentGroup = _getCurrentGroup();
       if (currentGroup == null || currentGroup.all.isEmpty) {
         _logger.debug('未找到当前组或组为空，跳过批量测试');
         return;
       }
-      final nodesToTest = currentGroup.all.take(maxNodes).toList();
-      _logger.info('AutoLatencyService', '开始批量测试当前组 ${currentGroup.name} 的节点，数量: ${nodesToTest.length}');
-      _logger.debug('AutoLatencyService', '测试节点列表: ${nodesToTest.map((p) => p.name).join(', ')}');
+      final nodesToTest = _collectGroupNodes(
+        currentGroup,
+        _ref!.read(groupsProvider),
+      ).where((proxy) => _shouldTestProxy(proxy.name)).toList();
+      _logger.info('开始批量测试当前组 ${currentGroup.name}，节点数: ${nodesToTest.length}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.delayTest(nodesToTest, testUrl);
+      // Limit concurrency, not coverage: later nodes must not be starved by
+      // always testing the same prefix of a subscription.
+      for (var offset = 0; offset < nodesToTest.length; offset += batchSize) {
+        if (generation != _serviceGeneration || !_ensureServiceActive()) return;
+        final batch = nodesToTest
+            .skip(offset)
+            .take(batchSize)
+            .where((proxy) => _shouldTestProxy(proxy.name))
+            .toList();
+        if (batch.isEmpty) continue;
+        await _delayTest(batch, testUrl);
+        if (generation != _serviceGeneration) return;
+        final testedAt = DateTime.now();
+        for (final proxy in batch) {
+          _proxyTestCache[proxy.name] = testedAt;
+        }
+      }
       _logger.info('批量延迟测试完成');
     } catch (e) {
       _logger.error('批量延迟测试失败', e);
+    } finally {
+      _isGroupTestRunning = false;
     }
+  }
+
+  List<Proxy> _collectGroupNodes(Group root, List<Group> groups) {
+    final groupsByName = {for (final group in groups) group.name: group};
+    final visitedGroups = <String>{};
+    final nodesByName = <String, Proxy>{};
+    void visit(Group group) {
+      if (!visitedGroups.add(group.name)) return;
+      for (final proxy in group.all) {
+        final nestedGroup = groupsByName[proxy.name];
+        if (nestedGroup != null) {
+          visit(nestedGroup);
+        } else if (!const {'direct', 'reject', 'rejectdrop', 'pass', 'compatible'}
+            .contains(proxy.type.toLowerCase())) {
+          nodesByName.putIfAbsent(proxy.name, () => proxy);
+        }
+      }
+    }
+    visit(root);
+    return nodesByName.values.toList();
   }
   Timer? _nodeChangeTimer;
 
@@ -233,7 +290,7 @@ class AutoLatencyService {
           testCurrentNode(forceTest: true);
           Timer(const Duration(seconds: 2), () {
             if (_ensureServiceActive() && _isRefValid()) {
-              testCurrentGroupNodes(maxNodes: 3);
+              testCurrentGroupNodes(batchSize: 3);
             }
           });
         }
@@ -267,7 +324,7 @@ class AutoLatencyService {
       final randomDelay = Random().nextInt(30) + 10;
       Timer(Duration(seconds: randomDelay), () {
         if (_ensureServiceActive()) {
-          testCurrentGroupNodes(maxNodes: 3);
+          testCurrentGroupNodes(batchSize: 3);
         }
       });
     } catch (e) {
