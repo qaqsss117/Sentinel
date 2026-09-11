@@ -12,12 +12,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
+	"github.com/metacubex/mihomo/tunnel"
 	"golang.org/x/sync/semaphore"
 	"net"
 	"strconv"
@@ -54,7 +56,7 @@ func (t *TunHandler) handleProtect(fd int) {
 	_ = t.limit.Acquire(context.Background(), 1)
 	defer t.limit.Release(1)
 
-	if t.listener == nil {
+	if t.callback == nil {
 		return
 	}
 
@@ -110,6 +112,15 @@ func handleStartTun(fd int, callback unsafe.Pointer) {
 			limit:    semaphore.NewWeighted(4),
 		}
 		initTunHook()
+		// Latency tests can open QUIC sessions before Android enables the VPN.
+		// Retire them after installing protection, before processing TUN traffic.
+		runLock.Lock()
+		for _, proxy := range tunnel.ProxiesWithProviders() {
+			if err := outbound.ResetConnections(proxy.Adapter()); err != nil {
+				log.Warnln("Reset proxy transport on VPN start: %v", err)
+			}
+		}
+		runLock.Unlock()
 		tunListener, _ := t.Start(fd, currentConfig.General.Tun.Device, currentConfig.General.Tun.Stack)
 		if tunListener != nil {
 			log.Infoln("TUN address: %v", tunListener.Address())

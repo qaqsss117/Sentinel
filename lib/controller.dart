@@ -122,9 +122,10 @@ class AppController {
 
   updateTraffic() async {
     final traffic = await clashCore.getTraffic();
+    final totalTraffic = await clashCore.getTotalTraffic();
+    if (!context.mounted) return;
     _ref.read(trafficsProvider.notifier).addTraffic(traffic);
-    _ref.read(totalTrafficProvider.notifier).value =
-        await clashCore.getTotalTraffic();
+    _ref.read(totalTrafficProvider.notifier).value = totalTraffic;
   }
 
   addProfile(Profile profile) async {
@@ -150,14 +151,18 @@ class AppController {
   }
 
   updateProviders() async {
-    _ref.read(providersProvider.notifier).value =
-        await clashCore.getExternalProviders();
+    final providers = await clashCore.getExternalProviders();
+    if (!context.mounted) return;
+    _ref.read(providersProvider.notifier).value = providers;
   }
 
   updateLocalIp() async {
+    if (!context.mounted) return;
     _ref.read(localIpProvider.notifier).value = null;
     await Future.delayed(commonDuration);
-    _ref.read(localIpProvider.notifier).value = await utils.getLocalIpAddress();
+    final localIp = await utils.getLocalIpAddress();
+    if (!context.mounted) return;
+    _ref.read(localIpProvider.notifier).value = localIp;
   }
 
   Future<void> updateProfile(Profile profile) async {
