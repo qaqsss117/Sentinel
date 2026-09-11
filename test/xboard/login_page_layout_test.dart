@@ -57,23 +57,55 @@ Future<void> _pumpLogin(WidgetTester tester, Size size) async {
 }
 
 void main() {
-  testWidgets('login form grows with desktop width and retains typed input', (
+  testWidgets('desktop places branding beside a compact login form', (
     tester,
   ) async {
-    await _pumpLogin(tester, const Size(600, 800));
+    await _pumpLogin(tester, const Size(850, 555));
     final email = find.byType(TextFormField).first;
-    final narrowWidth = tester.getSize(email).width;
-    await tester.enterText(email, 'user@example.com');
+    final brand = find.byKey(const ValueKey('login-brand'));
+    expect(tester.getRect(brand).right, lessThan(tester.getRect(email).left));
+    expect(tester.getSize(email).width, inInclusiveRange(300, 440));
+    expect(find.byType(FilledButton).hitTestable(), findsOneWidget);
 
-    tester.view.physicalSize = const Size(1000, 800);
+    tester.view.physicalSize = const Size(1440, 900);
     await tester.pumpAndSettle();
-    final wideWidth = tester.getSize(email).width;
-    expect(wideWidth, greaterThan(narrowWidth));
-    expect(wideWidth, greaterThan(400));
-    expect(wideWidth, lessThanOrEqualTo(760));
-    expect(find.text('user@example.com'), findsOneWidget);
-    expect(tester.getRect(email).center.dx, closeTo(500, 1));
+    expect(tester.getRect(brand).right, lessThan(tester.getRect(email).left));
+    expect(tester.getSize(email).width, inInclusiveRange(300, 440));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('changing layout preserves credentials and password options', (
+    tester,
+  ) async {
+    await _pumpLogin(tester, const Size(390, 800));
+    final email = find.byType(TextFormField).first;
+    final password = find.byType(TextFormField).last;
+    final brand = find.byKey(const ValueKey('login-brand'));
+    await tester.enterText(email, 'user@example.com');
+    await tester.enterText(password, 'test-password');
+    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+
+    for (final width in [1000.0, 390.0]) {
+      tester.view.physicalSize = Size(width, 800);
+      await tester.pumpAndSettle();
+      expect(find.text('user@example.com'), findsOneWidget);
+      expect(find.text('test-password'), findsOneWidget);
+      expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, isTrue);
+      expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+      if (width < 760) {
+        expect(
+          tester.getRect(brand).bottom,
+          lessThan(tester.getRect(email).top),
+        );
+      } else {
+        expect(
+          tester.getRect(brand).right,
+          lessThan(tester.getRect(email).left),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('phone login fits and scrolls above the keyboard', (
@@ -112,5 +144,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(login.hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('large text fits around the responsive breakpoint', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.4;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await _pumpLogin(tester, const Size(320, 640));
+
+    for (final width in [320.0, 759.0, 760.0, 1080.0]) {
+      tester.view.physicalSize = Size(width, 640);
+      await tester.pumpAndSettle();
+      final login = find.byType(FilledButton);
+      await tester.ensureVisible(login);
+      await tester.pumpAndSettle();
+      expect(login.hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
   });
 }
