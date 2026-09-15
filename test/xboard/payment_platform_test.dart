@@ -196,21 +196,18 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('Android opens the URL for Xboard type $type', (tester) async {
-      // type=0 的 HTTPS 二维码链接也应在 Android 上交给浏览器打开。
+    testWidgets('Android shows a QR code for Xboard type $type', (tester) async {
       const data = 'https://pay.example/checkout';
       await purchase(tester, TargetPlatform.android, type, data);
-      for (var i = 0; i < 20 && launches.isEmpty; i++) {
+      for (var i = 0; i < 20 && find.byType(QrImageView).evaluate().isEmpty; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
 
-      expect(server.checkout!.data['payment_mode'], 'url');
-      expect(find.byType(QrImageView), findsNothing);
-      expect(launches, hasLength(1));
-      expect(launches.single.arguments['url'], data);
-      expect(launches.single.arguments['useWebView'], isFalse);
-      expect(launches.single.arguments['useSafariVC'], isFalse);
-      expect(clipboard, data);
+      expect(server.checkout!.data['payment_mode'], 'qrcode');
+      expect(find.byType(QrImageView), findsOneWidget);
+      expect(find.text('请截图后扫码支付'), findsOneWidget);
+      expect(launches, isEmpty);
+      expect(clipboard, isNull);
       final checks = server.orderChecks;
       await tester.pump(const Duration(seconds: 3));
       expect(server.orderChecks, greaterThan(checks));
