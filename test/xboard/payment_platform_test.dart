@@ -196,24 +196,28 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('Android shows a QR code for Xboard type $type', (tester) async {
-      const data = 'https://pay.example/checkout';
-      await purchase(tester, TargetPlatform.android, type, data);
-      for (var i = 0; i < 20 && find.byType(QrImageView).evaluate().isEmpty; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
+    for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
+      testWidgets('${platform.name} shows a QR code for Xboard type $type', (tester) async {
+        final data = type == 0
+            ? 'weixin://wxpay/bizpayurl?pr=test'
+            : 'https://pay.example/checkout';
+        await purchase(tester, platform, type, data);
+        for (var i = 0; i < 20 && find.byType(QrImageView).evaluate().isEmpty; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
 
-      expect(server.checkout!.data['payment_mode'], 'qrcode');
-      expect(find.byType(QrImageView), findsOneWidget);
-      expect(find.text('请截图后扫码支付'), findsOneWidget);
-      expect(launches, isEmpty);
-      expect(clipboard, isNull);
-      final checks = server.orderChecks;
-      await tester.pump(const Duration(seconds: 3));
-      expect(server.orderChecks, greaterThan(checks));
-      PaymentWaitingManager.hide();
-      await tester.pumpWidget(const SizedBox.shrink());
-      debugDefaultTargetPlatformOverride = null;
-    });
+        expect(server.checkout!.data['payment_mode'], 'qrcode');
+        expect(find.byType(QrImageView), findsOneWidget);
+        expect(find.text('请截图后扫码支付'), findsOneWidget);
+        expect(launches, isEmpty);
+        expect(clipboard, isNull);
+        final checks = server.orderChecks;
+        await tester.pump(const Duration(seconds: 3));
+        expect(server.orderChecks, greaterThan(checks));
+        PaymentWaitingManager.hide();
+        await tester.pumpWidget(const SizedBox.shrink());
+        debugDefaultTargetPlatformOverride = null;
+      });
+    }
   }
 }

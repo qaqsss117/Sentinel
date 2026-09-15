@@ -453,6 +453,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       paymentMode: switch (defaultTargetPlatform) {
         TargetPlatform.windows => 'qrcode',
         TargetPlatform.android => 'qrcode',
+        TargetPlatform.iOS => 'qrcode',
         _ => null,
       },
     );
@@ -486,6 +487,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       final showQrCode = switch (defaultTargetPlatform) {
         TargetPlatform.windows => true,
         TargetPlatform.android => true,
+        TargetPlatform.iOS => true,
         _ => paymentType == 0,
       };
       PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
