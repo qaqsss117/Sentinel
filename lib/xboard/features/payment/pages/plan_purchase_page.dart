@@ -442,32 +442,29 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   Future<void> _submitPayment(String tradeNo, DomainPaymentMethod method) async {
     _logger.debug('[支付] 提交支付: $tradeNo, 方式: ${method.id}');
-    PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
-    PaymentWaitingManager.updateStep(PaymentStep.verifyPayment);
+      PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
+      PaymentWaitingManager.updateStep(PaymentStep.verifyPayment);
 
     final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-    // 支付方式由后台接口配置决定，客户端按返回类型展示二维码或打开链接。
-    final paymentResult = await paymentNotifier.submitPayment(
-      tradeNo: tradeNo,
+      final paymentResult = await paymentNotifier.submitPayment(
+        tradeNo: tradeNo,
       method: method.id.toString(),
-    );
-
-    if (!mounted) return;
+      );
 
     if (paymentResult == null) {
-      final error = ref.read(userUIStateProvider).errorMessage;
-      throw Exception(error ?? '支付失败: 支付请求返回空结果');
+      throw Exception('支付失败: 支付请求返回空结果');
     }
+
+    if (!mounted) return;
 
     final paymentType = paymentResult['type'] as int? ?? 0;
     final paymentData = paymentResult['data'];
 
-    _logger.debug('[支付] type=$paymentType, dataType=${paymentData.runtimeType}');
+    _logger.debug('[支付] type=$paymentType, data=$paymentData (${paymentData.runtimeType})');
 
     // type: -1 余额支付成功（data 是 bool）
-    // 按 Xboard 类型区分扫码内容与跳转链接，不能将收银台链接包装成二维码。
-    // type: 0 二维码支付（data 是 String）
-    // type: 1 跳转支付（data 是 String）
+    // type: 0 跳转支付（data 是 String）
+    // type: 1 二维码支付（data 是 String）
     if (paymentType == -1) {
       // 免费订单/余额支付，data 是 bool
       if (paymentData == true) {
@@ -475,16 +472,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       } else {
         throw Exception('支付失败: 余额支付未成功 (data=$paymentData)');
       }
-    } else if (paymentData is String && paymentData.isNotEmpty) {
-      if (paymentType != 0 && paymentType != 1) {
-        throw Exception('支付失败: 未知的支付类型 $paymentType');
-      }
+    } else if (paymentData != null && paymentData is String && paymentData.isNotEmpty) {
+      // 付费订单，data 是支付URL（String）
       PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
-      if (paymentType == 0) {
-        PaymentWaitingManager.updatePaymentQrCode(paymentData);
-      } else {
-        await _launchPaymentUrl(paymentData, tradeNo);
-      }
+      await _launchPaymentUrl(paymentData, tradeNo);
     } else {
       throw Exception('支付失败: 未获取到有效的支付数据 (type=$paymentType, data=$paymentData)');
     }
