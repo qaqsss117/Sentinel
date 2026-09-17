@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
@@ -24,11 +25,12 @@ class _AuthenticatedUser extends XBoardUserAuthNotifier {
 
 class _PaymentServer implements HttpClientAdapter {
   final Map<String, dynamic> checkoutResponse;
+  final int checkoutStatus;
   RequestOptions? checkout;
   bool created = false;
   int orderChecks = 0;
 
-  _PaymentServer(this.checkoutResponse);
+  _PaymentServer(this.checkoutResponse, {this.checkoutStatus = 200});
 
   @override
   Future<ResponseBody> fetch(
@@ -65,7 +67,7 @@ class _PaymentServer implements HttpClientAdapter {
     }
     return ResponseBody.fromString(
       jsonEncode(response),
-      200,
+      options.path == '/api/v1/user/order/checkout' ? checkoutStatus : 200,
       headers: {
         'content-type': ['application/json'],
       },
@@ -110,10 +112,15 @@ void main() {
     WidgetTester tester,
     TargetPlatform platform,
     int type,
-    String data,
-  ) async {
+    String data, {
+    Map<String, dynamic>? checkoutResponse,
+    int checkoutStatus = 200,
+  }) async {
     // 收银台 URL 可由服务端直接生成，覆盖响应快于弹窗首帧的情况。
-    server = _PaymentServer({'type': type, 'data': data});
+    server = _PaymentServer(
+      checkoutResponse ?? {'type': type, 'data': data},
+      checkoutStatus: checkoutStatus,
+    );
     XBoardSDK.instance.httpService.dio.httpClientAdapter = server;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
@@ -134,7 +141,8 @@ void main() {
           xboardUserAuthProvider.overrideWith(_AuthenticatedUser.new),
           xboardSdkProvider.overrideWith((ref) async => XBoardSDK.instance),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          navigatorKey: globalState.navigatorKey,
           localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -143,7 +151,7 @@ void main() {
           ],
           supportedLocales: [Locale('zh', 'CN')],
           locale: Locale('zh', 'CN'),
-          home: PlanPurchasePage(
+          home: const PlanPurchasePage(
             plan: DomainPlan(
               id: 1,
               name: '测试套餐',
@@ -167,48 +175,37 @@ void main() {
     await tester.pump();
   }
 
-  for (final type in [0, 1]) {
-    testWidgets('Windows shows a QR code for Xboard type $type', (
-      tester,
-    ) async {
-      final data = type == 0
-          ? 'weixin://wxpay/bizpayurl?pr=test'
-          : 'https://pay.example/checkout';
-      await purchase(tester, TargetPlatform.windows, type, data);
-      for (
-        var i = 0;
-        i < 20 && find.byType(QrImageView).evaluate().isEmpty;
-        i++
-      ) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-
-      expect(server.checkout!.data['payment_mode'], 'qrcode');
-      expect(find.byType(QrImageView), findsOneWidget);
-      expect(find.text('请使用手机扫码支付'), findsOneWidget);
-      expect(launches, isEmpty);
-
-      final checks = server.orderChecks;
-      await tester.pump(const Duration(seconds: 3));
-      expect(server.orderChecks, greaterThan(checks));
-      PaymentWaitingManager.hide();
-      await tester.pumpWidget(const SizedBox.shrink());
-      debugDefaultTargetPlatformOverride = null;
-    });
-
-    for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
-      testWidgets('${platform.name} shows a QR code for Xboard type $type', (tester) async {
-        final data = type == 0
-            ? 'weixin://wxpay/bizpayurl?pr=test'
-            : 'https://pay.example/checkout';
-        await purchase(tester, platform, type, data);
-        for (var i = 0; i < 20 && find.byType(QrImageView).evaluate().isEmpty; i++) {
+  const platforms = [
+    TargetPlatform.windows,
+    TargetPlatform.android,
+    TargetPlatform.iOS,
+  ];
+  const nativeQrCodes = {
+    'WeChat': 'weixin://wxpay/bizpayurl?pr=test',
+    'Alipay': 'https://qr.alipay.com/TEST-NATIVE-CODE',
+  };
+  for (final platform in platforms) {
+    for (final entry in nativeQrCodes.entries) {
+      testWidgets('${platform.name} displays ${entry.key} QR content', (
+        tester,
+      ) async {
+        await purchase(tester, platform, 0, entry.value);
+        for (
+          var i = 0;
+          i < 20 && find.byType(QrImageView).evaluate().isEmpty;
+          i++
+        ) {
           await tester.pump(const Duration(milliseconds: 100));
         }
 
-        expect(server.checkout!.data['payment_mode'], 'qrcode');
+        expect(server.checkout!.data.containsKey('payment_mode'), isFalse);
         expect(find.byType(QrImageView), findsOneWidget);
-        expect(find.text('请截图后扫码支付'), findsOneWidget);
+        expect(
+          find.text(
+            platform == TargetPlatform.windows ? '请使用手机扫码支付' : '请截图后扫码支付',
+          ),
+          findsOneWidget,
+        );
         expect(launches, isEmpty);
         expect(clipboard, isNull);
         final checks = server.orderChecks;
@@ -220,4 +217,55 @@ void main() {
       });
     }
   }
+
+  for (final platform in platforms) {
+    testWidgets(
+      '${platform.name} opens configured redirect payment without a QR code',
+      (tester) async {
+        await purchase(
+          tester,
+          platform,
+          1,
+          'https://pay.example/submit.php?sign=test-signature',
+        );
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(server.checkout!.data.containsKey('payment_mode'), isFalse);
+        expect(find.byType(QrImageView), findsNothing);
+        expect(find.textContaining('支付通道未返回原生支付二维码'), findsNothing);
+        expect(launches, hasLength(1));
+        expect(
+          launches.single.arguments['url'],
+          'https://pay.example/submit.php?sign=test-signature',
+        );
+        expect(clipboard, 'https://pay.example/submit.php?sign=test-signature');
+        final checks = server.orderChecks;
+        await tester.pump(const Duration(seconds: 3));
+        expect(server.orderChecks, greaterThan(checks));
+        PaymentWaitingManager.hide();
+        await tester.pumpWidget(const SizedBox.shrink());
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+  }
+
+  testWidgets('gateway QR failure is shown to the customer', (tester) async {
+    const message = '支付通道未返回原生支付二维码，请联系管理员切换扫码支付通道';
+    await purchase(
+      tester,
+      TargetPlatform.android,
+      0,
+      '',
+      checkoutResponse: {'message': message},
+      checkoutStatus: 400,
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(QrImageView), findsNothing);
+    expect(find.textContaining(message), findsOneWidget);
+    expect(find.textContaining('支付请求返回空结果'), findsNothing);
+    expect(launches, isEmpty);
+    await tester.pumpWidget(const SizedBox.shrink());
+    debugDefaultTargetPlatformOverride = null;
+  });
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/services.dart';
@@ -447,30 +446,26 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     PaymentWaitingManager.updateStep(PaymentStep.verifyPayment);
 
     final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
+    // 支付方式由后台接口配置决定，客户端按返回类型展示二维码或打开链接。
     final paymentResult = await paymentNotifier.submitPayment(
       tradeNo: tradeNo,
       method: method.id.toString(),
-      paymentMode: switch (defaultTargetPlatform) {
-        TargetPlatform.windows => 'qrcode',
-        TargetPlatform.android => 'qrcode',
-        TargetPlatform.iOS => 'qrcode',
-        _ => null,
-      },
     );
 
-    if (paymentResult == null) {
-      throw Exception('支付失败: 支付请求返回空结果');
-    }
-
     if (!mounted) return;
+
+    if (paymentResult == null) {
+      final error = ref.read(userUIStateProvider).errorMessage;
+      throw Exception(error ?? '支付失败: 支付请求返回空结果');
+    }
 
     final paymentType = paymentResult['type'] as int? ?? 0;
     final paymentData = paymentResult['data'];
 
-    _logger.debug('[支付] type=$paymentType, data=$paymentData (${paymentData.runtimeType})');
+    _logger.debug('[支付] type=$paymentType, dataType=${paymentData.runtimeType}');
 
     // type: -1 余额支付成功（data 是 bool）
-    // type 与 Xboard 一致；展示方式还取决于客户端平台。
+    // 按 Xboard 类型区分扫码内容与跳转链接，不能将收银台链接包装成二维码。
     // type: 0 二维码支付（data 是 String）
     // type: 1 跳转支付（data 是 String）
     if (paymentType == -1) {
@@ -484,14 +479,8 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       if (paymentType != 0 && paymentType != 1) {
         throw Exception('支付失败: 未知的支付类型 $paymentType');
       }
-      final showQrCode = switch (defaultTargetPlatform) {
-        TargetPlatform.windows => true,
-        TargetPlatform.android => true,
-        TargetPlatform.iOS => true,
-        _ => paymentType == 0,
-      };
       PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
-      if (showQrCode) {
+      if (paymentType == 0) {
         PaymentWaitingManager.updatePaymentQrCode(paymentData);
       } else {
         await _launchPaymentUrl(paymentData, tradeNo);
