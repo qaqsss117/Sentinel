@@ -27,7 +27,7 @@ const defaultBypassDomain = [
   "172.2*",
   "172.30.*",
   "172.31.*",
-  "192.168.*"
+  "192.168.*",
 ];
 
 const defaultAppSettingProps = AppSettingProps();
@@ -37,6 +37,7 @@ const defaultProxiesStyle = ProxiesStyle();
 const defaultWindowProps = WindowProps();
 const defaultAccessControl = AccessControl();
 final defaultThemeProps = ThemeProps(
+  themeMode: ThemeMode.dark,
   primaryColor: defaultPrimaryColor,
 );
 
@@ -115,9 +116,9 @@ abstract class AccessControl with _$AccessControl {
 
 extension AccessControlExt on AccessControl {
   List<String> get currentList => switch (mode) {
-        AccessControlMode.acceptSelected => acceptList,
-        AccessControlMode.rejectSelected => rejectList,
-      };
+    AccessControlMode.acceptSelected => acceptList,
+    AccessControlMode.rejectSelected => rejectList,
+  };
 }
 
 @freezed
@@ -177,10 +178,8 @@ abstract class ProxiesStyle with _$ProxiesStyle {
 
 @freezed
 abstract class TextScale with _$TextScale {
-  const factory TextScale({
-    @Default(false) enable,
-    @Default(1.0) scale,
-  }) = _TextScale;
+  const factory TextScale({@Default(false) enable, @Default(1.0) scale}) =
+      _TextScale;
 
   factory TextScale.fromJson(Map<String, Object?> json) =>
       _$TextScaleFromJson(json);
@@ -205,7 +204,10 @@ abstract class ThemeProps with _$ThemeProps {
       return defaultThemeProps;
     }
     try {
-      return ThemeProps.fromJson(json);
+      final theme = ThemeProps.fromJson(json);
+      return theme.primaryColor == 0xFFD8C0C3
+          ? theme.copyWith(primaryColor: defaultPrimaryColor)
+          : theme;
     } catch (_) {
       return defaultThemeProps;
     }

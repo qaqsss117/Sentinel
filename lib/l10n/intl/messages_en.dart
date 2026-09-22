@@ -894,6 +894,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "Send Verification Code",
     ),
     "sendVerificationCodeFailed": m15,
+    "sentinelBalanceDeduction": MessageLookupByLibrary.simpleMessage(
+      "Balance applied",
+    ),
+    "sentinelDiscount": MessageLookupByLibrary.simpleMessage("Discount"),
+    "sentinelOriginalPrice": MessageLookupByLibrary.simpleMessage(
+      "Original price",
+    ),
+    "sentinelRemainingBalance": MessageLookupByLibrary.simpleMessage(
+      "Remaining balance",
+    ),
+    "sentinelTotal": MessageLookupByLibrary.simpleMessage("Total to pay"),
     "setNewPassword": MessageLookupByLibrary.simpleMessage("Set New Password"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show"),

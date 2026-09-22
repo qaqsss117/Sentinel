@@ -6,8 +6,8 @@ class LanguageSelector extends ConsumerWidget {
   const LanguageSelector({super.key});
 
   static const List<Map<String, String>> supportedLanguages = [
-    {'code': 'zh_CN', 'name': '中文', 'flag': '🇨🇳'},
-    {'code': 'en', 'name': 'English', 'flag': '🌐'},
+    {'code': 'zh_CN', 'name': '中文'},
+    {'code': 'en', 'name': 'English'},
   ];
 
   @override
@@ -36,10 +36,7 @@ class LanguageSelector extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              currentLanguage['flag']!,
-              style: const TextStyle(fontSize: 18),
-            ),
+            const Icon(Icons.language_rounded, size: 18),
             const SizedBox(width: 6),
             Text(
               currentLanguage['code'] == 'zh_CN' ? '中' : 'EN',
@@ -72,10 +69,7 @@ class LanguageSelector extends ConsumerWidget {
               value: language['code'],
               child: Row(
                 children: [
-                  Text(
-                    language['flag']!,
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                  const Icon(Icons.language_rounded, size: 18),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

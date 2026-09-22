@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class XBInputField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
@@ -33,59 +34,16 @@ class XBInputField extends StatelessWidget {
       validator: validator,
       onChanged: onChanged,
       enabled: enabled,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        color: colorScheme.onSurface,
-      ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
         prefixIcon: prefixIcon != null
-            ? Icon(
-                prefixIcon,
-                color: colorScheme.onSurfaceVariant,
-              )
+            ? Icon(prefixIcon, color: colorScheme.onSurfaceVariant)
             : null,
         suffixIcon: suffixIcon,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.outline,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.outline,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.error,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.error,
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerLow,
-        labelStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-        ),
-        hintStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant.withOpacity(0.6),
-        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,

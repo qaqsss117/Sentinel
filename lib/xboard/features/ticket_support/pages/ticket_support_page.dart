@@ -1,20 +1,22 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
-import 'package:go_router/go_router.dart';
 
 class TicketSupportPage extends StatefulWidget {
-  const TicketSupportPage({super.key});
+  const TicketSupportPage({super.key, this.ticketApi});
+
+  final TicketApi? ticketApi;
 
   @override
   State<TicketSupportPage> createState() => _TicketSupportPageState();
 }
 
 class _TicketSupportPageState extends State<TicketSupportPage> {
+  TicketApi get _api => widget.ticketApi ?? XBoardSDK.instance.ticket;
+
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
 
@@ -61,14 +63,14 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
     }
 
     try {
-      final tickets = await XBoardSDK.instance.ticket.getTickets();
+      final tickets = await _api.getTickets();
       final selected = _selectTicket(
         tickets,
         selectTicketId ?? _selectedTicketId,
       );
       final detail = selected == null
           ? null
-          : await XBoardSDK.instance.ticket.getTicket(selected.id);
+          : await _api.getTicket(selected.id);
       if (!mounted) return;
       setState(() {
         _tickets = tickets;
@@ -107,7 +109,7 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
       _error = null;
     });
     try {
-      final detail = await XBoardSDK.instance.ticket.getTicket(ticketId);
+      final detail = await _api.getTicket(ticketId);
       if (!mounted || _selectedTicketId != ticketId) return;
       setState(() => _ticket = detail);
       _scrollToLatestMessage();
@@ -126,7 +128,7 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
 
     setState(() => _isSending = true);
     try {
-      await XBoardSDK.instance.ticket.replyTicket(ticket.id, message);
+      await _api.replyTicket(ticket.id, message);
       _messageController.clear();
       await _refresh(showLoading: false, selectTicketId: ticket.id);
     } catch (error) {
@@ -149,11 +151,7 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
 
     setState(() => _isCreating = true);
     try {
-      await XBoardSDK.instance.ticket.createTicket(
-        draft.subject,
-        draft.message,
-        draft.level,
-      );
+      await _api.createTicket(draft.subject, draft.message, draft.level);
       if (!mounted) return;
       XBoardNotification.showSuccess(
         AppLocalizations.of(context).ticketCreated,
@@ -195,7 +193,7 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
 
     setState(() => _isClosing = true);
     try {
-      await XBoardSDK.instance.ticket.closeTicket(ticket.id);
+      await _api.closeTicket(ticket.id);
       if (!mounted) return;
       XBoardNotification.showSuccess(localizations.ticketClosed);
       await _refresh(showLoading: false, selectTicketId: ticket.id);
@@ -242,39 +240,31 @@ class _TicketSupportPageState extends State<TicketSupportPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop =
-        Platform.isLinux || Platform.isWindows || Platform.isMacOS;
     final localizations = AppLocalizations.of(context);
     final scaffold = Scaffold(
-      appBar: isDesktop
-          ? null
-          : AppBar(
-              title: Text(localizations.onlineSupportTitle),
-              actions: [
-                IconButton(
-                  onPressed: _tickets.isEmpty ? null : _showTicketHistory,
-                  tooltip: localizations.ticketHistory,
-                  icon: const Icon(Icons.history),
-                ),
-                if (!_hasOpenTicket)
-                  IconButton(
-                    onPressed: _isCreating ? null : _createTicket,
-                    tooltip: localizations.ticketNew,
-                    icon: const Icon(Icons.add_comment_outlined),
-                  ),
-              ],
+      appBar: AppBar(
+        title: Text(localizations.onlineSupportTitle),
+        actions: [
+          IconButton(
+            onPressed: _tickets.isEmpty ? null : _showTicketHistory,
+            tooltip: localizations.ticketHistory,
+            icon: const Icon(Icons.history),
+          ),
+          if (!_hasOpenTicket)
+            IconButton(
+              onPressed: _isCreating ? null : _createTicket,
+              tooltip: localizations.ticketNew,
+              icon: const Icon(Icons.add_comment_outlined),
             ),
-      body: _buildBody(isDesktop),
+        ],
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) =>
+            _buildBody(constraints.maxWidth >= 900),
+      ),
     );
 
-    if (isDesktop) return scaffold;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) context.go('/');
-      },
-      child: scaffold,
-    );
+    return scaffold;
   }
 
   Widget _buildBody(bool isDesktop) {
@@ -414,7 +404,7 @@ class _TicketList extends StatelessWidget {
           leading: CircleAvatar(
             backgroundColor: isOpen
                 ? Theme.of(context).colorScheme.primaryContainer
-                : Theme.of(context).colorScheme.surfaceContainerHighest,
+                : Theme.of(context).colorScheme.surfaceContainer,
             child: Icon(isOpen ? Icons.forum_outlined : Icons.lock_outline),
           ),
           title: Text(
@@ -570,12 +560,12 @@ class _MessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: message.isMe
               ? colorScheme.primaryContainer
-              : colorScheme.surfaceContainerHighest,
+              : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(8),
-            topRight: const Radius.circular(8),
-            bottomLeft: Radius.circular(message.isMe ? 8 : 2),
-            bottomRight: Radius.circular(message.isMe ? 2 : 8),
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(message.isMe ? 18 : 4),
+            bottomRight: Radius.circular(message.isMe ? 4 : 18),
           ),
         ),
         child: Column(
@@ -583,7 +573,14 @@ class _MessageBubble extends StatelessWidget {
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [
-            Text(message.message),
+            SelectableText(
+              message.message,
+              style: TextStyle(
+                color: message.isMe
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               _formatTicketTime(context, message.createdAt),
@@ -614,7 +611,7 @@ class _MessageComposer extends StatelessWidget {
     final localizations = AppLocalizations.of(context);
     return Material(
       color: Theme.of(context).colorScheme.surface,
-      elevation: 8,
+      elevation: 0,
       child: SafeArea(
         top: false,
         child: Padding(
@@ -631,7 +628,6 @@ class _MessageComposer extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: localizations.onlineSupportInputHint,
                     filled: true,
-                    border: const OutlineInputBorder(),
                   ),
                 ),
               ),

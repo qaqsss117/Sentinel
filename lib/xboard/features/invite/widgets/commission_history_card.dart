@@ -12,22 +12,22 @@ class CommissionHistoryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inviteState = ref.watch(inviteProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Text(
                   appLocalizations.commissionHistory,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 if (inviteState.totalCommission > 0)
                   TextButton.icon(
@@ -45,22 +45,28 @@ class CommissionHistoryCard extends ConsumerWidget {
                     Icon(
                       Icons.history,
                       size: 48,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.4),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       appLocalizations.noCommissionRecord,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
                 ),
               )
             else
-              ...inviteState.commissionHistory.take(5).map((commission) => 
-                _buildCommissionItem(context, commission)
-              ),
+              ...inviteState.commissionHistory
+                  .take(5)
+                  .map(
+                    (commission) => _buildCommissionItem(context, commission),
+                  ),
             if (inviteState.commissionHistory.length >= 5)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -72,15 +78,21 @@ class CommissionHistoryCard extends ConsumerWidget {
                   ),
                   if (inviteState.commissionHistory.length >= 5)
                     TextButton.icon(
-                      onPressed: () => ref.read(inviteProvider.notifier).loadNextHistoryPage(),
-                      icon: inviteState.isLoadingHistory 
-                        ? const SizedBox(
-                            width: 16, 
-                            height: 16, 
-                            child: CircularProgressIndicator(strokeWidth: 2)
-                          )
-                        : const Icon(Icons.refresh),
-                      label: Text(inviteState.isLoadingHistory ? appLocalizations.loading : appLocalizations.loadMore),
+                      onPressed: () => ref
+                          .read(inviteProvider.notifier)
+                          .loadNextHistoryPage(),
+                      icon: inviteState.isLoadingHistory
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh),
+                      label: Text(
+                        inviteState.isLoadingHistory
+                            ? appLocalizations.loading
+                            : appLocalizations.loadMore,
+                      ),
                     ),
                 ],
               ),
@@ -90,15 +102,16 @@ class CommissionHistoryCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildCommissionItem(BuildContext context, DomainCommission commission) {
+  Widget _buildCommissionItem(
+    BuildContext context,
+    DomainCommission commission,
+  ) {
     final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.3),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -148,10 +161,7 @@ class CommissionHistoryCard extends ConsumerWidget {
   }
 
   void _showWithdrawDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const WithdrawDialog(),
-    );
+    showDialog(context: context, builder: (context) => const WithdrawDialog());
   }
 
   void _showCommissionHistoryDialog(BuildContext context) {

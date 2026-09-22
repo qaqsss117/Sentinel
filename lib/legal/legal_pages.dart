@@ -1,3 +1,5 @@
+import '../theme/sentinel_theme.dart';
+import '../theme/sentinel_widgets.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -17,22 +19,14 @@ Future<void> ensureLegalConsent() async {
   await accepted.future;
 }
 
-Future<void> showLegalDocument(
-  BuildContext context,
-  LegalDocumentType type,
-) {
+Future<void> showLegalDocument(BuildContext context, LegalDocumentType type) {
   return Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => LegalDocumentPage(type: type),
-    ),
+    MaterialPageRoute(builder: (_) => LegalDocumentPage(type: type)),
   );
 }
 
 class LegalDocumentPage extends StatefulWidget {
-  const LegalDocumentPage({
-    required this.type,
-    super.key,
-  });
+  const LegalDocumentPage({required this.type, super.key});
 
   final LegalDocumentType type;
 
@@ -47,9 +41,7 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
   Widget build(BuildContext context) {
     final document = legalDocumentFor(widget.type, english: _english);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(document.title),
-      ),
+      appBar: AppBar(title: Text(document.title)),
       body: SelectionArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
@@ -85,8 +77,8 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
                     Text(
                       section.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(section.body),
@@ -102,12 +94,7 @@ class _LegalDocumentPageState extends State<LegalDocumentPage> {
 }
 
 class LegalLinks extends StatelessWidget {
-  const LegalLinks({
-    this.checked,
-    this.onChecked,
-    this.prefix,
-    super.key,
-  });
+  const LegalLinks({this.checked, this.onChecked, this.prefix, super.key});
 
   final bool? checked;
   final ValueChanged<bool?>? onChecked;
@@ -126,7 +113,8 @@ class LegalLinks extends StatelessWidget {
         ),
         const Text('与 / and'),
         TextButton(
-          onPressed: () => showLegalDocument(context, LegalDocumentType.privacy),
+          onPressed: () =>
+              showLegalDocument(context, LegalDocumentType.privacy),
           child: const Text('《隐私政策》/ Privacy'),
         ),
       ],
@@ -156,17 +144,10 @@ class _LegalBootstrapApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '哨兵加速器 / SentinelVPN',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF176B5B)),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF43A68F),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      themeMode: ThemeMode.dark,
+      theme: SentinelTheme.build(brightness: Brightness.light),
+      darkTheme: SentinelTheme.build(brightness: Brightness.dark),
+      builder: (context, child) => SentinelBackground(child: child!),
       home: LegalConsentPage(onAccepted: onAccepted),
     );
   }
@@ -227,8 +208,8 @@ class _LegalConsentPageState extends State<LegalConsentPage> {
                     '用户协议与隐私政策',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(

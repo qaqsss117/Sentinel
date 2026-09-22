@@ -692,6 +692,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать все"),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
     "selectedCountTitle": m14,
+    "sentinelBalanceDeduction": MessageLookupByLibrary.simpleMessage(
+      "Оплачено с баланса",
+    ),
+    "sentinelDiscount": MessageLookupByLibrary.simpleMessage("Скидка"),
+    "sentinelOriginalPrice": MessageLookupByLibrary.simpleMessage(
+      "Исходная цена",
+    ),
+    "sentinelRemainingBalance": MessageLookupByLibrary.simpleMessage(
+      "Остаток баланса",
+    ),
+    "sentinelTotal": MessageLookupByLibrary.simpleMessage("К оплате"),
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "shrink": MessageLookupByLibrary.simpleMessage("Сжать"),
@@ -1232,10 +1243,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPaymentMethodVerified": MessageLookupByLibrary.simpleMessage(
       "Способ оплаты подтверждён",
     ),
-    "xboardPaymentMethodVerifiedPreparing":
-        MessageLookupByLibrary.simpleMessage(
-          "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
-        ),
+    "xboardPaymentMethodVerifiedPreparing": MessageLookupByLibrary.simpleMessage(
+      "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
+    ),
     "xboardPaymentPageAutoOpened": MessageLookupByLibrary.simpleMessage(
       "1. Страница оплаты была открыта автоматически",
     ),

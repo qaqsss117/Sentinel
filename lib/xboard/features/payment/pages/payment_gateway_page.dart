@@ -1,490 +1,279 @@
-import 'package:fl_clash/widgets/widgets.dart';
+import 'dart:async';
+
+import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/theme/sentinel_assets.dart';
+import 'package:fl_clash/theme/sentinel_theme.dart';
+import 'package:fl_clash/theme/sentinel_widgets.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fl_clash/xboard/utils/xboard_notification.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
-class PaymentGatewayPage extends ConsumerStatefulWidget {
-  final String paymentUrl;
-  final String tradeNo;
+import 'package:url_launcher/url_launcher.dart';
+
+class PaymentGatewayPage extends StatefulWidget {
   const PaymentGatewayPage({
     super.key,
     required this.paymentUrl,
     required this.tradeNo,
+    this.orderApi,
+    this.launchPayment,
   });
+  final String paymentUrl;
+  final String tradeNo;
+  final OrderApi? orderApi;
+  final Future<bool> Function(Uri)? launchPayment;
+
   @override
-  ConsumerState<PaymentGatewayPage> createState() => _PaymentGatewayPageState();
+  State<PaymentGatewayPage> createState() => _PaymentGatewayPageState();
 }
-class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
-  bool _isLoading = true;
-  String? _errorMessage;
-  bool _isCheckingPayment = false;
-  bool _autoPollingEnabled = false;
+
+class _PaymentGatewayPageState extends State<PaymentGatewayPage> {
+  Timer? _pollTimer;
+  Timer? _initialCheck;
+  Timer? _returnTimer;
+  bool _opening = false;
+  bool _checking = false;
+  String? _error;
+  int? _status;
+
   @override
   void initState() {
     super.initState();
-    _openPaymentUrl();
-    _startPaymentStatusCheck();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _openPayment();
+      _initialCheck = Timer(const Duration(seconds: 3), _checkPayment);
+    });
   }
+
   @override
   void dispose() {
-    _stopAutoPolling();
+    _pollTimer?.cancel();
+    _initialCheck?.cancel();
+    _returnTimer?.cancel();
     super.dispose();
   }
-  Future<void> _openPaymentUrl() async {
-    try {
-      setState(() {
-        _isLoading = false;
-      });
-      await _launchPaymentUrl(isAutomatic: true);
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-  Future<void> _launchPaymentUrl({bool isAutomatic = false}) async {
+
+  Future<void> _openPayment() async {
+    if (_opening) return;
+    setState(() {
+      _opening = true;
+      _error = null;
+    });
+    final l10n = AppLocalizations.of(context);
     try {
       final uri = Uri.parse(widget.paymentUrl);
-      if (!await canLaunchUrl(uri)) {
-        throw Exception('无法打开支付链接: ${widget.paymentUrl}');
-      }
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication, // 强制在外部浏览器打开
+      final opened = widget.launchPayment != null
+          ? await widget.launchPayment!(uri)
+          : await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      if (!opened) throw StateError(l10n.xboardFailedToOpenPaymentLink);
+      _pollTimer?.cancel();
+      _pollTimer = Timer.periodic(
+        const Duration(seconds: 5),
+        (_) => _checkPayment(),
       );
-      if (!launched) {
-        throw Exception('无法启动外部浏览器');
-      }
-      if (mounted) {
-        XBoardNotification.showInfo(isAutomatic
-            ? '🚀 正在自动打开支付页面，完成支付后请返回应用'
-            : '已在浏览器中打开支付页面，完成支付后请返回应用');
-        _startAutoPolling();
-      }
-    } catch (e) {
-      if (mounted) {
-        XBoardNotification.showError('打开支付链接失败: $e');
-      }
+    } catch (_) {
+      if (mounted) setState(() => _error = l10n.xboardFailedToOpenPaymentLink);
+    } finally {
+      if (mounted) setState(() => _opening = false);
     }
   }
+
   Future<void> _copyPaymentUrl() async {
+    final l10n = AppLocalizations.of(context);
     try {
       await Clipboard.setData(ClipboardData(text: widget.paymentUrl));
-      if (mounted) {
-        XBoardNotification.showSuccess('支付链接已复制到剪贴板');
-      }
-    } catch (e) {
-      if (mounted) {
-        XBoardNotification.showError('复制失败: $e');
-      }
+      if (mounted) XBoardNotification.showSuccess(l10n.xboardPaymentLinkCopied);
+    } catch (_) {
+      if (mounted) setState(() => _error = l10n.xboardCopyFailed);
     }
   }
-  Future<void> _startPaymentStatusCheck() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      _checkPaymentStatus();
-    }
-  }
-  void _startAutoPolling() {
-    if (_autoPollingEnabled) return;
-    setState(() {
-      _autoPollingEnabled = true;
-    });
-    _pollPaymentStatus();
-  }
-  void _stopAutoPolling() {
-    setState(() {
-      _autoPollingEnabled = false;
-    });
-  }
-  Future<void> _pollPaymentStatus() async {
-    if (!_autoPollingEnabled || !mounted) return;
-    await Future.delayed(const Duration(seconds: 5));
-    if (!_autoPollingEnabled || !mounted) return;
-    await _checkPaymentStatus(silent: true);
-    if (_autoPollingEnabled && mounted) {
-      _pollPaymentStatus();
-    }
-  }
-  Future<void> _checkPaymentStatus({bool silent = false}) async {
-    if (_isCheckingPayment) return;
-    setState(() {
-      _isCheckingPayment = true;
-    });
-    try {
-      // 使用 SDK 查询订单状态
-      final orderModels = await XBoardSDK.instance.order.getOrders();
-      // SDK getOrder(tradeNo) might not exist, getOrders() returns list.
-      // Need to find by tradeNo.
-      // Wait, OrderApi has getOrder()?
-      // Step 288: OrderApi has getOrder(), getPaymentMethods(), checkCoupon().
-      // Step 156: `getOrder` (singular) was missing in providers.
-      // Step 178: `OrderApi` interface: `Future<List<OrderModel>> getOrders();`
-      // It does NOT have `getOrderByTradeNo`.
-      // So I must fetch all orders and filter? Or `getOrders` supports query?
-      // SDK `getOrders` implementation?
-      // I'll assume I have to fetch all and find.
-      // Or maybe `XBoardSDK.instance.order.getOrder(tradeNo)` exists?
-      // I'll check `OrderApi` again.
-      // Step 178 view_file lines 1-14:
-      // `Future<List<OrderModel>> getOrders();`
-      // `Future<String> createOrder(...)`
-      // `Future<PaymentResultModel> checkoutOrder(...)`
-      // `Future<bool> cancelOrder(...)`
-      // `Future<List<PaymentMethodModel>> getPaymentMethods();`
-      // `Future<CouponModel> checkCoupon(...)`
-      // No `getOrder(tradeNo)`.
-      // So I must use `getOrders()` and filter.
-      
-      final order = orderModels.firstWhere(
-        (o) => o.tradeNo == widget.tradeNo,
-        orElse: () => const OrderModel(status: -1), // Dummy
-      );
 
-      if (mounted) {
-        setState(() {
-          _isCheckingPayment = false;
-        });
-        if (order.status != -1) {
-          // status: 0=pending, 1=processing, 2=canceled, 3=completed
-          if (order.status == 3) {
-            _stopAutoPolling();
-            XBoardNotification.showSuccess('🎉 支付成功！');
-            Future.delayed(const Duration(seconds: 1), () {
-              if (mounted) {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
-            });
-          } else if (order.status == 2) {
-            _stopAutoPolling();
-            if (!silent) {
-              XBoardNotification.showInfo('支付已取消');
-            }
-          } else if (order.status == 0 || order.status == 1) {
-            if (!silent) {
-              XBoardNotification.showInfo(_autoPollingEnabled ? '正在等待支付...' : '订单状态：待支付');
-            }
-          }
-        } else {
-          if (!silent) {
-            XBoardNotification.showError('未找到订单信息');
-          }
-        }
+  Future<void> _checkPayment() async {
+    if (_checking || !mounted || _status == 3) return;
+    setState(() {
+      _checking = true;
+      _error = null;
+    });
+    final l10n = AppLocalizations.of(context);
+    try {
+      final orders = await (widget.orderApi ?? XBoardSDK.instance.order)
+          .getOrders();
+      if (!mounted) return;
+      final order = orders.firstWhere(
+        (order) => order.tradeNo == widget.tradeNo,
+        orElse: () => const OrderModel(status: -1),
+      );
+      setState(() {
+        _status = order.status;
+        if (_status == -1) _error = l10n.xboardOrderNotFound;
+      });
+      if (_status == 2 || _status == 3) {
+        _pollTimer?.cancel();
+        _pollTimer = null;
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isCheckingPayment = false;
+      if (_status == 3) {
+        // Only a confirmed backend result can complete the payment flow.
+        _returnTimer = Timer(const Duration(seconds: 1), () {
+          if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
         });
-        if (!silent) {
-          XBoardNotification.showError('检查支付状态失败: $e');
-        }
       }
+    } catch (_) {
+      if (mounted)
+        setState(() => _error = l10n.xboardFailedToCheckPaymentStatus);
+    } finally {
+      if (mounted) setState(() => _checking = false);
     }
   }
-  void _completePayment() {
-    XBoardNotification.showSuccess('支付完成！');
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-  void _cancelPayment() {
-    Navigator.of(context).pop();
-  }
+
   @override
   Widget build(BuildContext context) {
-    return CommonScaffold(
-      title: '支付网关',
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error, size: 64, color: Colors.red),
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final success = _status == 3;
+    final statusColor = _error != null
+        ? scheme.error
+        : success
+        ? SentinelColors.of(context).success
+        : scheme.primary;
+    final statusText =
+        _error ??
+        (success
+            ? l10n.xboardPaymentSuccess
+            : _status == 2
+            ? l10n.xboardPaymentCancelled
+            : l10n.xboardWaitingForPayment);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.xboardPaymentGateway)),
+      body: SingleChildScrollView(
+        child: SentinelPage(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SentinelPanel(
+                child: Column(
+                  children: [
+                    if (_opening || _checking)
+                      const SentinelAnimation(
+                        asset: SentinelAssets.loading,
+                        size: 88,
+                        fallback: Icons.hourglass_top_rounded,
+                      )
+                    else
+                      Icon(
+                        success
+                            ? Icons.check_circle_rounded
+                            : _error != null
+                            ? Icons.error_outline_rounded
+                            : Icons.payment_rounded,
+                        size: 56,
+                        color: statusColor,
+                      ),
+                    const SizedBox(height: 16),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        statusText,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleLarge?.copyWith(color: statusColor),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.xboardPaymentPageOpenedCompleteAndReturn,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    ),
+                    if (_pollTimer != null) ...[
                       const SizedBox(height: 16),
-                      Text(_errorMessage!),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('返回'),
+                      Text(
+                        l10n.xboardAutoCheckEvery5Seconds,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '支付信息',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  const Text('订单号: '),
-                                  Expanded(
-                                    child: Text(
-                                      widget.tradeNo,
-                                      style: const TextStyle(fontFamily: 'monospace'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              InkWell(
-                                onTap: _copyPaymentUrl,
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.blue.shade200),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Icon(Icons.info, color: Colors.blue),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                const Text(
-                                                  '支付链接',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.blue,
-                                                  ),
-                                                ),
-                                                const Spacer(),
-                                                Icon(
-                                                  Icons.copy,
-                                                  size: 16,
-                                                  color: Colors.blue.shade600,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  '点击复制',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    color: Colors.blue.shade600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              widget.paymentUrl,
-                                              style: const TextStyle(fontSize: 12),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_autoPollingEnabled)
-                        Card(
-                          color: Colors.green.shade50,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '自动检测支付状态',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green.shade800,
-                                        ),
-                                      ),
-                                      Text(
-                                        '系统每5秒自动检查一次，支付完成后会自动跳转',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.green.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: _stopAutoPolling,
-                                  child: Text(
-                                    '停止',
-                                    style: TextStyle(color: Colors.green.shade700),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (_autoPollingEnabled) const SizedBox(height: 16),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '操作提示',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text('1. 系统已自动为您打开支付页面'),
-                              const Text('2. 请在浏览器中完成支付操作'),
-                              const Text('3. 支付完成后返回应用，系统将自动检测'),
-                              const Text('4. 如需重新打开，可点击下方"重新打开"按钮'),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade50,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: Colors.amber.shade200),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.info_outline, size: 16, color: Colors.amber.shade700),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        '提示：如果浏览器未自动打开，可以点击"重新打开"或复制链接手动打开',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.amber.shade700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _launchPaymentUrl(isAutomatic: false),
-                              icon: const Icon(Icons.open_in_browser),
-                              label: const Text('重新打开'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _copyPaymentUrl,
-                              icon: const Icon(Icons.copy),
-                              label: const Text('复制链接'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.purple,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _isCheckingPayment ? null : _checkPaymentStatus,
-                              icon: _isCheckingPayment
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : const Icon(Icons.refresh),
-                              label: Text(_isCheckingPayment ? '检查中...' : '检查状态'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _completePayment,
-                              icon: const Icon(Icons.check_circle),
-                              label: const Text('支付完成'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _cancelPayment,
-                              icon: const Icon(Icons.cancel),
-                              label: const Text('取消支付'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
+              ),
+              const SizedBox(height: 20),
+              SentinelPanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.xboardPaymentInfo,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.xboardOrderNumber,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 6),
+                    SelectableText(widget.tradeNo),
+                    const Divider(height: 32),
+                    Text(
+                      l10n.xboardPaymentLink,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      widget.paymentUrl,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 20),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: _opening ? null : _openPayment,
+                          icon: const Icon(Icons.open_in_browser),
+                          label: Text(l10n.xboardReopenPayment),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _copyPaymentUrl,
+                          icon: const Icon(Icons.copy),
+                          label: Text(l10n.xboardCopyPaymentLink),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.xboardOperationTips,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(l10n.xboardCompletePaymentInBrowser),
+              Text(l10n.xboardReturnAfterPaymentAutoDetect),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  FilledButton.icon(
+                    onPressed: _checking || success ? null : _checkPayment,
+                    icon: const Icon(Icons.refresh),
+                    label: Text(
+                      _checking ? l10n.xboardChecking : l10n.xboardCheckStatus,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    child: Text(l10n.xboardReturn),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-} 
+}

@@ -31,25 +31,30 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      scrollable: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
           Icon(
             state.forceUpdate ? Icons.warning : Icons.system_update,
-            color: state.forceUpdate 
-                ? Colors.red 
+            color: state.forceUpdate
+                ? Theme.of(context).colorScheme.error
                 : Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              state.forceUpdate 
-                  ? appLocalizations.updateCheckForceUpdate(state.latestVersion ?? '')
-                  : appLocalizations.updateCheckNewVersionFound(state.latestVersion ?? ''),
+              state.forceUpdate
+                  ? appLocalizations.updateCheckForceUpdate(
+                      state.latestVersion ?? '',
+                    )
+                  : appLocalizations.updateCheckNewVersionFound(
+                      state.latestVersion ?? '',
+                    ),
               style: TextStyle(
-                color: state.forceUpdate ? Colors.red : null,
+                color: state.forceUpdate
+                    ? Theme.of(context).colorScheme.error
+                    : null,
               ),
             ),
           ),
@@ -62,7 +67,9 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -70,12 +77,18 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
                 Icon(
                   Icons.info_outline,
                   size: 16,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  appLocalizations.updateCheckCurrentVersion(state.currentVersion ?? ''),
-                  style: Theme.of(context).textTheme.bodySmall,
+                Expanded(
+                  child: Text(
+                    appLocalizations.updateCheckCurrentVersion(
+                      state.currentVersion ?? '',
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               ],
             ),
@@ -84,28 +97,32 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
             const SizedBox(height: 16),
             Text(
               appLocalizations.updateCheckReleaseNotes,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
               constraints: const BoxConstraints(maxHeight: 120),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
                 ),
               ),
               padding: const EdgeInsets.all(12),
               child: SingleChildScrollView(
                 child: Text(
                   state.releaseNotes!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    height: 1.4,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
               ),
             ),
@@ -119,8 +136,9 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
       actions: [
         if (!state.forceUpdate)
           TextButton(
-            onPressed:
-                _isDownloading ? null : () => Navigator.of(context).pop(),
+            onPressed: _isDownloading
+                ? null
+                : () => Navigator.of(context).pop(),
             child: Text(appLocalizations.updateCheckUpdateLater),
           ),
         ElevatedButton.icon(
@@ -135,13 +153,13 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
             _isDownloading && _downloadProgress != null
                 ? '${(_downloadProgress! * 100).round()}%'
                 : state.forceUpdate
-                    ? appLocalizations.updateCheckMustUpdate
-                    : appLocalizations.updateCheckUpdateNow,
+                ? appLocalizations.updateCheckMustUpdate
+                : appLocalizations.updateCheckUpdateNow,
           ),
-          style: state.forceUpdate 
+          style: state.forceUpdate
               ? ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
                 )
               : null,
         ),
@@ -196,9 +214,9 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
         _isDownloading = false;
         _downloadProgress = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('下载更新失败: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('下载更新失败: $error')));
     }
   }
 

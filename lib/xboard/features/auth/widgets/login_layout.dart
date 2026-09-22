@@ -1,3 +1,4 @@
+import 'package:fl_clash/theme/sentinel_assets.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter/material.dart';
 
@@ -103,7 +104,7 @@ class _LoginBrand extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final foreground = isWide ? colors.onPrimaryContainer : colors.onSurface;
+    final foreground = colors.onSurface;
 
     return Container(
       constraints: BoxConstraints(minHeight: minHeight),
@@ -114,7 +115,10 @@ class _LoginBrand extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [colors.primaryContainer, colors.surfaceContainerLow],
+                colors: [
+                  colors.primary.withValues(alpha: .16),
+                  colors.surfaceContainerLow,
+                ],
               ),
               border: Border.all(
                 color: colors.outlineVariant.withValues(alpha: 0.4),
@@ -129,7 +133,7 @@ class _LoginBrand extends StatelessWidget {
             : CrossAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/icon.png',
+            SentinelAssets.logo,
             width: isWide ? 80 : 56,
             height: isWide ? 80 : 56,
             excludeFromSemantics: true,
@@ -144,7 +148,15 @@ class _LoginBrand extends StatelessWidget {
             ),
           ),
           if (isWide) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            Image.asset(
+              SentinelAssets.globe,
+              width: 140,
+              height: 100,
+              fit: BoxFit.contain,
+              excludeFromSemantics: true,
+            ),
+            const SizedBox(height: 20),
             Text(
               appLocalizations.xboardEnjoyFastNetworkExperience,
               style: textTheme.titleMedium?.copyWith(color: foreground),

@@ -1053,5 +1053,10 @@
   "onlineSupportCancel": "Cancel",
   "onlineSupportSend": "Send",
   "contactSupport": "Support",
-  "configurationError": "Application configuration error, please contact support"
+  "configurationError": "Application configuration error, please contact support",
+  "sentinelOriginalPrice": "Original price",
+  "sentinelDiscount": "Discount",
+  "sentinelTotal": "Total to pay",
+  "sentinelBalanceDeduction": "Balance applied",
+  "sentinelRemainingBalance": "Remaining balance"
 }

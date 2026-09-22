@@ -1,240 +1,133 @@
-import 'package:fl_clash/pages/pages.dart';
+import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/theme/sentinel_widgets.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 class SubscriptionPage extends ConsumerStatefulWidget {
   const SubscriptionPage({super.key});
   @override
   ConsumerState<SubscriptionPage> createState() => _SubscriptionPageState();
 }
+
 class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
-  bool _isLoading = false;
-  String? _subscriptionUrl;
-  String? _errorMessage;
-  @override
-  void initState() {
-    super.initState();
-    _loadSubscriptionInfo();
-  }
-  Future<void> _loadSubscriptionInfo() async {
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _refresh() async {
+    if (_loading) return;
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _loading = true;
+      _error = null;
     });
     try {
-      // 使用 xboardUserProvider 获取订阅信息
-      final userAuthState = ref.read(xboardUserProvider);
-      final subscriptionInfo = userAuthState.subscriptionInfo;
-      
-      if (mounted) {
-        setState(() {
-          _subscriptionUrl = subscriptionInfo?.subscribeUrl;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.toString();
-          _isLoading = false;
-        });
-      }
+      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
+    } catch (_) {
+      if (mounted)
+        setState(
+          () => _error = AppLocalizations.of(
+            context,
+          ).xboardFailedToGetSubscriptionInfo,
+        );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
-  Future<void> _refreshSubscription() async {
-    await _loadSubscriptionInfo();
-  }
-  void _copyToClipboard() async {
-    if (_subscriptionUrl != null) {
-      await Clipboard.setData(
-        ClipboardData(text: _subscriptionUrl!),
+
+  Future<void> _copy(String url) async {
+    await Clipboard.setData(ClipboardData(text: url));
+    if (mounted)
+      XBoardNotification.showSuccess(
+        AppLocalizations.of(context).xboardSubscriptionLinkCopied,
       );
-      // 复制操作日志 (UI层)
-      if (mounted) {
-        XBoardNotification.showSuccess('订阅链接已复制到剪贴板');
-      }
-    }
   }
-  void _navigateToHome() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const HomePage(),
-      ),
-    );
-  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final url = ref.watch(subscriptionInfoProvider)?.subscribeUrl;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('订阅购买'),
+        title: Text(l10n.xboardSubscriptionInfo),
         actions: [
           IconButton(
+            tooltip: l10n.refresh,
             icon: const Icon(Icons.refresh),
-            onPressed: _refreshSubscription,
-          ),
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: _navigateToHome,
+            onPressed: _loading ? null : _refresh,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        child: SentinelPage(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SentinelPanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '订阅信息',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Icon(Icons.link_rounded, color: scheme.primary, size: 32),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.xboardSubscriptionLink,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 16),
-                    if (_isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else if (_errorMessage != null)
-                      Column(
-                        children: [
-                          const Icon(
-                            Icons.error,
-                            color: Colors.red,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '获取订阅信息失败',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _refreshSubscription,
-                            child: const Text('重新获取'),
-                          ),
-                        ],
-                      )
-                    else if (_subscriptionUrl != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            '订阅链接:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Text(
-                              _subscriptionUrl!,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: _copyToClipboard,
-                                  icon: const Icon(Icons.copy),
-                                  label: const Text('复制链接'),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: _refreshSubscription,
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('刷新'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    if (_loading)
+                      const LinearProgressIndicator()
+                    else if (_error != null)
+                      Text(_error!, style: TextStyle(color: scheme.error))
+                    else if (url == null || url.isEmpty) ...[
+                      Text(l10n.xboardNoAvailableSubscription),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: () => context.go('/plans'),
+                        child: Text(l10n.xboardPlans),
                       ),
+                    ] else ...[
+                      SelectableText(
+                        url,
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: () => _copy(url),
+                        icon: const Icon(Icons.copy),
+                        label: Text(l10n.xboardCopyLink),
+                      ),
+                    ],
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+              const SizedBox(height: 20),
+              SentinelPanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '使用说明',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Text(
+                      l10n.xboardUsageInstructions,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      '1. 复制上方的订阅链接',
-                      style: TextStyle(fontSize: 14),
-                    ),
+                    Text(l10n.xboardCopySubscriptionLinkAbove),
                     const SizedBox(height: 8),
-                    const Text(
-                      '2. 在配置文件中添加此订阅链接',
-                      style: TextStyle(fontSize: 14),
-                    ),
+                    Text(l10n.xboardAddLinkToConfig),
                     const SizedBox(height: 8),
-                    const Text(
-                      '3. 定期更新订阅获取最新节点',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.shade200),
-                      ),
-                      child: const Text(
-                        '提示: 请妥善保管您的订阅链接，不要分享给他人',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 14,
-                        ),
-                      ),
+                    Text(l10n.xboardUpdateSubscriptionRegularly),
+                    const Divider(height: 32),
+                    Text(
+                      l10n.xboardKeepSubscriptionLinkSafe,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

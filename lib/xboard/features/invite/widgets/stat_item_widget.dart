@@ -17,26 +17,18 @@ class StatItemWidget extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        Icon(
-          icon, 
-          size: 32, 
-          color: colorScheme.primary,
-        ),
+        Icon(icon, size: 32, color: colorScheme.primary),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           title,
-          style: TextStyle(
-            fontSize: 12,
-            color: colorScheme.onSurface.withOpacity(0.6),
-          ),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
         ),
       ],
     );

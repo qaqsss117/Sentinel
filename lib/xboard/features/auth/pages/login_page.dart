@@ -28,8 +28,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late XBoardStorageService _storageService;
 
   // 从配置文件加载的应用信息
-  String _appTitle = 'XBoard';
-  String _appWebsite = 'example.com';
+  String _appTitle = appName;
+  String _appWebsite = '';
 
   @override
   void initState() {

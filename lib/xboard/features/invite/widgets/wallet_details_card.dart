@@ -12,25 +12,26 @@ class WalletDetailsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inviteState = ref.watch(inviteProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Text(
                   appLocalizations.walletDetails,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     TextButton.icon(
                       onPressed: () => _showWithdrawDialog(context),
@@ -70,7 +71,7 @@ class WalletDetailsCard extends ConsumerWidget {
                   Expanded(
                     child: StatItemWidget(
                       title: appLocalizations.walletBalance,
-                      value: inviteState.formattedWalletBalance, 
+                      value: inviteState.formattedWalletBalance,
                       icon: Icons.account_balance,
                     ),
                   ),
@@ -83,16 +84,10 @@ class WalletDetailsCard extends ConsumerWidget {
   }
 
   void _showTransferDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const TransferDialog(),
-    );
+    showDialog(context: context, builder: (context) => const TransferDialog());
   }
 
   void _showWithdrawDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const WithdrawDialog(),
-    );
+    showDialog(context: context, builder: (context) => const WithdrawDialog());
   }
 }

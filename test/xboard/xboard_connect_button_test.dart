@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -38,6 +39,8 @@ Future<void> _pumpButton(
   required bool isImporting,
   Profile? currentProfile,
   ImportStatus status = ImportStatus.idle,
+  int? runTime,
+  Future<void> Function(bool)? onToggle,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -45,7 +48,7 @@ Future<void> _pumpButton(
         startButtonSelectorStateProvider.overrideWithValue(
           const StartButtonSelectorState(isInit: true, hasProfile: true),
         ),
-        runTimeProvider.overrideWithValue(null),
+        runTimeProvider.overrideWithValue(runTime),
         currentProfileProvider.overrideWithValue(currentProfile),
         subscriptionInfoProvider.overrideWith((ref) => subscription),
         profileImportProvider.overrideWith(
@@ -55,16 +58,16 @@ Future<void> _pumpButton(
           ),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
         ],
-        supportedLocales: [Locale('zh', 'CN')],
-        locale: Locale('zh', 'CN'),
-        home: Scaffold(body: XBoardConnectButton()),
+        supportedLocales: const [Locale('zh', 'CN')],
+        locale: const Locale('zh', 'CN'),
+        home: Scaffold(body: XBoardConnectButton(onToggle: onToggle)),
       ),
     ),
   );
@@ -72,6 +75,74 @@ Future<void> _pumpButton(
 }
 
 void main() {
+  testWidgets(
+    'waits for the command, prevents repeats and does not claim success',
+    (tester) async {
+      final completion = Completer<void>();
+      var calls = 0;
+      await _pumpButton(
+        tester,
+        subscription: _subscription,
+        isImporting: false,
+        currentProfile: _importedProfile,
+        onToggle: (start) {
+          expect(start, isTrue);
+          calls++;
+          return completion.future;
+        },
+      );
+      await tester.tap(find.byType(InkWell));
+      await tester.pump();
+      expect(tester.widget<InkWell>(find.byType(InkWell)).onTap, isNull);
+      expect(calls, 1);
+      completion.complete();
+      await tester.pump();
+      expect(
+        find.text(AppLocalizations.current.xboardStartProxy),
+        findsOneWidget,
+      );
+      expect(find.text(AppLocalizations.current.xboardStopProxy), findsNothing);
+    },
+  );
+
+  testWidgets('failed command restores retry without changing runtime', (
+    tester,
+  ) async {
+    await _pumpButton(
+      tester,
+      subscription: _subscription,
+      isImporting: false,
+      currentProfile: _importedProfile,
+      onToggle: (_) async => throw StateError('offline'),
+    );
+    await tester.tap(find.byType(InkWell));
+    await tester.pump();
+    expect(tester.widget<InkWell>(find.byType(InkWell)).onTap, isNotNull);
+    expect(
+      find.text(AppLocalizations.current.xboardOperationFailed),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'can stop a running connection even if subscription is unavailable',
+    (tester) async {
+      bool? requested;
+      await _pumpButton(
+        tester,
+        subscription: null,
+        isImporting: true,
+        runTime: 120000,
+        onToggle: (start) async {
+          requested = start;
+        },
+      );
+      await tester.tap(find.byType(InkWell));
+      await tester.pump();
+      expect(requested, isFalse);
+    },
+  );
+
   testWidgets('disables connection before subscription is delivered', (
     tester,
   ) async {
@@ -129,9 +200,7 @@ void main() {
       status: ImportStatus.failed,
     );
 
-    final button = tester.widget<InkWell>(
-      find.byType(InkWell),
-    );
+    final button = tester.widget<InkWell>(find.byType(InkWell));
     expect(button.onTap, isNotNull);
   });
 }

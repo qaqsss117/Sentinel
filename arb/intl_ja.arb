@@ -791,5 +791,10 @@
   "onlineSupportCancel": "キャンセル",
   "onlineSupportSend": "送信",
   "contactSupport": "サポートに連絡",
-  "configurationError": "アプリケーション設定エラー、サポートにお問い合わせください"
+  "configurationError": "アプリケーション設定エラー、サポートにお問い合わせください",
+  "sentinelOriginalPrice": "通常価格",
+  "sentinelDiscount": "割引",
+  "sentinelTotal": "お支払い金額",
+  "sentinelBalanceDeduction": "残高から充当",
+  "sentinelRemainingBalance": "残りの残高"
 }

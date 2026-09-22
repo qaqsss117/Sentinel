@@ -9,14 +9,15 @@ class InviteRulesCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inviteState = ref.watch(inviteProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Icon(Icons.rule, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
@@ -35,10 +36,7 @@ class InviteRulesCard extends ConsumerWidget {
               '• ${appLocalizations.currentCommissionRate(inviteState.commissionRate.toString())}\n'
               '• ${appLocalizations.commissionSettled}\n'
               '• ${appLocalizations.withdrawalAvailable}',
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ],
         ),

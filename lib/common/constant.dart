@@ -38,8 +38,8 @@ const geoIpFileName = "GeoIP.dat";
 const geoSiteFileName = "GeoSite.dat";
 final double kHeaderHeight = system.isDesktop
     ? !Platform.isMacOS
-        ? 40
-        : 28
+          ? 40
+          : 28
     : 0;
 const profilesDirectoryName = "profiles";
 const localhost = "127.0.0.1";
@@ -83,7 +83,7 @@ const viewModeColumnsMap = {
 // const toolsStoreKey = PageStorageKey<String>('tools');
 // const profilesStoreKey = PageStorageKey<String>('profiles');
 
-const defaultPrimaryColor = 0XFFD8C0C3;
+const defaultPrimaryColor = 0xFF8B72F8;
 
 double getWidgetHeight(num lines) {
   return max(lines * 84 + (lines - 1) * 16, 0).ap;

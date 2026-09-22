@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-21",
+  "sourceBaseCommit": "08a3e9efcd10d154b2112bbaa77c2f712f971baa",
+  "flutter": "3.47.2",
+  "dart": "3.13.2",
+  "tests": {
+    "passed": 137,
+    "failed": 0,
+    "command": "flutter --no-version-check test --no-pub --dart-define=CAPTURE_UI=true"
+  },
+  "analyzer": {
+    "errors": 0,
+    "warnings": 487,
+    "infos": 86,
+    "exitCode": 1,
+    "command": "dart analyze --format machine lib test"
+  },
+  "builds": {
+    "androidExitCode": 0,
+    "windowsExitCode": 0
+  },
+  "artifacts": [
+    {
+      "path": "build/windows/x64/runner/Debug/SentinelVPN.exe",
+      "bytes": 553984,
+      "sha256": "47de7b68ad7665b5ff66bf724a8098151393b581830806878038cb851179989d"
+    },
+    {
+      "path": "build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 376213838,
+      "sha256": "70f697db2711728dfdb7bcc18f5fc6ed66530bc2b7d4da59cd0c322d73dea5d1"
+    }
+  ],
+  "screenshots": {
+    "count": 67,
+    "data": "synthetic provider and SDK fixtures; no live accounts in delivered screenshots",
+    "historicalComparison": "Repository images/ are historical reference, not an exact pre-change baseline"
+  },
+  "nativeAndroid": {
+    "deviceModel": "24090RA29C",
+    "package": "com.follow.clash.debug",
+    "install": "passed",
+    "activityLaunch": "passed",
+    "navigation": "passed: home/plans/support/invite remain visible; purchase details return to plans; Android system back returns invite to home",
+    "liveEffects": "Application automatically restored an existing device session and refreshed subscription data. No manual VPN toggle, purchase, payment or message send.",
+    "savedSessionStartup": "passed after auth redirect fix; loading resolves to home",
+    "evidence": "ADB UIAutomator accessibility hierarchy verified selected destinations and purchase detail route; private device screenshots are not included"
+  },
+  "notValidated": [
+    "Windows native resizing on a live signed-in session",
+    "Real VPN connection and stop",
+    "Real payment success and cancellation",
+    "Live ticket send",
+    "Signed Android release and MSIX packaging"
+  ]
+}

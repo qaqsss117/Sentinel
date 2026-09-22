@@ -791,5 +791,10 @@
   "onlineSupportCancel": "Отмена",
   "onlineSupportSend": "Отправить",
   "contactSupport": "Связаться с поддержкой",
-  "configurationError": "Ошибка конфигурации приложения, обратитесь в службу поддержки"
+  "configurationError": "Ошибка конфигурации приложения, обратитесь в службу поддержки",
+  "sentinelOriginalPrice": "Исходная цена",
+  "sentinelDiscount": "Скидка",
+  "sentinelTotal": "К оплате",
+  "sentinelBalanceDeduction": "Оплачено с баланса",
+  "sentinelRemainingBalance": "Остаток баланса"
 }

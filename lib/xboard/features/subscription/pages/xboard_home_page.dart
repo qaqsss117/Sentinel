@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:fl_clash/theme/sentinel_widgets.dart';
+import 'package:fl_clash/theme/sentinel_assets.dart';
+import 'package:fl_clash/xboard/features/invite/widgets/user_menu_widget.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
@@ -14,20 +16,23 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_stat
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import '../widgets/subscription_usage_card.dart';
 import '../widgets/xboard_connect_button.dart';
+
 class XBoardHomePage extends ConsumerStatefulWidget {
   const XBoardHomePage({super.key});
   @override
   ConsumerState<XBoardHomePage> createState() => _XBoardHomePageState();
 }
-class _XBoardHomePageState extends ConsumerState<XBoardHomePage> 
+
+class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     with AutomaticKeepAliveClientMixin {
+  Timer? _groupsTimer;
   bool _hasInitialized = false;
   bool _hasStartedLatencyTesting = false;
   bool _hasCheckedSubscriptionStatus = false;
-  
+
   @override
-  bool get wantKeepAlive => true;  // 保持页面状态，防止重建
-  
+  bool get wantKeepAlive => true; // 保持页面状态，防止重建
+
   @override
   void initState() {
     super.initState();
@@ -49,20 +54,25 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         });
       }
     });
-    
+
     // 监听订阅导入完成事件
     ref.listenManual(profileImportProvider, (previous, next) {
       // 从导入中变为完成（成功或失败）
-      if (previous?.isImporting == true && !next.isImporting && !_hasCheckedSubscriptionStatus) {
+      if (previous?.isImporting == true &&
+          !next.isImporting &&
+          !_hasCheckedSubscriptionStatus) {
         _hasCheckedSubscriptionStatus = true;
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
-            subscriptionStatusChecker.checkSubscriptionStatusOnStartup(context, ref);
+            subscriptionStatusChecker.checkSubscriptionStatusOnStartup(
+              context,
+              ref,
+            );
           }
         });
       }
     });
-    
+
     ref.listenManual(currentProfileProvider, (previous, next) {
       if (previous?.label != next?.label && previous != null) {
         Future.delayed(const Duration(milliseconds: 1500), () {
@@ -73,7 +83,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       }
     });
     ref.listenManual(groupsProvider, (previous, next) {
-      if ((previous?.isEmpty ?? true) && next.isNotEmpty && !_hasStartedLatencyTesting) {
+      if ((previous?.isEmpty ?? true) &&
+          next.isNotEmpty &&
+          !_hasStartedLatencyTesting) {
         _hasStartedLatencyTesting = true;
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
@@ -83,134 +95,104 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    super.build(context);  // 必须调用，配合 AutomaticKeepAliveClientMixin
-    
-    final appLocalizations = AppLocalizations.of(context);
-    // 根据操作系统平台判断设备类型
-    final isDesktop = Platform.isLinux || Platform.isWindows || Platform.isMacOS;
-    
+    super.build(context); // 必须调用，配合 AutomaticKeepAliveClientMixin
+
+    final localizations = AppLocalizations.of(context);
     return Scaffold(
-      appBar: isDesktop ? null : AppBar(
-        automaticallyImplyLeading: false,
-        leadingWidth: 120,
-        leading: TextButton.icon(
-          icon: const Icon(Icons.support_agent, size: 20),
-          label: Text(appLocalizations.onlineSupport),
-          onPressed: () {
-            // 移动端独有的按钮，使用 push 创建路由栈
-            context.push('/support');
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
-        actions: [
-          TextButton.icon(
-            icon: const Icon(Icons.card_giftcard, size: 20),
-            label: Text(appLocalizations.xboardPlanInfo),
-            onPressed: () {
-              // 移动端独有的按钮，使用 push 创建路由栈
-              context.push('/plans');
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ),
-        ],
-      ),
-      body: Consumer(
-        builder: (_, ref, __) {
-          // 获取屏幕高度并计算自适应间距
-          final screenHeight = MediaQuery.of(context).size.height;
-        final appBarHeight = kToolbarHeight;
-        final statusBarHeight = MediaQuery.of(context).padding.top;
-        final bottomNavHeight = 60.0; // 底部导航栏高度
-        final availableHeight = screenHeight - appBarHeight - statusBarHeight - bottomNavHeight;
-        
-        // 根据可用高度调整间距
-        double sectionSpacing;
-        double verticalPadding;
-        double horizontalPadding;
-        
-        if (availableHeight < 500) {
-          // 小屏幕：紧凑布局
-          sectionSpacing = 8.0;
-          verticalPadding = 8.0;
-          horizontalPadding = 12.0;
-        } else if (availableHeight < 650) {
-          // 中等屏幕：适中布局
-          sectionSpacing = 10.0;
-          verticalPadding = 10.0;
-          horizontalPadding = 16.0;
-        } else {
-          // 大屏幕：标准布局
-          sectionSpacing = 14.0;
-          verticalPadding = 12.0;
-          horizontalPadding = 16.0;
-        }
-        
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                Theme.of(context).colorScheme.surface,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(vertical: verticalPadding),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - (2 * verticalPadding),
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(constraints.maxWidth < 600 ? 16 : 28),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
                         children: [
-                          const NoticeBanner(),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                            child: _buildUsageSection(),
+                          Image.asset(
+                            SentinelAssets.logo,
+                            width: 36,
+                            height: 36,
+                            excludeFromSemantics: true,
                           ),
-                          SizedBox(height: sectionSpacing),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                            child: _buildProxyModeSection(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              appName,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
                           ),
-                          SizedBox(height: sectionSpacing),
-                          const NodeSelectorBar(),
-                          SizedBox(height: sectionSpacing),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                            child: _buildConnectionSection(),
-                          ),
-                          // 添加弹性空间，确保内容不会太紧凑
-                          if (availableHeight > 600) const Spacer(),
+                          const UserMenuWidget(),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      const NoticeBanner(),
+                      const SizedBox(height: 20),
+                      LayoutBuilder(
+                        builder: (context, pane) {
+                          final connection = SentinelPanel(
+                            child: Column(
+                              children: [
+                                Text(
+                                  localizations
+                                      .xboardEnjoyFastNetworkExperience,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 20),
+                                const XBoardConnectButton(),
+                                const SizedBox(height: 24),
+                                const NodeSelectorBar(),
+                              ],
+                            ),
+                          );
+                          final details = Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const XBoardOutboundMode(),
+                              const SizedBox(height: 20),
+                              _buildUsageSection(),
+                            ],
+                          );
+                          if (pane.maxWidth >= 900) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 6, child: connection),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 5, child: details),
+                              ],
+                            );
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              connection,
+                              const SizedBox(height: 20),
+                              details,
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-          ),
-        );
-        },
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
+
   Widget _buildUsageSection() {
     return Consumer(
       builder: (context, ref, child) {
@@ -225,32 +207,23 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       },
     );
   }
-  Widget _buildConnectionSection() {
-    return Consumer(
-      builder: (context, ref, child) {
-        return const XBoardConnectButton(isFloating: false);
-      },
-    );
-  }
-  Widget _buildProxyModeSection() {
-    return const XBoardOutboundMode();
-  }
+
   /// 等待订阅导入完成后再检查订阅状态（备用方案）
   /// 如果3秒后还没有触发导入完成监听器，则主动检查
   void _waitForSubscriptionImportThenCheck() async {
     await Future.delayed(const Duration(seconds: 3));
-    
+
     // 如果已经通过监听器检查过了，就不再检查
     if (_hasCheckedSubscriptionStatus) {
       return;
     }
-    
+
     _hasCheckedSubscriptionStatus = true;
     if (mounted) {
       subscriptionStatusChecker.checkSubscriptionStatusOnStartup(context, ref);
     }
   }
-  
+
   void _showTokenExpiredDialog() {
     if (!mounted) return;
     showDialog(
@@ -287,7 +260,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     if (_hasStartedLatencyTesting) {
       return;
     }
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    _groupsTimer?.cancel();
+    _groupsTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -303,10 +277,16 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
             }
           });
         }
-      } catch (e) {
-      }
+      } catch (e) {}
     });
   }
+
+  @override
+  void dispose() {
+    _groupsTimer?.cancel();
+    super.dispose();
+  }
+
   void _performInitialLatencyTest() {
     if (!mounted) return;
     autoLatencyService.testCurrentNode();
@@ -319,4 +299,4 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       }
     });
   }
-} 
+}

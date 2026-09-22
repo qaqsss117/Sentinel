@@ -1,3 +1,5 @@
+import 'theme/sentinel_theme.dart';
+import 'theme/sentinel_widgets.dart';
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -18,18 +20,18 @@ import 'controller.dart';
 import 'xboard/xboard.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/router/app_router.dart' as xboard_router;
+import 'package:fl_clash/xboard/router/auth_redirect.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 
 class Application extends ConsumerStatefulWidget {
-  const Application({
-    super.key,
-  });
+  const Application({super.key});
 
   @override
   ConsumerState<Application> createState() => ApplicationState();
 }
 
 class ApplicationState extends ConsumerState<Application> {
+  late final GoRouter _router;
   Timer? _autoUpdateGroupTaskTimer;
   Timer? _autoUpdateProfilesTaskTimer;
 
@@ -52,10 +54,17 @@ class ApplicationState extends ConsumerState<Application> {
   @override
   void initState() {
     super.initState();
+    _router = _buildRouter();
+    ref.listenManual(xboardUserProvider, (previous, next) {
+      if (previous?.isAuthenticated != next.isAuthenticated ||
+          previous?.isInitialized != next.isInitialized) {
+        _router.refresh();
+      }
+    });
     _autoUpdateGroupTask();
     _autoUpdateProfilesTask();
     globalState.appController = AppController(context, ref);
-    
+
     // ✅ 后台预热：统一初始化服务（不阻塞 UI）
     // 这样快速认证和登录页都能使用已初始化的 SDK
     Future.microtask(() async {
@@ -66,7 +75,7 @@ class ApplicationState extends ConsumerState<Application> {
         debugPrint('[Application] 预热初始化失败: $e');
       }
     });
-    
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final currentContext = globalState.navigatorKey.currentContext;
       if (currentContext != null) {
@@ -75,13 +84,12 @@ class ApplicationState extends ConsumerState<Application> {
       await globalState.appController.init();
       globalState.appController.initLink();
       app?.initShortcuts();
-      
+
       // ✅ 等待初始化完成后再执行快速认证
       _performQuickAuthWithDomainService();
-      
+
       // 启动后检查更新
       _checkForUpdates();
-      
     });
   }
 
@@ -91,33 +99,33 @@ class ApplicationState extends ConsumerState<Application> {
     Future.microtask(() async {
       try {
         debugPrint('[Application] 开始快速认证检查...');
-        
+
         // ✅ 等待初始化完成
         final initState = ref.read(initializationProvider);
         if (!initState.isReady) {
           debugPrint('[Application] 等待初始化完成...');
           // 等待初始化完成（最多 30 秒）
           final deadline = DateTime.now().add(const Duration(seconds: 30));
-          while (!ref.read(initializationProvider).isReady && 
-                 DateTime.now().isBefore(deadline)) {
+          while (!ref.read(initializationProvider).isReady &&
+              DateTime.now().isBefore(deadline)) {
             await Future.delayed(const Duration(milliseconds: 500));
           }
-          
+
           if (!ref.read(initializationProvider).isReady) {
             debugPrint('[Application] 初始化超时，跳过快速认证');
             return;
           }
         }
-        
+
         // SDK 已初始化，执行快速认证
         final userNotifier = ref.read(xboardUserProvider.notifier);
         await userNotifier.quickAuth();
-        
+
         // 强制刷新UI，确保路由能够响应最新的认证状态
         if (mounted) {
           setState(() {});
         }
-        
+
         debugPrint('[Application] 快速认证检查完成');
       } catch (e) {
         debugPrint('[Application] 快速认证检查失败: $e');
@@ -128,7 +136,6 @@ class ApplicationState extends ConsumerState<Application> {
       }
     });
   }
-
 
   /// 检查应用更新
   void _checkForUpdates() {
@@ -146,7 +153,7 @@ class ApplicationState extends ConsumerState<Application> {
         debugPrint('[Application] 开始自动检查更新...');
         final updateNotifier = ref.read(updateCheckProvider.notifier);
         await updateNotifier.checkForUpdates();
-        
+
         // 检查是否有更新
         final updateState = ref.read(updateCheckProvider);
         if (updateState.hasUpdate && mounted) {
@@ -193,19 +200,11 @@ class ApplicationState extends ConsumerState<Application> {
     if (system.isDesktop) {
       return WindowManager(
         child: TrayManager(
-          child: HotKeyManager(
-            child: ProxyManager(
-              child: child,
-            ),
-          ),
+          child: HotKeyManager(child: ProxyManager(child: child)),
         ),
       );
     }
-    return AndroidManager(
-      child: TileManager(
-        child: child,
-      ),
-    );
+    return AndroidManager(child: TileManager(child: child));
   }
 
   _buildState(Widget child) {
@@ -227,21 +226,13 @@ class ApplicationState extends ConsumerState<Application> {
 
   _buildPlatformApp(Widget child) {
     if (system.isDesktop) {
-      return WindowHeaderContainer(
-        child: child,
-      );
+      return WindowHeaderContainer(child: child);
     }
-    return VpnManager(
-      child: child,
-    );
+    return VpnManager(child: child);
   }
 
   _buildApp(Widget child) {
-    return MessageManager(
-      child: ThemeManager(
-        child: child,
-      ),
-    );
+    return MessageManager(child: ThemeManager(child: child));
   }
 
   @override
@@ -250,11 +241,11 @@ class ApplicationState extends ConsumerState<Application> {
       _buildState(
         Consumer(
           builder: (_, ref, child) {
-            final locale =
-                ref.watch(appSettingProvider.select((state) => state.locale));
+            final locale = ref.watch(
+              appSettingProvider.select((state) => state.locale),
+            );
             final themeProps = ref.watch(themeSettingProvider);
-            final userState = ref.watch(xboardUserProvider);
-            
+
             // 使用 go_router 的路由系统
             return MaterialApp.router(
               debugShowCheckedModeBanner: false,
@@ -262,36 +253,39 @@ class ApplicationState extends ConsumerState<Application> {
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate
+                GlobalWidgetsLocalizations.delegate,
               ],
               builder: (_, child) {
                 return AppEnvManager(
                   child: _buildPlatformApp(
-                    _buildApp(child!),
+                    _buildApp(
+                      SentinelBackground(decorated: true, child: child!),
+                    ),
                   ),
                 );
               },
-              routerConfig: _buildRouter(userState),
+              routerConfig: _router,
               scrollBehavior: BaseScrollBehavior(),
               title: appName,
               locale: utils.getLocaleForString(locale),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
               themeMode: themeProps.themeMode,
-              theme: ThemeData(
-                useMaterial3: true,
+              theme: SentinelTheme.build(
+                brightness: Brightness.light,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
                   primaryColor: themeProps.primaryColor,
                 ),
               ),
-              darkTheme: ThemeData(
-                useMaterial3: true,
+              darkTheme: SentinelTheme.build(
+                brightness: Brightness.dark,
+                pureBlack: themeProps.pureBlack,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,
                   primaryColor: themeProps.primaryColor,
-                ).toPureBlack(themeProps.pureBlack),
+                ),
               ),
             );
           },
@@ -301,58 +295,43 @@ class ApplicationState extends ConsumerState<Application> {
   }
 
   // 构建带认证重定向的路由器
-  GoRouter _buildRouter(UserAuthState userState) {
+  GoRouter _buildRouter() {
     return GoRouter(
       navigatorKey: globalState.navigatorKey,
       initialLocation: '/',
       routes: xboard_router.routes,
       redirect: (context, state) {
-        final isAuthenticated = userState.isAuthenticated;
-        final isInitialized = userState.isInitialized;
-        final isLoginPage = state.uri.path == '/login';
-
-        // 初始化中，显示加载页面
-        if (!isInitialized) {
-          return '/loading';
-        }
-
-        // 未认证且不在登录页，跳转到登录页
-        if (!isAuthenticated && !isLoginPage) {
-          return '/login';
-        }
-
-        // 已认证且在登录页，跳转到首页
-        if (isAuthenticated && isLoginPage) {
-          return '/';
-        }
-
-        return null; // 不重定向
+        final userState = ref.read(xboardUserProvider);
+        return redirectForAuth(
+          path: state.uri.path,
+          isInitialized: userState.isInitialized,
+          isAuthenticated: userState.isAuthenticated,
+        );
       },
     );
   }
 
   @override
   Future<void> dispose() async {
+    _router.dispose();
     try {
       linkManager.destroy();
       _autoUpdateGroupTaskTimer?.cancel();
       _autoUpdateProfilesTaskTimer?.cancel();
-      
+
       // 释放XBoard SDK资源
       try {
         XBoardSDK.instance.dispose();
-      // ignore: empty_catches
-      } catch (e) {
-      }
-      
+        // ignore: empty_catches
+      } catch (e) {}
+
       await clashCore.destroy();
       await globalState.appController.savePreferences();
       await globalState.appController.handleExit();
-      
-    // ignore: empty_catches
-    } catch (e) {
-    }
-    
+
+      // ignore: empty_catches
+    } catch (e) {}
+
     super.dispose();
   }
 }

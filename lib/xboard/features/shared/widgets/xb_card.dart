@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class XBCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -22,16 +23,17 @@ class XBCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final defaultBorderRadius = BorderRadius.circular(16);
+    final defaultBorderRadius = BorderRadius.circular(20);
     return Container(
       margin: margin,
       child: Material(
-        elevation: elevation ?? (isSelected ? 4 : 2),
+        elevation: elevation ?? 0,
         borderRadius: borderRadius ?? defaultBorderRadius,
-        color: backgroundColor ?? 
-               (isSelected 
-                 ? colorScheme.primaryContainer 
-                 : colorScheme.surfaceContainer),
+        color:
+            backgroundColor ??
+            (isSelected
+                ? colorScheme.primaryContainer
+                : colorScheme.surfaceContainer),
         child: InkWell(
           onTap: onTap,
           borderRadius: borderRadius ?? defaultBorderRadius,
@@ -39,12 +41,12 @@ class XBCard extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               borderRadius: borderRadius ?? defaultBorderRadius,
-              border: isSelected
-                  ? Border.all(
-                      color: colorScheme.primary,
-                      width: 2,
-                    )
-                  : null,
+              border: Border.all(
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.outlineVariant.withValues(alpha: .65),
+                width: isSelected ? 2 : 1,
+              ),
             ),
             child: child,
           ),

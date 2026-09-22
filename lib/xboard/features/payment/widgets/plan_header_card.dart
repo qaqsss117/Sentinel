@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_clash/theme/sentinel_theme.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import '../utils/price_calculator.dart';
@@ -7,10 +8,7 @@ import '../utils/price_calculator.dart';
 class PlanHeaderCard extends StatelessWidget {
   final DomainPlan plan;
 
-  const PlanHeaderCard({
-    super.key,
-    required this.plan,
-  });
+  const PlanHeaderCard({super.key, required this.plan});
 
   String _getTrafficDisplay(BuildContext context) {
     if (plan.transferQuota == 0) {
@@ -31,8 +29,8 @@ class PlanHeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.blue.shade600,
-        borderRadius: BorderRadius.circular(12),
+        gradient: SentinelTheme.heroGradient,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -74,8 +72,10 @@ class PlanHeaderCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 // 第二行：流量 + 速率（居中）
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     _buildCompactInfo(
                       Icons.cloud_download_outlined,
@@ -121,4 +121,3 @@ class PlanHeaderCard extends StatelessWidget {
     );
   }
 }
-

@@ -8,9 +8,12 @@ class ThemeDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentThemeMode = ref.read(themeSettingProvider.select((state) => state.themeMode));
-    
+    final currentThemeMode = ref.read(
+      themeSettingProvider.select((state) => state.themeMode),
+    );
+
     return AlertDialog(
+      scrollable: true,
       title: Text(appLocalizations.selectTheme),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -20,16 +23,16 @@ class ThemeDialog extends ConsumerWidget {
               children: [
                 const Icon(Icons.auto_mode),
                 const SizedBox(width: 8),
-                Text(appLocalizations.auto),
+                Expanded(child: Text(appLocalizations.auto)),
               ],
             ),
             value: ThemeMode.system,
             groupValue: currentThemeMode,
             onChanged: (value) {
               if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                  (state) => state.copyWith(themeMode: value),
-                );
+                ref
+                    .read(themeSettingProvider.notifier)
+                    .updateState((state) => state.copyWith(themeMode: value));
                 Navigator.of(context).pop();
               }
             },
@@ -39,16 +42,16 @@ class ThemeDialog extends ConsumerWidget {
               children: [
                 const Icon(Icons.light_mode),
                 const SizedBox(width: 8),
-                Text(appLocalizations.light),
+                Expanded(child: Text(appLocalizations.light)),
               ],
             ),
             value: ThemeMode.light,
             groupValue: currentThemeMode,
             onChanged: (value) {
               if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                  (state) => state.copyWith(themeMode: value),
-                );
+                ref
+                    .read(themeSettingProvider.notifier)
+                    .updateState((state) => state.copyWith(themeMode: value));
                 Navigator.of(context).pop();
               }
             },
@@ -58,16 +61,16 @@ class ThemeDialog extends ConsumerWidget {
               children: [
                 const Icon(Icons.dark_mode),
                 const SizedBox(width: 8),
-                Text(appLocalizations.dark),
+                Expanded(child: Text(appLocalizations.dark)),
               ],
             ),
             value: ThemeMode.dark,
             groupValue: currentThemeMode,
             onChanged: (value) {
               if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                  (state) => state.copyWith(themeMode: value),
-                );
+                ref
+                    .read(themeSettingProvider.notifier)
+                    .updateState((state) => state.copyWith(themeMode: value));
                 Navigator.of(context).pop();
               }
             },

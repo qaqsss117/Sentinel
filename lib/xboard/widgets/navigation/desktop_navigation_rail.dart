@@ -1,3 +1,4 @@
+import 'package:fl_clash/theme/sentinel_assets.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/user_menu_widget.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// 桌面端侧边导航栏
 class DesktopNavigationRail extends ConsumerWidget {
   final int selectedIndex;
+  final bool extended;
   final Function(int) onDestinationSelected;
 
   const DesktopNavigationRail({
     super.key,
     required this.selectedIndex,
+    this.extended = false,
     required this.onDestinationSelected,
   });
 
@@ -20,7 +23,7 @@ class DesktopNavigationRail extends ConsumerWidget {
     final isDark = colorScheme.brightness == Brightness.dark;
 
     return Container(
-      width: 88,
+      width: extended ? 224 : 88,
       decoration: BoxDecoration(
         // 浅色模式使用纯色，深色模式使用渐变色
         gradient: isDark
@@ -44,13 +47,22 @@ class DesktopNavigationRail extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const SizedBox(height: 24),
-          
-          // 导航项
-          Expanded(
-            child: _buildNavigationItems(context, colorScheme),
+          const SizedBox(height: 28),
+          Image.asset(
+            SentinelAssets.logo,
+            width: 40,
+            height: 40,
+            excludeFromSemantics: true,
           ),
-          
+          if (extended) ...[
+            const SizedBox(height: 12),
+            Text('Sentinel', style: Theme.of(context).textTheme.titleLarge),
+          ],
+          const SizedBox(height: 28),
+
+          // 导航项
+          Expanded(child: _buildNavigationItems(context, colorScheme)),
+
           // 底部功能区
           _buildBottomActions(colorScheme),
         ],
@@ -76,25 +88,22 @@ class DesktopNavigationRail extends ConsumerWidget {
   }
 
   /// 导航项
-  Widget _buildNavigationItems(
-    BuildContext context,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildNavigationItems(BuildContext context, ColorScheme colorScheme) {
     final appLocalizations = AppLocalizations.of(context);
-    
+
     return NavigationRail(
       backgroundColor: Colors.transparent,
       selectedIndex: selectedIndex,
-      extended: false,
-      labelType: NavigationRailLabelType.all,
+      extended: extended,
+      minExtendedWidth: 224,
+      labelType: extended
+          ? NavigationRailLabelType.none
+          : NavigationRailLabelType.all,
       leading: null,
       useIndicator: true,
       indicatorColor: colorScheme.primaryContainer,
-      selectedIconTheme: IconThemeData(
-        color: colorScheme.primary,
-        size: 26,
-      ),
-      selectedLabelTextStyle: TextStyle(
+      selectedIconTheme: IconThemeData(color: colorScheme.primary, size: 26),
+      selectedLabelTextStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: colorScheme.primary,
@@ -103,10 +112,8 @@ class DesktopNavigationRail extends ConsumerWidget {
         color: colorScheme.onSurfaceVariant,
         size: 24,
       ),
-      unselectedLabelTextStyle: TextStyle(
-        fontSize: 11,
-        color: colorScheme.onSurfaceVariant,
-      ),
+      unselectedLabelTextStyle: Theme.of(context).textTheme.labelLarge
+          ?.copyWith(fontSize: 11, color: colorScheme.onSurfaceVariant),
       destinations: [
         NavigationRailDestination(
           icon: const Icon(Icons.home_outlined),
@@ -145,6 +152,4 @@ class DesktopNavigationRail extends ConsumerWidget {
       ],
     );
   }
-
 }
-

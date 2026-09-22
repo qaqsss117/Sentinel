@@ -7004,6 +7004,56 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Original price`
+  String get sentinelOriginalPrice {
+    return Intl.message(
+      'Original price',
+      name: 'sentinelOriginalPrice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Discount`
+  String get sentinelDiscount {
+    return Intl.message(
+      'Discount',
+      name: 'sentinelDiscount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total to pay`
+  String get sentinelTotal {
+    return Intl.message(
+      'Total to pay',
+      name: 'sentinelTotal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Balance applied`
+  String get sentinelBalanceDeduction {
+    return Intl.message(
+      'Balance applied',
+      name: 'sentinelBalanceDeduction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remaining balance`
+  String get sentinelRemainingBalance {
+    return Intl.message(
+      'Remaining balance',
+      name: 'sentinelRemainingBalance',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

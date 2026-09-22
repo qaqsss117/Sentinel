@@ -1021,5 +1021,10 @@
   "onlineSupportCancel": "取消",
   "onlineSupportSend": "发送",
   "contactSupport": "联系客服",
-  "configurationError": "应用配置异常，请联系客服"
+  "configurationError": "应用配置异常，请联系客服",
+  "sentinelOriginalPrice": "原价",
+  "sentinelDiscount": "优惠",
+  "sentinelTotal": "实付金额",
+  "sentinelBalanceDeduction": "余额抵扣",
+  "sentinelRemainingBalance": "剩余余额"
 }

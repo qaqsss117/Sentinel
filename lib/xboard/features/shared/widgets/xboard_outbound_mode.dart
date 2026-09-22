@@ -13,6 +13,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('xboard_outbound_mode.dart');
+
 class XBoardOutboundMode extends StatelessWidget {
   const XBoardOutboundMode({super.key});
   void _handleModeChange(WidgetRef ref, Mode modeOption) {
@@ -25,7 +26,12 @@ class XBoardOutboundMode extends StatelessWidget {
       });
     }
   }
-  Future<void> _handleTunToggle(BuildContext context, WidgetRef ref, bool selected) async {
+
+  Future<void> _handleTunToggle(
+    BuildContext context,
+    WidgetRef ref,
+    bool selected,
+  ) async {
     if (selected) {
       final storageService = ref.read(storageServiceProvider);
       final hasShownResult = await storageService.hasTunFirstUseShown();
@@ -35,22 +41,23 @@ class XBoardOutboundMode extends StatelessWidget {
           final shouldEnable = await TunIntroductionDialog.show(context);
           if (shouldEnable == true) {
             await storageService.markTunFirstUseShown();
-            ref.read(patchClashConfigProvider.notifier).updateState(
-                  (state) => state.copyWith.tun(enable: true),
-                );
+            ref
+                .read(patchClashConfigProvider.notifier)
+                .updateState((state) => state.copyWith.tun(enable: true));
           }
         }
       } else {
-        ref.read(patchClashConfigProvider.notifier).updateState(
-              (state) => state.copyWith.tun(enable: true),
-            );
+        ref
+            .read(patchClashConfigProvider.notifier)
+            .updateState((state) => state.copyWith.tun(enable: true));
       }
     } else {
-      ref.read(patchClashConfigProvider.notifier).updateState(
-            (state) => state.copyWith.tun(enable: false),
-          );
+      ref
+          .read(patchClashConfigProvider.notifier)
+          .updateState((state) => state.copyWith.tun(enable: false));
     }
   }
+
   void _selectValidProxyForGlobalMode(WidgetRef ref) {
     _logger.debug('[XBoardOutboundMode] 开始选择有效代理节点');
     final groups = ref.read(groupsProvider);
@@ -62,7 +69,9 @@ class XBoardOutboundMode extends StatelessWidget {
       (group) => group.name == GroupName.GLOBAL.name,
       orElse: () => groups.first,
     );
-    _logger.debug('[XBoardOutboundMode] 找到全局组: ${globalGroup.name}, 节点数: ${globalGroup.all.length}');
+    _logger.debug(
+      '[XBoardOutboundMode] 找到全局组: ${globalGroup.name}, 节点数: ${globalGroup.all.length}',
+    );
     if (globalGroup.all.isEmpty) {
       _logger.debug('[XBoardOutboundMode] 全局组没有可用节点');
       return;
@@ -70,7 +79,7 @@ class XBoardOutboundMode extends StatelessWidget {
     Proxy? validProxy;
     for (final proxy in globalGroup.all) {
       _logger.debug('[XBoardOutboundMode] 检查节点: ${proxy.name}');
-      if (proxy.name.toUpperCase() != 'DIRECT' && 
+      if (proxy.name.toUpperCase() != 'DIRECT' &&
           proxy.name.toLowerCase() != 'direct' &&
           proxy.name.toUpperCase() != 'REJECT') {
         validProxy = proxy;
@@ -89,32 +98,43 @@ class XBoardOutboundMode extends StatelessWidget {
       _logger.debug('[XBoardOutboundMode] 没有找到有效的代理节点');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tunSelectedColor = isDark 
+    final tunSelectedColor = isDark
         ? Colors.green.shade800.withValues(alpha: 0.4)
         : Colors.green.withValues(alpha: 0.2);
-    final tunCheckmarkColor = isDark ? Colors.green.shade300 : Colors.green.shade700;
-    final tunBorderColor = isDark ? Colors.green.shade600 : Colors.green.shade300;
-    
+    final tunCheckmarkColor = isDark
+        ? Colors.green.shade300
+        : Colors.green.shade700;
+    final tunBorderColor = isDark
+        ? Colors.green.shade600
+        : Colors.green.shade300;
+
     return Consumer(
       builder: (context, ref, child) {
-        final mode = ref.watch(patchClashConfigProvider.select((state) => state.mode));
-        final tunEnabled = buildCapabilities.supportsTun &&
+        final mode = ref.watch(
+          patchClashConfigProvider.select((state) => state.mode),
+        );
+        final tunEnabled =
+            buildCapabilities.supportsTun &&
             ref.watch(
               patchClashConfigProvider.select((state) => state.tun.enable),
             );
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
           ),
           padding: const EdgeInsets.all(14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Icon(
                     Icons.tune,
@@ -144,12 +164,21 @@ class XBoardOutboundMode extends StatelessWidget {
                             _handleModeChange(ref, Mode.rule);
                           }
                         },
-                        selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                        checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                        selectedColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
+                        checkmarkColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimaryContainer,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 0,
+                        ),
                         labelStyle: TextStyle(
                           fontSize: 13,
-                          color: mode == Mode.rule ? Theme.of(context).colorScheme.onPrimaryContainer : null,
+                          color: mode == Mode.rule
+                              ? Theme.of(context).colorScheme.onPrimaryContainer
+                              : null,
                         ),
                       ),
                     ),
@@ -165,12 +194,21 @@ class XBoardOutboundMode extends StatelessWidget {
                             _handleModeChange(ref, Mode.global);
                           }
                         },
-                        selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                        checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                        selectedColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
+                        checkmarkColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimaryContainer,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 0,
+                        ),
                         labelStyle: TextStyle(
                           fontSize: 13,
-                          color: mode == Mode.global ? Theme.of(context).colorScheme.onPrimaryContainer : null,
+                          color: mode == Mode.global
+                              ? Theme.of(context).colorScheme.onPrimaryContainer
+                              : null,
                         ),
                       ),
                     ),
@@ -190,7 +228,10 @@ class XBoardOutboundMode extends StatelessWidget {
                           side: tunEnabled
                               ? BorderSide(color: tunBorderColor, width: 1)
                               : null,
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 0,
+                          ),
                           labelStyle: const TextStyle(fontSize: 13),
                         ),
                       ),
@@ -201,7 +242,9 @@ class XBoardOutboundMode extends StatelessWidget {
               Text(
                 _getModeDescription(mode, tunEnabled, context),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.65),
                   fontSize: 12,
                 ),
               ),
@@ -211,8 +254,11 @@ class XBoardOutboundMode extends StatelessWidget {
       },
     );
   }
+
   String _getModeDescription(Mode mode, bool tunEnabled, BuildContext context) {
-    final tunStatus = tunEnabled ? ' | ${AppLocalizations.of(context).xboardTunEnabled}' : '';
+    final tunStatus = tunEnabled
+        ? ' | ${AppLocalizations.of(context).xboardTunEnabled}'
+        : '';
     switch (mode) {
       case Mode.rule:
         return '${AppLocalizations.of(context).xboardProxyModeRuleDescription}$tunStatus';

@@ -8,11 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/latency/widgets/latency_indicator.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+
 class NodeSelectorBar extends ConsumerStatefulWidget {
   const NodeSelectorBar({super.key});
   @override
   ConsumerState<NodeSelectorBar> createState() => _NodeSelectorBarState();
 }
+
 class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   String? _lastProxyName;
   bool _isFirstBuild = true;
@@ -28,15 +30,19 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       });
     });
   }
+
   @override
   void dispose() {
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final groups = ref.watch(groupsProvider);
     final selectedMap = ref.watch(selectedMapProvider);
-    final mode = ref.watch(patchClashConfigProvider.select((state) => state.mode));
+    final mode = ref.watch(
+      patchClashConfigProvider.select((state) => state.mode),
+    );
     ref.listen(runTimeProvider, (previous, next) {
       final wasConnected = previous != null;
       final isConnected = next != null;
@@ -73,7 +79,8 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
             (g) => g.name == selectedProxyName,
             orElse: () => group, // 如果没找到引用的组，就使用当前组
           );
-          if (referencedGroup.name == selectedProxyName && referencedGroup.type == GroupType.URLTest) {
+          if (referencedGroup.name == selectedProxyName &&
+              referencedGroup.type == GroupType.URLTest) {
             currentGroup = referencedGroup;
             break;
           } else {
@@ -84,7 +91,8 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       }
       if (currentGroup == null) {
         currentGroup = groups.firstWhere(
-          (group) => group.hidden != true && group.name != GroupName.GLOBAL.name,
+          (group) =>
+              group.hidden != true && group.name != GroupName.GLOBAL.name,
           orElse: () => groups.first,
         );
         if (currentGroup.now != null && currentGroup.now!.isNotEmpty) {
@@ -93,7 +101,8 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
             (g) => g.name == nowValue,
             orElse: () => currentGroup!,
           );
-          if (referencedGroup.name == nowValue && referencedGroup.type == GroupType.URLTest) {
+          if (referencedGroup.name == nowValue &&
+              referencedGroup.type == GroupType.URLTest) {
             currentGroup = referencedGroup;
           }
         }
@@ -119,15 +128,18 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
     _checkNodeChange(currentProxy);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.zero,
       child: _buildProxyDisplay(context, currentGroup, currentProxy),
     );
   }
+
   Widget _buildProxyDisplay(BuildContext context, Group group, Proxy proxy) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
         onTap: () {
@@ -140,7 +152,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -178,7 +190,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                 ),
               ),
               const SizedBox(width: 10),
-              ElevatedButton(
+              IconButton.filledTonal(
+                tooltip: AppLocalizations.of(context).xboardSwitch,
+                icon: const Icon(Icons.swap_horiz_rounded),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -189,19 +203,6 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  minimumSize: const Size(56, 30),
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  AppLocalizations.of(context).xboardSwitch,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                ),
               ),
             ],
           ),
@@ -209,24 +210,30 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       ),
     );
   }
+
   Widget _buildProxyLatency(Proxy proxy) {
-    final delayState = ref.watch(getDelayProvider(
-      proxyName: proxy.name,
-      testUrl: ref.read(appSettingProvider).testUrl,
-    ));
+    final delayState = ref.watch(
+      getDelayProvider(
+        proxyName: proxy.name,
+        testUrl: ref.read(appSettingProvider).testUrl,
+      ),
+    );
     return LatencyIndicator(
       delayValue: delayState,
       onTap: () => _handleManualTest(proxy),
       showIcon: true,
     );
   }
+
   Widget _buildEmptyState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.zero,
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -282,7 +289,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                minimumSize: const Size(56, 30),
+                minimumSize: const Size(56, 48),
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -290,7 +297,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ),
               child: Text(
                 AppLocalizations.of(context).xboardSetup,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -298,6 +308,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       ),
     );
   }
+
   void _checkNodeChange(Proxy currentProxy) {
     if (_isFirstBuild) {
       _lastProxyName = currentProxy.name;
@@ -309,6 +320,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       autoLatencyService.onNodeChanged();
     }
   }
+
   void _handleManualTest(Proxy proxy) {
     autoLatencyService.testProxy(proxy, forceTest: true);
   }
