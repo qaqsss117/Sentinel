@@ -150,6 +150,31 @@ dart setup.dart android
 
 **构建输出：** `build/app/outputs/flutter-apk/app-release.apk`
 
+#### Windows 跨盘 Kotlin 编译失败
+
+如果项目位于 D 盘、Pub 缓存位于 C 盘，Kotlin 2.2 的增量缓存可能报
+`this and base files have different roots` / `Could not close incremental caches`。
+`mobile_scanner:compileReleaseKotlin` 还可能出现 `serialize`、回调类型等未定义引用。
+先查看日志中 `What went wrong` 上方的具体错误；Flutter 最后的 `assembleRelease failed`
+调用栈本身不能确定原因。
+
+项目已在 `android/gradle.properties` 设置 `kotlin.incremental=false`，避免写入有问题的跨盘
+增量缓存。它只关闭 Kotlin 的增量编译；Gradle 仍会跳过未改变的任务，重新编译 Kotlin
+源码时耗时可能增加。无需修改 Pub 缓存中的插件源码或移动项目。升级 Kotlin 后应先验证
+跨盘构建，再考虑重新启用。
+
+在项目根目录运行以下 PowerShell 命令验证扫码插件会实际重新编译，随后验证完整 APK：
+
+```powershell
+Push-Location android
+.\gradlew.bat :mobile_scanner:compileReleaseKotlin --rerun-tasks --console=plain
+Pop-Location
+# 已通过 setup.dart 编译好 Go 核心时，可直接重试 Flutter 打包
+flutter build apk --release --split-per-abi --dart-define=APP_ENV=stable
+```
+
+分架构 APK 位于 `build/app/outputs/flutter-apk/app-<ABI>-release.apk`。
+
 ---
 
 ### 🪟 Windows 构建
