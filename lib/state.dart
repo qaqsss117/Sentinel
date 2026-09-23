@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:ffi' show Pointer;
 
 import 'package:animations/animations.dart';
@@ -20,6 +21,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'common/common.dart';
 import 'controller.dart';
+import 'xboard/features/subscription/services/upstream_usage_service.dart';
 import 'models/models.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
@@ -127,9 +129,18 @@ class GlobalState {
   }
 
   handleStart([UpdateTasks? tasks]) async {
-    startTime ??= DateTime.now();
+    // Reattaching the Android UI must not replace a healthy background session.
+    if (Platform.isAndroid && startTime != null) {
+      startUpdateTasks(tasks);
+      return;
+    }
+    await UpstreamUsageService.prepareSelected();
+    final params = await getSetupParams(pathConfig: config.patchClashConfig);
+    final setupError = await clashCore.setupConfig(params);
+    if (setupError.isNotEmpty) throw StateError(setupError);
     await clashCore.startListener();
     await service?.startVpn();
+    startTime ??= DateTime.now();
     startUpdateTasks(tasks);
   }
 
@@ -138,6 +149,7 @@ class GlobalState {
   }
 
   Future handleStop() async {
+    await UpstreamUsageService.stopSelected();
     startTime = null;
     await clashCore.stopListener();
     await service?.stopVpn();

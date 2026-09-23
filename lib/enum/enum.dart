@@ -263,6 +263,8 @@ enum ActionMethod {
   changeProxy,
   getTraffic,
   getTotalTraffic,
+  managedSession,
+  managedControl,
   resetTraffic,
   asyncTestDelay,
   getConnections,

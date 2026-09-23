@@ -37,6 +37,9 @@ func (result ActionResult) error(data interface{}) {
 
 func handleAction(action *Action, result ActionResult) {
 	switch action.Method {
+	case Method("managedSession"):
+		result.success(handleManagedSession(action.Data.(string)))
+		return
 	case initClashMethod:
 		paramsString := action.Data.(string)
 		result.success(handleInitClash(paramsString))

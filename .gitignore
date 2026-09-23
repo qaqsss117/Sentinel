@@ -12,6 +12,11 @@
 .swiftpm/
 migrate_working_dir/
 test/
+!/test/
+/test/*
+!/test/xboard/
+/test/xboard/*
+!/test/xboard/upstream_usage_service_test.dart
 # IntelliJ related
 *.iml
 *.ipr

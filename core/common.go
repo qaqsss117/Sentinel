@@ -236,6 +236,7 @@ func updateConfig(params *UpdateParams) {
 }
 
 func setupConfig(params *SetupParams) error {
+	configureManagedRequirement(params.Config.Proxy)
 	runLock.Lock()
 	defer runLock.Unlock()
 	var err error

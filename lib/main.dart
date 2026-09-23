@@ -25,6 +25,7 @@ import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart'; 
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'; // 导入域名服务
 import 'legal/legal_consent_store.dart';
 import 'legal/legal_pages.dart';
+import 'xboard/features/subscription/services/upstream_usage_service.dart';
 
 // 定义一个全局变量来持有 RemoteTaskManager 实例，方便在整个应用生命周期中访问和管理
 RemoteTaskManager? remoteTaskManager;
@@ -148,6 +149,7 @@ Future<void> _service(List<String> flags) async {
   tile?.addListener(
     _TileListenerWithService(
       onStop: () async {
+        await UpstreamUsageService.instance.stop('closed');
         await app?.tip(appLocalizations.stopVpn);
         clashLibHandler.stopListener();
         await vpn?.stop();
@@ -188,6 +190,13 @@ Future<void> _service(List<String> flags) async {
       if (profileId == null) {
         return;
       }
+      try {
+        await UpstreamUsageService.prepareSelected();
+      } catch (error) {
+        await app?.tip(error.toString());
+        await vpn?.stop();
+        return;
+      }
       final params = await globalState.getSetupParams(
         pathConfig: clashConfig,
       );
@@ -219,6 +228,20 @@ _handleMainIpc(ClashLibHandler clashLibHandler) {
   }
   final serviceReceiverPort = ReceivePort();
   serviceReceiverPort.listen((message) async {
+    final command = jsonDecode(message as String) as Map<String, dynamic>;
+    if (command['method'] == 'managedControl') {
+      String result = 'ok';
+      try {
+        final data = jsonDecode(command['data'] as String) as Map<String, dynamic>;
+        if (data['operation'] == 'prepare') {
+          await UpstreamUsageService.instance.prepare(data['profile_id'] as String);
+        } else {
+          await UpstreamUsageService.instance.stop('closed');
+        }
+      } catch (error) { result = error.toString(); }
+      sendPort.send(jsonEncode({'id': command['id'], 'method': 'managedControl', 'data': result, 'code': 0}));
+      return;
+    }
     final res = await clashLibHandler.invokeAction(message);
     sendPort.send(res);
   });

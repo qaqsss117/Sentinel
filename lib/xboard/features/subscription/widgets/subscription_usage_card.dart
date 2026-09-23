@@ -8,6 +8,7 @@ import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:go_router/go_router.dart';
 import '../services/subscription_status_service.dart';
+import '../services/upstream_usage_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 
 class SubscriptionUsageCard extends ConsumerWidget {
@@ -42,7 +43,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
             subscriptionStatus.type == SubscriptionStatusType.noSubscription)) {
       return _buildStatusCard(subscriptionStatus, theme, context);
     }
-    return _buildUsageCard(theme, context);
+    return ValueListenableBuilder<int?>(
+      valueListenable: UpstreamUsageService.estimatedRemaining,
+      builder: (context, remaining, _) => _buildUsageCard(theme, context, remaining),
+    );
   }
 
   Widget _buildEmptyCard(ThemeData theme, BuildContext context) {
@@ -313,10 +317,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
     }
   }
 
-  Widget _buildUsageCard(ThemeData theme, BuildContext context) {
-    final progress = _getProgressValue();
-    final usedTraffic = _getUsedTraffic();
+  Widget _buildUsageCard(ThemeData theme, BuildContext context, int? remaining) {
     final totalTraffic = _getTotalTraffic();
+    final usedTraffic = remaining == null ? _getUsedTraffic() : (totalTraffic - remaining).clamp(0, totalTraffic).toDouble();
+    final progress = remaining == null ? _getProgressValue() : (totalTraffic > 0 ? usedTraffic / totalTraffic : 0.0);
     final remainingDays = _calculateRemainingDays();
     return Container(
       decoration: BoxDecoration(
@@ -385,6 +389,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
+          if (remaining != null)
+            Text('预计剩余 ${_formatBytes(remaining.toDouble())} · 含本机未确认用量，多设备可能延迟', style: theme.textTheme.bodySmall),
           Container(
             height: 6,
             decoration: BoxDecoration(

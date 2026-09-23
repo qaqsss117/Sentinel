@@ -48,6 +48,9 @@ func handleInitClash(paramsString string) bool {
 }
 
 func handleStartListener() bool {
+	if !statistic.Managed.Allowed() {
+		return false
+	}
 	runLock.Lock()
 	defer runLock.Unlock()
 	isRunning = true

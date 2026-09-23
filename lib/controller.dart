@@ -11,6 +11,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/features/subscription/services/upstream_usage_service.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -121,6 +122,7 @@ class AppController {
   }
 
   updateTraffic() async {
+    await UpstreamUsageService.refreshDisplay();
     final traffic = await clashCore.getTraffic();
     final totalTraffic = await clashCore.getTotalTraffic();
     if (!context.mounted) return;

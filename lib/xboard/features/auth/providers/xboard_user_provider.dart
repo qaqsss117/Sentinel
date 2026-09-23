@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/services/services.dart';
@@ -155,6 +156,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
   Future<void> handleTokenExpired() async {
     _logger.info('处理token过期，清除认证状态');
+    await globalState.appController.updateStatus(false);
     await XBoardSDK.instance.logout();
     state = const UserAuthState(isInitialized: true);
   }
@@ -454,6 +456,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
   Future<void> logout() async {
     _logger.info('用户登出');
+    await globalState.appController.updateStatus(false);
     
     _logger.info('用户登出');
     

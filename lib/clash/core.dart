@@ -203,7 +203,9 @@ class ClashCore {
   }
 
   startListener() async {
-    await clashInterface.startListener();
+    if (!await clashInterface.startListener()) {
+      throw StateError('代理核心未获得有效使用授权，请重新连接');
+    }
   }
 
   stopListener() async {

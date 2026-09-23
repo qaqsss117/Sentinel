@@ -48,7 +48,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton> {
       } else {
         await globalState.appController.updateStatus(!running);
       }
-    } catch (_) {
+    } catch (error) {
+      globalState.showNotifier(error.toString());
       if (mounted) setState(() => _failed = true);
     } finally {
       if (mounted) setState(() => _pending = false);
