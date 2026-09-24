@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'managed_subscription_profile.dart';
+import 'upstream_transport_config.dart';
 
 /// Owned by the Android service isolate, or the desktop application process.
 /// The native core independently expires the lease if this process stalls.
@@ -26,6 +27,7 @@ class UpstreamUsageService {
     this.profileFile,
     this.journalFile,
     this.validateConfiguration,
+    this.createHttp,
     HttpService? httpService,
   }) : _http = httpService;
 
@@ -39,6 +41,7 @@ class UpstreamUsageService {
   final Future<File> Function(String)? profileFile;
   final Future<File> Function()? journalFile;
   final Future<String> Function(String)? validateConfiguration;
+  final Future<HttpService> Function(String, HttpConfig)? createHttp;
   static final instance = UpstreamUsageService();
   static const coreVersion = '1.19.0';
   static final estimatedRemaining = ValueNotifier<int?>(null);
@@ -64,6 +67,7 @@ class UpstreamUsageService {
   }
 
   HttpService? _http;
+  UpstreamTransportConfig? _transportConfig;
   Map<String, dynamic>? _session;
   Timer? _timer;
   Future<void>? _tick;
@@ -121,15 +125,14 @@ class UpstreamUsageService {
 
   Future<HttpService> _transport() async {
     if (_http != null) return _http!;
+    final selected = _transportConfig;
+    if (selected != null) {
+      return _http = await _createHttp(selected.baseUrl, selected.httpConfig);
+    }
     if (XBoardSDK.instance.isInitialized) {
       final original = XBoardSDK.instance.httpService;
       // No account-token interceptor: restricted session tokens must not be replaced.
-      return _http = await HttpService.create(
-        original.baseUrl,
-        httpConfig: original.httpConfig,
-        requireEncryptedGateway: true,
-        directConnections: true,
-      );
+      return _http = await _createHttp(original.baseUrl, original.httpConfig);
     }
     if (!XBoardConfig.isInitialized) {
       await XBoardConfig.initialize(
@@ -139,11 +142,9 @@ class UpstreamUsageService {
     final url = await XBoardConfig.getFastestPanelUrl();
     if (url == null) throw StateError('无法连接授权服务');
     final cert = await ConfigFileLoaderHelper.getCertificateConfig();
-    return _http = await HttpService.create(
+    return _http = await _createHttp(
       url,
-      requireEncryptedGateway: true,
-      directConnections: true,
-      httpConfig: HttpConfig(
+      HttpConfig(
         encryptedGateway:
             await ConfigFileLoaderHelper.getEncryptedGatewayConfig(),
         userAgent: await UserAgentConfig.get(UserAgentScenario.apiEncrypted),
@@ -152,6 +153,41 @@ class UpstreamUsageService {
             cert['enabled'] == true && cert['path'] != null,
       ),
     );
+  }
+
+  Future<HttpService> _createHttp(String url, HttpConfig config) =>
+      createHttp != null
+      ? createHttp!(url, config)
+      : HttpService.create(
+          url,
+          httpConfig: config,
+          requireEncryptedGateway: true,
+          directConnections: true,
+        );
+
+  static Map<String, dynamic> prepareCommand(String profileId) => {
+    'operation': 'prepare',
+    'profile_id': profileId,
+    if (XBoardSDK.instance.isInitialized)
+      'transport': UpstreamTransportConfig.fromService(
+        XBoardSDK.instance.httpService,
+      ).toJson(),
+  };
+
+  Future<void> handleControl(Map<String, dynamic> command) async {
+    if (command['operation'] == 'prepare') {
+      final transport = command['transport'];
+      await prepare(
+        command['profile_id'] as String,
+        transportConfig: transport == null
+            ? null
+            : UpstreamTransportConfig.fromJson(
+                Map<String, dynamic>.from(transport as Map),
+              ),
+      );
+    } else {
+      await stop('closed');
+    }
   }
 
   Future<Map<String, dynamic>> _request(
@@ -229,7 +265,7 @@ class UpstreamUsageService {
     if (Platform.isAndroid && !globalState.isService) {
       final result = await clashCore.clashInterface.invoke<String>(
         method: ActionMethod.managedControl,
-        data: jsonEncode({'operation': 'prepare', 'profile_id': profile.id}),
+        data: jsonEncode(prepareCommand(profile.id)),
         timeout: const Duration(seconds: 90),
       );
       if (result != 'ok') {
@@ -253,11 +289,14 @@ class UpstreamUsageService {
     }
   }
 
-  Future<void> prepare(String profileId) async {
+  Future<void> prepare(
+    String profileId, {
+    UpstreamTransportConfig? transportConfig,
+  }) async {
     if (_preparing || _stopping) throw StateError('代理正在启动或停止，请稍后重试');
     _preparing = true;
     try {
-      await _prepare(profileId);
+      await _prepare(profileId, transportConfig);
     } finally {
       _preparing = false;
     }
@@ -315,8 +354,17 @@ class UpstreamUsageService {
     }
   }
 
-  Future<void> _prepare(String profileId) async {
+  Future<void> _prepare(
+    String profileId,
+    UpstreamTransportConfig? transportConfig,
+  ) async {
     await stop('closed');
+    // Finish the old session using its original transport before switching.
+    if (transportConfig != null && !transportConfig.matches(_transportConfig)) {
+      _http?.dispose();
+      _http = null;
+      _transportConfig = transportConfig;
+    }
     final attempt = ++_generation;
     final file = profileFile != null
         ? await profileFile!(profileId)

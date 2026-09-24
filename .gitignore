@@ -17,6 +17,7 @@ test/
 !/test/xboard/
 /test/xboard/*
 !/test/xboard/upstream_usage_service_test.dart
+!/test/xboard/upstream_transport_handoff_test.dart
 # IntelliJ related
 *.iml
 *.ipr

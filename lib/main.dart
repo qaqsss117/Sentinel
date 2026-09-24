@@ -233,11 +233,7 @@ _handleMainIpc(ClashLibHandler clashLibHandler) {
       String result = 'ok';
       try {
         final data = jsonDecode(command['data'] as String) as Map<String, dynamic>;
-        if (data['operation'] == 'prepare') {
-          await UpstreamUsageService.instance.prepare(data['profile_id'] as String);
-        } else {
-          await UpstreamUsageService.instance.stop('closed');
-        }
+        await UpstreamUsageService.instance.handleControl(data);
       } catch (error) { result = error.toString(); }
       sendPort.send(jsonEncode({'id': command['id'], 'method': 'managedControl', 'data': result, 'code': 0}));
       return;

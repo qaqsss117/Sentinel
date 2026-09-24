@@ -23,9 +23,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   for (final scenario in [
-    (legacyEnvelope: true, omitStatus: false),
-    (legacyEnvelope: false, omitStatus: false),
-    (legacyEnvelope: false, omitStatus: true),
+    (legacyEnvelope: true, omitStatus: false, handoff: false),
+    (legacyEnvelope: false, omitStatus: false, handoff: false),
+    (legacyEnvelope: false, omitStatus: true, handoff: false),
+    (legacyEnvelope: false, omitStatus: false, handoff: true),
   ]) {
     test(
       'managed startup and settlement through encrypted SDK ($scenario)',
@@ -66,28 +67,47 @@ void main() {
         http.dio.httpClientAdapter = gateway;
         final operations = <Map<String, dynamic>>[];
         final renewed = Completer<void>();
-        final service = UpstreamUsageService(
-          httpService: http,
-          profileFile: (_) async => profile,
-          journalFile: () async => journal,
-          validateConfiguration: (content) async {
-            expect(content, _configuration);
-            return '';
-          },
-          invokeCore: (request) async {
-            operations.add(request);
-            if (request['operation'] == 'renew') renewed.complete();
-            return {
-              'metering_version': 1,
-              'reason': '',
-              'traffic': {
-                '7': [10, 20],
+        final handedOffClients = <HttpService>[];
+        UpstreamUsageService makeService({bool cold = false}) =>
+            UpstreamUsageService(
+              httpService: cold ? null : http,
+              createHttp: (url, config) async {
+                final client = await HttpService.create(
+                  url,
+                  httpConfig: config,
+                  requireEncryptedGateway: true,
+                  directConnections: true,
+                );
+                expect(client.tokenManager, isNull);
+                client.dio.httpClientAdapter = gateway;
+                handedOffClients.add(client);
+                return client;
               },
-            };
-          },
-        );
+              profileFile: (_) async => profile,
+              journalFile: () async => journal,
+              validateConfiguration: (content) async {
+                expect(content, _configuration);
+                return '';
+              },
+              invokeCore: (request) async {
+                operations.add(request);
+                if (request['operation'] == 'renew') renewed.complete();
+                return {
+                  'metering_version': 1,
+                  'reason': '',
+                  'traffic': {
+                    '7': [10, 20],
+                  },
+                };
+              },
+            );
+        var service = makeService();
         addTearDown(() async {
           await service.stop('closed');
+          XBoardSDK.instance.dispose();
+          for (final client in handedOffClients) {
+            client.dispose();
+          }
           http.dio.close(force: true);
           await directory.delete(recursive: true);
         });
@@ -109,13 +129,39 @@ void main() {
           return;
         }
         final configuration = (await service.fetchConfiguration())!;
-        await ManagedSubscriptionProfile.install(file: profile,
+        await ManagedSubscriptionProfile.install(
+          file: profile,
           content: configuration['content'] as String,
           version: configuration['configuration_version'] as String,
-          coreVersion: UpstreamUsageService.coreVersion, validate: (_) async => '');
+          coreVersion: UpstreamUsageService.coreVersion,
+          validate: (_) async => '',
+        );
         expect(await profile.readAsString(), contains('self-hosted'));
-        expect(operations.where((request) => request['operation'] == 'begin'), isEmpty);
-        await service.prepare('profile');
+        expect(
+          operations.where((request) => request['operation'] == 'begin'),
+          isEmpty,
+        );
+        Map<String, dynamic>? command;
+        if (scenario.handoff) {
+          await XBoardSDK.instance.initialize(
+            http.baseUrl,
+            panelType: 'xboard',
+            httpConfig: http.httpConfig,
+            useMemoryStorage: true,
+            requireEncryptedGateway: true,
+          );
+          await XBoardSDK.instance.saveToken('different-ui-account-token');
+          command =
+              jsonDecode(
+                    jsonEncode(UpstreamUsageService.prepareCommand('profile')),
+                  )
+                  as Map<String, dynamic>;
+          XBoardSDK.instance.dispose();
+          service = makeService(cold: true);
+          await service.handleControl(command);
+        } else {
+          await service.prepare('profile');
+        }
         expect(await profile.readAsString(), contains('upstream-7'));
         expect(
           operations.singleWhere((r) => r['operation'] == 'begin')['tags'],
@@ -134,11 +180,35 @@ void main() {
           },
         );
         await service.stop('closed');
-        expect(gateway.actions, ['open', 'configuration', 'close', 'open', 'report', 'close']);
+        expect(gateway.actions, [
+          'open',
+          'configuration',
+          'close',
+          'open',
+          'report',
+          'close',
+        ]);
         expect(gateway.finalTraffic, {
           '7': [10, 20],
         });
         expect(await journal.exists(), isFalse);
+        if (command != null) {
+          // Reconnect reuses the handed-off transport, while obtaining a fresh lease.
+          await service.handleControl(command);
+          await service.handleControl({'operation': 'stop'});
+          expect(handedOffClients, hasLength(1));
+          expect(gateway.actions, [
+            'open',
+            'configuration',
+            'close',
+            'open',
+            'report',
+            'close',
+            'open',
+            'close',
+          ]);
+          expect(await journal.exists(), isFalse);
+        }
       },
     );
   }
@@ -185,7 +255,9 @@ class _UpstreamGateway implements HttpClientAdapter {
       'period': '0:0',
       'deadline_reason': 'authorization_timeout',
       'configuration_version': 'a' * 64,
-      'nodes': {'upstream-7': {'id': 7, 'name': 'HK', 'rate': 1}},
+      'nodes': {
+        'upstream-7': {'id': 7, 'name': 'HK', 'rate': 1},
+      },
     };
     switch (action) {
       case 'open':
