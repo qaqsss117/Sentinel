@@ -15,6 +15,7 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
+import 'managed_subscription_profile.dart';
 
 /// Owned by the Android service isolate, or the desktop application process.
 /// The native core independently expires the lease if this process stalls.
@@ -25,7 +26,8 @@ class UpstreamUsageService {
     this.profileFile,
     this.journalFile,
     this.validateConfiguration,
-  });
+    HttpService? httpService,
+  }) : _http = httpService;
 
   final Future<Map<String, dynamic>> Function(Map<String, dynamic>)? invokeCore;
   final Future<Map<String, dynamic>> Function(
@@ -38,6 +40,7 @@ class UpstreamUsageService {
   final Future<File> Function()? journalFile;
   final Future<String> Function(String)? validateConfiguration;
   static final instance = UpstreamUsageService();
+  static const coreVersion = '1.19.0';
   static final estimatedRemaining = ValueNotifier<int?>(null);
   static final _leaseClock = Stopwatch()..start();
 
@@ -77,7 +80,7 @@ class UpstreamUsageService {
     'quota_exhausted' => '套餐流量已用完，请购买流量或续费',
     'banned' || 'signed_out' => '账号已停用或登录已失效，请重新登录',
     'period_changed' => '流量周期已更新，请重新连接',
-    'configuration_changed' => '节点配置已更新，请重新连接',
+    'configuration_changed' => '节点配置已更新，请刷新订阅后再连接',
     'disabled' => '导入节点暂未开放',
     'device_limit' => '已达到套餐设备数限制',
     'storage_error' => '流量记录保存失败，请检查存储空间后重试',
@@ -178,7 +181,35 @@ class UpstreamUsageService {
           },
         )
         .timeout(const Duration(seconds: 20));
-    final result = Map<String, dynamic>.from(response['data'] as Map);
+    // Older plugin releases returned only {data: ...}. The SDK wraps that
+    // unrecognized envelope once more; standard Xboard envelopes need one unwrap.
+    dynamic data = response['data'];
+    if (data is Map && data.length == 1 && data['data'] is Map) {
+      data = data['data'];
+    }
+    if (response['success'] != true ||
+        data is! Map ||
+        data['allowed'] is! bool ||
+        data['status'] is! String) {
+      throw StateError('授权接口返回格式异常（$action），请更新面板上游订阅插件后重试');
+    }
+    final result = Map<String, dynamic>.from(data);
+    if (result['allowed'] == true) {
+      final validLease =
+          result['server_time'] is int &&
+          result['lease_until'] is int &&
+          result['remaining'] is int &&
+          result['period'] is String;
+      final validSession =
+          action != 'open' ||
+          (result['session_id'] is String && result['session_token'] is String);
+      final validConfiguration =
+          action != 'configuration' ||
+          (result['content'] is String && result['nodes'] is Map);
+      if (!validLease || !validSession || !validConfiguration) {
+        throw StateError('授权接口返回数据不完整（$action），请更新面板上游订阅插件后重试');
+      }
+    }
     if (result['lease_until'] is int) {
       result['lease_until'] =
           (result['lease_until'] as int) -
@@ -232,6 +263,58 @@ class UpstreamUsageService {
     }
   }
 
+  Future<Map<String, dynamic>?> fetchConfiguration() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    final auth = prefs.getString('xboard_token');
+    if (auth == null || auth.isEmpty) return null;
+    var device = prefs.getString('upstream_device_id');
+    if (device == null) {
+      device = const Uuid().v4();
+      await prefs.setString('upstream_device_id', device);
+    }
+    Map<String, dynamic> opened;
+    try {
+      opened = await _request('open', {
+        'device_id': device,
+        'core': 'mihomo',
+        'core_version': coreVersion,
+        'metering_version': 1,
+        'configuration_only': true,
+      }, auth);
+    } on XBoardException catch (error) {
+      if (error.code == 404) return null;
+      rethrow;
+    }
+    if (opened['status'] == 'disabled') return null;
+    if (opened['allowed'] != true) {
+      throw StateError(reasonText(opened['status'] as String));
+    }
+    try {
+      final result = await _request(
+        'configuration',
+        {},
+        opened['session_token'] as String,
+      );
+      if (result['allowed'] != true ||
+          result['configuration_version'] is! String ||
+          result['configuration_version'] != opened['configuration_version'] ||
+          result['content'] is! String ||
+          result['nodes'] is! Map) {
+        throw StateError('无法导入完整节点配置，请更新面板或重试');
+      }
+      return result;
+    } finally {
+      try {
+        await _request('close', {
+          'period': opened['period'],
+          'seq': 1,
+          'traffic': <String, dynamic>{},
+        }, opened['session_token'] as String);
+      } catch (_) {}
+    }
+  }
+
   Future<void> _prepare(String profileId) async {
     await stop('closed');
     final attempt = ++_generation;
@@ -240,6 +323,10 @@ class UpstreamUsageService {
         : File(await appPath.getProfilePath(profileId));
     final oldContent = await file.readAsString();
     final hadImportedNodes = RegExp(r'upstream-\d+').hasMatch(oldContent);
+    final configurationVersion = await ManagedSubscriptionProfile.version(
+      file,
+      coreVersion,
+    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
     final auth = prefs.getString('xboard_token');
@@ -255,8 +342,9 @@ class UpstreamUsageService {
       opened = await _request('open', {
         'device_id': device,
         'core': 'mihomo',
-        'core_version': '1.19.0',
+        'core_version': coreVersion,
         'metering_version': 1,
+        'configuration_version': configurationVersion ?? 'missing',
       }, auth);
     } on XBoardException catch (e) {
       if (e.code == 404 && !hadImportedNodes) return;
@@ -270,13 +358,12 @@ class UpstreamUsageService {
     _session = {...opened, 'seq': 0, 'traffic': <String, dynamic>{}};
     await _persist();
     try {
-      final config = await _request(
-        'configuration',
-        {},
-        opened['session_token'] as String,
-      );
-      if (attempt != _generation || _stopping) throw StateError('启动已取消');
-      final content = config['content'] as String;
+      if (configurationVersion == null ||
+          opened['configuration_version'] != configurationVersion ||
+          opened['nodes'] is! Map) {
+        throw StateError(reasonText('configuration_changed'));
+      }
+      final content = oldContent;
       final capability = await core({'operation': 'capabilities'});
       if (capability['metering_version'] != 1) throw StateError('请更新代理核心');
       String validation;
@@ -299,17 +386,18 @@ class UpstreamUsageService {
         validation = await clashCore.validateConfig(content);
       }
       if (validation.isNotEmpty) throw StateError('节点配置校验失败');
-      final staged = File('${file.path}.upstream.tmp');
-      await staged.writeAsString(content, flush: true);
-      await staged.rename(file.path);
+      if (await ManagedSubscriptionProfile.version(file, coreVersion) !=
+          configurationVersion) {
+        throw StateError(reasonText('configuration_changed'));
+      }
       if (attempt != _generation || _stopping) throw StateError('启动已取消');
-      final nodes = Map<String, dynamic>.from(config['nodes'] as Map);
+      final nodes = Map<String, dynamic>.from(opened['nodes'] as Map);
       final started = await core({
         'operation': 'begin',
         'tags': nodes.map((tag, node) => MapEntry(tag, '${node['id']}')),
-        'remaining': config['remaining'],
-        'ttl': _ttl(config),
-        'deadline_reason': config['deadline_reason'],
+        'remaining': opened['remaining'],
+        'ttl': _ttl(opened),
+        'deadline_reason': opened['deadline_reason'],
       });
       _meterStarted = true;
       if ((started['reason'] as String).isNotEmpty) {

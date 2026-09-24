@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/xboard/features/subscription/services/upstream_usage_service.dart';
+import 'package:fl_clash/xboard/features/subscription/services/managed_subscription_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,6 +20,7 @@ void main() {
   var closeFails = false;
   var configurationFails = false;
   var opens = 0;
+  final configurationVersion = 'a' * 64;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({
@@ -30,7 +32,8 @@ void main() {
     );
     journal = File('${directory.path}/journal.json');
     profile = File('${directory.path}/profile.yaml');
-    await profile.writeAsString('proxies: []');
+    await ManagedSubscriptionProfile.install(file: profile, content: 'proxies: []',
+      version: configurationVersion, coreVersion: UpstreamUsageService.coreVersion, validate: (_) async => '');
     counters = {
       '7': [10, 20],
     };
@@ -43,7 +46,7 @@ void main() {
     service = UpstreamUsageService(
       journalFile: () async => journal,
       profileFile: (_) async => profile,
-      validateConfiguration: (_) async => '',
+      validateConfiguration: (_) async => configurationFails ? 'invalid' : '',
       invokeCore: (request) async {
         operations.add(request['operation'] as String);
         return {
@@ -55,23 +58,20 @@ void main() {
       sendRequest: (action, body, token) async {
         switch (action) {
           case 'open':
+            expect(body['configuration_version'], configurationVersion);
             return {
               'allowed': true,
               'session_id': 'session-${++opens}',
               'session_token': 'restricted',
               'period': '0:0',
-            };
-          case 'configuration':
-            if (configurationFails) throw StateError('invalid configuration');
-            return {
-              'content': 'proxies: []',
-              'nodes': {
-                'upstream-7': {'id': 7},
-              },
+              'configuration_version': configurationVersion,
+              'nodes': {'upstream-7': {'id': 7}},
               'remaining': 1000,
               'lease_until': 400,
               'server_time': 100,
             };
+          case 'configuration':
+            fail('Connecting must not download configuration');
           case 'report':
             return report.future;
           case 'close':

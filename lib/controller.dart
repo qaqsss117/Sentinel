@@ -89,6 +89,10 @@ class AppController {
         updateRunTime,
         updateTraffic,
       ]);
+      // Startup can replace the profile with its managed upstream configuration.
+      // Refresh the visible groups even when the legacy scaffold is not mounted.
+      await updateGroups();
+      await updateProviders();
       final currentLastModified =
           await _ref.read(currentProfileProvider)?.profileLastModified;
       if (currentLastModified == null || lastProfileModified == null) {
