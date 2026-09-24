@@ -23,10 +23,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   for (final scenario in [
-    (legacyEnvelope: true, omitStatus: false, handoff: false),
-    (legacyEnvelope: false, omitStatus: false, handoff: false),
-    (legacyEnvelope: false, omitStatus: true, handoff: false),
-    (legacyEnvelope: false, omitStatus: false, handoff: true),
+    (legacyEnvelope: true, omitStatus: false, handoff: false, refresh: false),
+    (legacyEnvelope: false, omitStatus: false, handoff: false, refresh: false),
+    (legacyEnvelope: false, omitStatus: true, handoff: false, refresh: false),
+    (legacyEnvelope: false, omitStatus: false, handoff: true, refresh: false),
+    (legacyEnvelope: false, omitStatus: false, handoff: false, refresh: true),
+    (legacyEnvelope: false, omitStatus: false, handoff: true, refresh: true),
   ]) {
     test(
       'managed startup and settlement through encrypted SDK ($scenario)',
@@ -142,6 +144,7 @@ void main() {
           isEmpty,
         );
         Map<String, dynamic>? command;
+        if (scenario.refresh) gateway.configurationVersion = 'b' * 64;
         if (scenario.handoff) {
           await XBoardSDK.instance.initialize(
             http.baseUrl,
@@ -164,6 +167,13 @@ void main() {
         }
         expect(await profile.readAsString(), contains('upstream-7'));
         expect(
+          await ManagedSubscriptionProfile.version(
+            profile,
+            UpstreamUsageService.coreVersion,
+          ),
+          gateway.configurationVersion,
+        );
+        expect(
           operations.singleWhere((r) => r['operation'] == 'begin')['tags'],
           {'upstream-7': '7'},
         );
@@ -184,6 +194,7 @@ void main() {
           'open',
           'configuration',
           'close',
+          if (scenario.refresh) ...['open', 'open', 'configuration', 'close'],
           'open',
           'report',
           'close',
@@ -201,6 +212,7 @@ void main() {
             'open',
             'configuration',
             'close',
+            if (scenario.refresh) ...['open', 'open', 'configuration', 'close'],
             'open',
             'report',
             'close',
@@ -224,6 +236,7 @@ class _UpstreamGateway implements HttpClientAdapter {
   final bool legacyEnvelope;
   final bool omitStatus;
   final actions = <String>[];
+  String configurationVersion = 'a' * 64;
   Object? finalTraffic;
 
   @override
@@ -254,7 +267,7 @@ class _UpstreamGateway implements HttpClientAdapter {
       'remaining': 1000,
       'period': '0:0',
       'deadline_reason': 'authorization_timeout',
-      'configuration_version': 'a' * 64,
+      'configuration_version': configurationVersion,
       'nodes': {
         'upstream-7': {'id': 7, 'name': 'HK', 'rate': 1},
       },
@@ -262,11 +275,17 @@ class _UpstreamGateway implements HttpClientAdapter {
     switch (action) {
       case 'open':
         final body = jsonDecode(utf8.decode(request.payload.body)) as Map;
-        if (actions.length == 1 && !omitStatus) {
-          expect(body['configuration_only'], isTrue);
-        } else if (!omitStatus) {
-          expect(body['configuration_version'], 'a' * 64);
-          expect(body['configuration_only'], isNull);
+        if (!omitStatus &&
+            body['configuration_only'] != true &&
+            body['configuration_version'] != configurationVersion) {
+          data
+            ..clear()
+            ..addAll({
+              'allowed': false,
+              'status': 'configuration_changed',
+              'configuration_version': configurationVersion,
+            });
+          break;
         }
         data.addAll({
           'session_id': 'session-a',

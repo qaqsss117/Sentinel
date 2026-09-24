@@ -369,12 +369,16 @@ class UpstreamUsageService {
     final file = profileFile != null
         ? await profileFile!(profileId)
         : File(await appPath.getProfilePath(profileId));
-    final oldContent = await file.readAsString();
-    final hadImportedNodes = RegExp(r'upstream-\d+').hasMatch(oldContent);
-    final configurationVersion = await ManagedSubscriptionProfile.version(
+    var content = await file.readAsString();
+    var configurationVersion = await ManagedSubscriptionProfile.version(
       file,
       coreVersion,
     );
+    // Display names no longer necessarily start with "upstream-". A stamped
+    // profile still requires managed authorization if publication is disabled.
+    final hadImportedNodes =
+        configurationVersion != null ||
+        RegExp(r'upstream-\d+').hasMatch(content);
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
     final auth = prefs.getString('xboard_token');
@@ -385,60 +389,75 @@ class UpstreamUsageService {
       await prefs.setString('upstream_device_id', device);
     }
     await _settlePending();
+    _checkPreparing(attempt);
+    Future<Map<String, dynamic>> open() => _request('open', {
+      'device_id': device,
+      'core': 'mihomo',
+      'core_version': coreVersion,
+      'metering_version': 1,
+      'configuration_version': configurationVersion ?? 'missing',
+    }, auth);
     Map<String, dynamic> opened;
     try {
-      opened = await _request('open', {
-        'device_id': device,
-        'core': 'mihomo',
-        'core_version': coreVersion,
-        'metering_version': 1,
-        'configuration_version': configurationVersion ?? 'missing',
-      }, auth);
+      opened = await open();
     } on XBoardException catch (e) {
       if (e.code == 404 && !hadImportedNodes) return;
       rethrow;
+    }
+    if (opened['allowed'] != true &&
+        opened['status'] == 'configuration_changed') {
+      // Keep ordinary starts on the cached path. Only a server-confirmed
+      // version change downloads a replacement, and retry authorization once.
+      _checkPreparing(attempt);
+      final refreshed = await fetchConfiguration();
+      _checkPreparing(attempt);
+      if (refreshed == null) {
+        throw StateError(reasonText('configuration_changed'));
+      }
+      await ManagedSubscriptionProfile.install(
+        file: file,
+        content: refreshed['content'] as String,
+        version: refreshed['configuration_version'] as String,
+        coreVersion: coreVersion,
+        validate: (value) async {
+          final validation = await _validateConfiguration(value);
+          _checkPreparing(attempt);
+          return validation;
+        },
+      );
+      _checkPreparing(attempt);
+      configurationVersion = await ManagedSubscriptionProfile.version(
+        file,
+        coreVersion,
+      );
+      content = await file.readAsString();
+      _checkPreparing(attempt);
+      opened = await open();
     }
     if (opened['allowed'] != true) {
       if (opened['status'] == 'disabled' && !hadImportedNodes) return;
       throw StateError(reasonText(opened['status'] as String));
     }
-    if (attempt != _generation || _stopping) throw StateError('启动已取消');
     _session = {...opened, 'seq': 0, 'traffic': <String, dynamic>{}};
-    await _persist();
     try {
+      // Retain a late successful open long enough to close it on cancellation.
+      // Its authorization must not occupy a device slot until the lease expires.
+      await _persist();
+      _checkPreparing(attempt);
       if (configurationVersion == null ||
           opened['configuration_version'] != configurationVersion ||
           opened['nodes'] is! Map) {
         throw StateError(reasonText('configuration_changed'));
       }
-      final content = oldContent;
       final capability = await core({'operation': 'capabilities'});
       if (capability['metering_version'] != 1) throw StateError('请更新代理核心');
-      String validation;
-      if (validateConfiguration != null) {
-        validation = await validateConfiguration!(content);
-      } else if (Platform.isAndroid && globalState.isService) {
-        final response =
-            jsonDecode(
-                  await ClashLibHandler().invokeAction(
-                    jsonEncode({
-                      'id': const Uuid().v4(),
-                      'method': 'validateConfig',
-                      'data': content,
-                    }),
-                  ),
-                )
-                as Map;
-        validation = response['data'] as String;
-      } else {
-        validation = await clashCore.validateConfig(content);
-      }
+      final validation = await _validateConfiguration(content);
       if (validation.isNotEmpty) throw StateError('节点配置校验失败');
       if (await ManagedSubscriptionProfile.version(file, coreVersion) !=
           configurationVersion) {
         throw StateError(reasonText('configuration_changed'));
       }
-      if (attempt != _generation || _stopping) throw StateError('启动已取消');
+      _checkPreparing(attempt);
       final nodes = Map<String, dynamic>.from(opened['nodes'] as Map);
       final started = await core({
         'operation': 'begin',
@@ -464,6 +483,31 @@ class UpstreamUsageService {
       await stop('authorization_timeout');
       rethrow;
     }
+  }
+
+  void _checkPreparing(int attempt) {
+    if (attempt != _generation || _stopping) throw StateError('启动已取消');
+  }
+
+  Future<String> _validateConfiguration(String content) async {
+    if (validateConfiguration != null) {
+      return validateConfiguration!(content);
+    }
+    if (Platform.isAndroid && globalState.isService) {
+      final response =
+          jsonDecode(
+                await ClashLibHandler().invokeAction(
+                  jsonEncode({
+                    'id': const Uuid().v4(),
+                    'method': 'validateConfig',
+                    'data': content,
+                  }),
+                ),
+              )
+              as Map;
+      return response['data'] as String;
+    }
+    return clashCore.validateConfig(content);
   }
 
   Future<void> checkpoint({bool reportNow = false}) async {
