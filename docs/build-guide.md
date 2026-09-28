@@ -150,6 +150,20 @@ dart setup.dart android
 
 **构建输出：** `build/app/outputs/flutter-apk/app-release.apk`
 
+#### Windows 上的 Kotlin 增量缓存错误
+
+Pub 缓存在 C 盘、项目在 D 盘时，Kotlin 增量编译可能报
+`this and base files have different roots`、无法关闭增量缓存，或在旧缓存下出现
+`mobile_scanner:compileReleaseKotlin` 的 `Unresolved reference` 错误。
+`android/gradle.properties` 已设置 `kotlin.incremental=false`，避免依赖此类缓存。
+这会让需要执行的 Kotlin 编译任务全量编译；Gradle 的任务跳过机制仍保留。
+
+可在 `android` 目录单独检查扫码插件，关闭自动回退以确认编译正常：
+
+```powershell
+.\gradlew.bat :mobile_scanner:compileReleaseKotlin --rerun-tasks --console=plain -Pkotlin.daemon.useFallbackStrategy=false
+```
+
 ---
 
 ### 🪟 Windows 构建
