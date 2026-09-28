@@ -329,6 +329,37 @@ class MessageLookup extends MessageLookupByLibrary {
     "discovery": MessageLookupByLibrary.simpleMessage(
       "Discovery a new version",
     ),
+    "discoveryAiCategory": MessageLookupByLibrary.simpleMessage("AI"),
+    "discoveryAll": MessageLookupByLibrary.simpleMessage("All"),
+    "discoveryCopyLink": MessageLookupByLibrary.simpleMessage("Copy link"),
+    "discoveryDeveloperCategory": MessageLookupByLibrary.simpleMessage(
+      "Developer tools",
+    ),
+    "discoveryEmpty": MessageLookupByLibrary.simpleMessage(
+      "No recommended sites yet",
+    ),
+    "discoveryHint": MessageLookupByLibrary.simpleMessage(
+      "Some sites may require a VPN connection. Actual availability depends on the site.",
+    ),
+    "discoveryNoMatches": MessageLookupByLibrary.simpleMessage(
+      "No matching sites",
+    ),
+    "discoveryOpen": MessageLookupByLibrary.simpleMessage("Open site"),
+    "discoveryOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not open browser",
+    ),
+    "discoveryRefresh": MessageLookupByLibrary.simpleMessage("Refresh"),
+    "discoveryRefreshFailed": MessageLookupByLibrary.simpleMessage(
+      "Refresh failed. The last successfully loaded catalog is retained. Check your connection and retry.",
+    ),
+    "discoverySearch": MessageLookupByLibrary.simpleMessage(
+      "Search names, domains or descriptions",
+    ),
+    "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("Search"),
+    "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("Social"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage("Discover"),
+    "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("Video"),
+    "discoveryWebsite": MessageLookupByLibrary.simpleMessage("Visit website"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage(
       "Update DNS related settings",
     ),

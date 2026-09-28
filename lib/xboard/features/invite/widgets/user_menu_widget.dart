@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/theme_dialog.dart';
@@ -13,13 +14,25 @@ class UserMenuWidget extends ConsumerWidget {
       icon: const Icon(Icons.person),
       tooltip: appLocalizations.userCenter,
       onSelected: (value) {
-        if (value == 'theme') {
+        if (value == 'discover') {
+          context.push('/discover');
+        } else if (value == 'theme') {
           _showThemeDialog(context);
         } else if (value == 'logout') {
           _showLogoutDialog(context);
         }
       },
       itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          value: 'discover',
+          child: Row(
+            children: [
+              const Icon(Icons.explore_outlined),
+              const SizedBox(width: 8),
+              Text(appLocalizations.discoveryTitle),
+            ],
+          ),
+        ),
         PopupMenuItem<String>(
           value: 'theme',
           child: Row(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../discovery/discovery_shortcuts.dart';
 import 'package:fl_clash/theme/sentinel_widgets.dart';
 import 'package:fl_clash/theme/sentinel_assets.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/user_menu_widget.dart';
@@ -133,6 +134,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                       ),
                       const SizedBox(height: 16),
                       const NoticeBanner(),
+                      const SizedBox(height: 16),
+                      const DiscoveryShortcuts(),
                       const SizedBox(height: 20),
                       LayoutBuilder(
                         builder: (context, pane) {

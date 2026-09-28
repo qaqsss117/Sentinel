@@ -11,12 +11,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'shell_layout.dart';
+import '../features/discovery/discovery_page.dart';
 
 /// XBoard 路由定义
 /// 使用 go_router 实现类型安全的声明式路由
 
 // 路由列表
 final List<RouteBase> routes = [
+    GoRoute(
+      path: '/discover',
+      name: 'discover',
+      builder: (context, state) => const DiscoveryPage(),
+    ),
     // StatefulShellRoute - 包含侧边栏的主框架，保持各分支状态
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

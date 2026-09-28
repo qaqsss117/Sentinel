@@ -267,6 +267,39 @@ class MessageLookup extends MessageLookupByLibrary {
     "discovery": MessageLookupByLibrary.simpleMessage(
       "Обнаружена новая версия",
     ),
+    "discoveryAiCategory": MessageLookupByLibrary.simpleMessage("ИИ"),
+    "discoveryAll": MessageLookupByLibrary.simpleMessage("Все"),
+    "discoveryCopyLink": MessageLookupByLibrary.simpleMessage(
+      "Скопировать ссылку",
+    ),
+    "discoveryDeveloperCategory": MessageLookupByLibrary.simpleMessage(
+      "Разработка",
+    ),
+    "discoveryEmpty": MessageLookupByLibrary.simpleMessage(
+      "Рекомендуемых сайтов пока нет",
+    ),
+    "discoveryHint": MessageLookupByLibrary.simpleMessage(
+      "Для некоторых сайтов может потребоваться VPN. Доступность зависит от сайта.",
+    ),
+    "discoveryNoMatches": MessageLookupByLibrary.simpleMessage(
+      "Сайты не найдены",
+    ),
+    "discoveryOpen": MessageLookupByLibrary.simpleMessage("Открыть сайт"),
+    "discoveryOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "Не удалось открыть браузер",
+    ),
+    "discoveryRefresh": MessageLookupByLibrary.simpleMessage("Обновить"),
+    "discoveryRefreshFailed": MessageLookupByLibrary.simpleMessage(
+      "Не удалось обновить. Сохранён последний загруженный каталог. Проверьте подключение и повторите.",
+    ),
+    "discoverySearch": MessageLookupByLibrary.simpleMessage(
+      "Поиск по названию, домену или описанию",
+    ),
+    "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("Поиск"),
+    "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("Соцсети"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage("Обзор"),
+    "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("Видео"),
+    "discoveryWebsite": MessageLookupByLibrary.simpleMessage("Открыть сайт"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage(
       "Обновление настроек, связанных с DNS",
     ),
@@ -1243,9 +1276,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPaymentMethodVerified": MessageLookupByLibrary.simpleMessage(
       "Способ оплаты подтверждён",
     ),
-    "xboardPaymentMethodVerifiedPreparing": MessageLookupByLibrary.simpleMessage(
-      "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
-    ),
+    "xboardPaymentMethodVerifiedPreparing":
+        MessageLookupByLibrary.simpleMessage(
+          "Способ оплаты подтверждён, готовимся к перенаправлению на страницу оплаты",
+        ),
     "xboardPaymentPageAutoOpened": MessageLookupByLibrary.simpleMessage(
       "1. Страница оплаты была открыта автоматически",
     ),

@@ -55,6 +55,156 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
+  /// `Discover`
+  String get discoveryTitle {
+    return Intl.message('Discover', name: 'discoveryTitle', desc: '', args: []);
+  }
+
+  /// `Visit website`
+  String get discoveryWebsite {
+    return Intl.message(
+      'Visit website',
+      name: 'discoveryWebsite',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Some sites may require a VPN connection. Actual availability depends on the site.`
+  String get discoveryHint {
+    return Intl.message(
+      'Some sites may require a VPN connection. Actual availability depends on the site.',
+      name: 'discoveryHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search names, domains or descriptions`
+  String get discoverySearch {
+    return Intl.message(
+      'Search names, domains or descriptions',
+      name: 'discoverySearch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get discoveryAll {
+    return Intl.message('All', name: 'discoveryAll', desc: '', args: []);
+  }
+
+  /// `Search`
+  String get discoverySearchCategory {
+    return Intl.message(
+      'Search',
+      name: 'discoverySearchCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Video`
+  String get discoveryVideoCategory {
+    return Intl.message(
+      'Video',
+      name: 'discoveryVideoCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Social`
+  String get discoverySocialCategory {
+    return Intl.message(
+      'Social',
+      name: 'discoverySocialCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AI`
+  String get discoveryAiCategory {
+    return Intl.message('AI', name: 'discoveryAiCategory', desc: '', args: []);
+  }
+
+  /// `Developer tools`
+  String get discoveryDeveloperCategory {
+    return Intl.message(
+      'Developer tools',
+      name: 'discoveryDeveloperCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh`
+  String get discoveryRefresh {
+    return Intl.message(
+      'Refresh',
+      name: 'discoveryRefresh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh failed. The last successfully loaded catalog is retained. Check your connection and retry.`
+  String get discoveryRefreshFailed {
+    return Intl.message(
+      'Refresh failed. The last successfully loaded catalog is retained. Check your connection and retry.',
+      name: 'discoveryRefreshFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No recommended sites yet`
+  String get discoveryEmpty {
+    return Intl.message(
+      'No recommended sites yet',
+      name: 'discoveryEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No matching sites`
+  String get discoveryNoMatches {
+    return Intl.message(
+      'No matching sites',
+      name: 'discoveryNoMatches',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open site`
+  String get discoveryOpen {
+    return Intl.message('Open site', name: 'discoveryOpen', desc: '', args: []);
+  }
+
+  /// `Could not open browser`
+  String get discoveryOpenFailed {
+    return Intl.message(
+      'Could not open browser',
+      name: 'discoveryOpenFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy link`
+  String get discoveryCopyLink {
+    return Intl.message(
+      'Copy link',
+      name: 'discoveryCopyLink',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Rule`
   String get rule {
     return Intl.message('Rule', name: 'rule', desc: '', args: []);
