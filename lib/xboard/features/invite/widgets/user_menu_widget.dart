@@ -15,7 +15,7 @@ class UserMenuWidget extends ConsumerWidget {
       tooltip: appLocalizations.userCenter,
       onSelected: (value) {
         if (value == 'discover') {
-          context.push('/discover');
+          context.go('/discover');
         } else if (value == 'theme') {
           _showThemeDialog(context);
         } else if (value == 'logout') {
@@ -29,7 +29,7 @@ class UserMenuWidget extends ConsumerWidget {
             children: [
               const Icon(Icons.explore_outlined),
               const SizedBox(width: 8),
-              Text(appLocalizations.discoveryTitle),
+              Expanded(child: Text(appLocalizations.discoveryTitle)),
             ],
           ),
         ),

@@ -55,9 +55,14 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  /// `Discover`
+  /// `Recommended sites`
   String get discoveryTitle {
-    return Intl.message('Discover', name: 'discoveryTitle', desc: '', args: []);
+    return Intl.message(
+      'Recommended sites',
+      name: 'discoveryTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Visit website`

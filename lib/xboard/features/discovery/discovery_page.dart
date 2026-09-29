@@ -3,6 +3,7 @@ import 'package:fl_clash/theme/sentinel_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:fl_clash/xboard/widgets/navigation/support_button.dart';
 import 'discovery_links.dart';
 import 'discovery_provider.dart';
 
@@ -17,13 +18,21 @@ class DiscoveryPage extends ConsumerStatefulWidget {
 class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
   String? _category;
   String _query = '';
+  bool _wasActive = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(discoveryProvider).refresh();
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // StatefulShellRoute keeps tabs mounted but disables tickers offstage.
+    final active = TickerMode.valuesOf(context).enabled;
+    if (active && !_wasActive) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && TickerMode.valuesOf(context).enabled) {
+          ref.read(discoveryProvider).refresh();
+        }
+      });
+    }
+    _wasActive = active;
   }
 
   @override
@@ -47,6 +56,7 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
             onPressed: store.isLoading ? null : store.refresh,
             icon: const Icon(Icons.refresh),
           ),
+          const SupportButton(),
         ],
       ),
       body: SentinelBackground(
@@ -59,30 +69,6 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SentinelPanel(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            strings.discoveryWebsite,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(Uri.parse(store.catalog.landingPageUrl).host),
-                          const SizedBox(height: 16),
-                          FilledButton.icon(
-                            onPressed: () => openDiscoveryLink(
-                              context,
-                              store.catalog.landingPageUrl,
-                              launcher: widget.launcher,
-                            ),
-                            icon: const Icon(Icons.open_in_new),
-                            label: Text(strings.discoveryWebsite),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     Text(
                       strings.discoveryHint,
                       style: Theme.of(context).textTheme.bodyMedium,

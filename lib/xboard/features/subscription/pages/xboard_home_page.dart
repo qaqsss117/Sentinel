@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/widgets/navigation/support_button.dart';
 
 import 'package:fl_clash/xboard/features/shared/shared.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
@@ -130,8 +131,11 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                             ),
                           ),
                           const UserMenuWidget(),
+                          const SupportButton(),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      _buildUsageSection(),
                       const SizedBox(height: 16),
                       const NoticeBanner(),
                       const SizedBox(height: 16),
@@ -157,14 +161,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                               ],
                             ),
                           );
-                          final details = Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const XBoardOutboundMode(),
-                              const SizedBox(height: 20),
-                              _buildUsageSection(),
-                            ],
-                          );
+                          const details = XBoardOutboundMode();
                           if (pane.maxWidth >= 900) {
                             return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,7 +277,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
             }
           });
         }
-      } catch (e) {}
+      } catch (_) {
+        // Profile state can still be loading; retry on the next timer tick.
+      }
     });
   }
 

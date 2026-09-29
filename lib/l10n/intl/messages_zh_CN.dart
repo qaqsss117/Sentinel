@@ -256,7 +256,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "discoverySearch": MessageLookupByLibrary.simpleMessage("搜索名称、域名或介绍"),
     "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("搜索"),
     "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("社交"),
-    "discoveryTitle": MessageLookupByLibrary.simpleMessage("发现"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage("推荐站点"),
     "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("视频"),
     "discoveryWebsite": MessageLookupByLibrary.simpleMessage("访问官网"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage("更新DNS相关设置"),

@@ -2,6 +2,7 @@ import 'package:fl_clash/theme/sentinel_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/widgets/navigation/support_button.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/user_menu_widget.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/error_card.dart';
@@ -57,7 +58,10 @@ class _InvitePageState extends ConsumerState<InvitePage>
                 children: [
                   SentinelPageHeading(
                     title: localizations.invite,
-                    trailing: const UserMenuWidget(),
+                    trailing: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [UserMenuWidget(), SupportButton()],
+                    ),
                   ),
                   const ErrorCard(),
                   const InviteStatsCard(),

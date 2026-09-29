@@ -357,7 +357,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("Search"),
     "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("Social"),
-    "discoveryTitle": MessageLookupByLibrary.simpleMessage("Discover"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage("Recommended sites"),
     "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("Video"),
     "discoveryWebsite": MessageLookupByLibrary.simpleMessage("Visit website"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage(

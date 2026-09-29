@@ -218,7 +218,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "discoverySearch": MessageLookupByLibrary.simpleMessage("名前・ドメイン・説明で検索"),
     "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("検索"),
     "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("ソーシャル"),
-    "discoveryTitle": MessageLookupByLibrary.simpleMessage("見つける"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage("おすすめサイト"),
     "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("動画"),
     "discoveryWebsite": MessageLookupByLibrary.simpleMessage("公式サイトへ"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage("DNS関連設定の更新"),

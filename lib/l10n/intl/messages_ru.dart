@@ -297,7 +297,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "discoverySearchCategory": MessageLookupByLibrary.simpleMessage("Поиск"),
     "discoverySocialCategory": MessageLookupByLibrary.simpleMessage("Соцсети"),
-    "discoveryTitle": MessageLookupByLibrary.simpleMessage("Обзор"),
+    "discoveryTitle": MessageLookupByLibrary.simpleMessage(
+      "Рекомендуемые сайты",
+    ),
     "discoveryVideoCategory": MessageLookupByLibrary.simpleMessage("Видео"),
     "discoveryWebsite": MessageLookupByLibrary.simpleMessage("Открыть сайт"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage(

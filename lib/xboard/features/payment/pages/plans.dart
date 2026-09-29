@@ -7,6 +7,7 @@ import '../widgets/plan_description_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fl_clash/xboard/widgets/navigation/support_button.dart';
 
 class PlansView extends ConsumerStatefulWidget {
   const PlansView({super.key});
@@ -114,10 +115,16 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   SentinelPageHeading(
                     title: l10n.xboardPlans,
                     subtitle: l10n.xboardEnjoyFastNetworkExperience,
-                    trailing: IconButton(
-                      onPressed: _refreshPlans,
-                      tooltip: l10n.refresh,
-                      icon: const Icon(Icons.refresh_rounded),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: _refreshPlans,
+                          tooltip: l10n.refresh,
+                          icon: const Icon(Icons.refresh_rounded),
+                        ),
+                        const SupportButton(),
+                      ],
                     ),
                   ),
                   if (state.isLoading)

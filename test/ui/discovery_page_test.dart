@@ -9,6 +9,7 @@ import 'package:fl_clash/xboard/features/discovery/discovery_provider.dart';
 import 'package:fl_clash/xboard/features/discovery/discovery_shortcuts.dart';
 import 'package:fl_clash/xboard/features/discovery/discovery_store.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/user_menu_widget.dart';
+import 'package:fl_clash/xboard/router/shell_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -111,7 +112,8 @@ void main() {
       testWidgets('discovery layout at $size in $brightness', (tester) async {
         await _mount(tester, _store(), size: size, brightness: brightness);
         await tester.pumpAndSettle();
-        expect(find.text('Discover'), findsOneWidget);
+        expect(find.text('Recommended sites'), findsOneWidget);
+        expect(find.text('Visit website'), findsNothing);
         expect(find.text('Google'), findsOneWidget);
         expect(find.text('GitHub'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -212,13 +214,13 @@ void main() {
       },
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Visit website'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Open site').first);
     await tester.pumpAndSettle();
-    expect(opened.toString(), DiscoveryCatalog.defaultLandingPageUrl);
+    expect(opened.toString(), 'https://www.google.com/');
     expect(find.text('Could not open browser'), findsOneWidget);
     await tester.tap(find.text('Copy link'));
     await tester.pumpAndSettle();
-    expect(copied, DiscoveryCatalog.defaultLandingPageUrl);
+    expect(copied, 'https://www.google.com/');
     expect(find.byType(AlertDialog), findsNothing);
     await tester.tap(find.widgetWithText(OutlinedButton, 'Open site').first);
     await tester.pumpAndSettle();
@@ -235,27 +237,68 @@ void main() {
       launcher: (_) async => throw Exception('no browser'),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Visit website'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Open site').first);
     await tester.pumpAndSettle();
     expect(find.text('Copy link'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
   testWidgets(
-    'home and user menu reach the same page and back keeps home state',
+    'recommendations tab refreshes on return and support preserves search state',
     (tester) async {
-      final store = _store();
+      var fetches = 0;
+      final store = _store(
+        fetch: () async {
+          fetches++;
+          return _catalog;
+        },
+      );
       final router = GoRouter(
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, _) => const Scaffold(
-              body: Column(
-                children: [TextField(), DiscoveryShortcuts(), UserMenuWidget()],
+          StatefulShellRoute.indexedStack(
+            builder: (_, _, shell) => AdaptiveShellLayout(child: shell),
+            branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: '/',
+                    builder: (_, _) => const Scaffold(
+                      body: Column(
+                        children: [
+                          TextField(),
+                          DiscoveryShortcuts(),
+                          UserMenuWidget(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(path: '/plans', builder: (_, _) => const Scaffold()),
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: '/discover',
+                    builder: (_, _) => const DiscoveryPage(),
+                  ),
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(path: '/invite', builder: (_, _) => const Scaffold()),
+                ],
+              ),
+            ],
           ),
-          GoRoute(path: '/discover', builder: (_, _) => const DiscoveryPage()),
+          GoRoute(
+            path: '/support',
+            builder: (_, _) =>
+                Scaffold(appBar: AppBar(title: const Text('Support page'))),
+          ),
         ],
       );
       addTearDown(router.dispose);
@@ -264,7 +307,9 @@ void main() {
           overrides: [discoveryProvider.overrideWith((_) => store)],
           child: MaterialApp.router(
             routerConfig: router,
-            theme: SentinelTheme.build(brightness: Brightness.dark),
+            theme: SentinelTheme.build(
+              brightness: Brightness.dark,
+            ).copyWith(platform: TargetPlatform.android),
             locale: const Locale('en'),
             supportedLocales: AppLocalizations.delegate.supportedLocales,
             localizationsDelegates: _delegates,
@@ -273,17 +318,44 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'keep home state');
-      await tester.tap(find.text('Discover'));
+      expect(find.text('Visit website'), findsOneWidget);
+      await tester.tap(find.text('Recommended sites'));
       await tester.pumpAndSettle();
       expect(find.byType(DiscoveryPage), findsOneWidget);
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        2,
+      );
+      expect(find.text('Visit website'), findsNothing);
+      await tester.enterText(find.byType(TextField), 'GitHub');
+      await tester.pumpAndSettle();
+      final fetchesBefore = fetches;
+      await tester.tap(find.byTooltip('Support'));
+      await tester.pumpAndSettle();
+      expect(find.text('Support page'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
       await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Google'), findsNothing);
+      expect(find.widgetWithText(TextField, 'GitHub'), findsOneWidget);
+      tester
+          .widget<NavigationBar>(find.byType(NavigationBar))
+          .onDestinationSelected!(0);
       await tester.pumpAndSettle();
       expect(find.text('keep home state'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.person));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(PopupMenuItem<String>, 'Discover'));
+      await tester.tap(
+        find.widgetWithText(PopupMenuItem<String>, 'Recommended sites'),
+      );
       await tester.pumpAndSettle();
       expect(find.byType(DiscoveryPage), findsOneWidget);
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        2,
+      );
+      expect(find.widgetWithText(TextField, 'GitHub'), findsOneWidget);
+      expect(fetches, greaterThan(fetchesBefore));
     },
   );
 }

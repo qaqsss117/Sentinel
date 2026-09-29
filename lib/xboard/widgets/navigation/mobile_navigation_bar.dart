@@ -31,9 +31,9 @@ class MobileNavigationBar extends StatelessWidget {
           label: appLocalizations.xboardPlans,
         ),
         NavigationDestination(
-          icon: const Icon(Icons.support_agent_outlined, size: 22),
-          selectedIcon: const Icon(Icons.support_agent, size: 22),
-          label: appLocalizations.onlineSupport,
+          icon: const Icon(Icons.explore_outlined, size: 22),
+          selectedIcon: const Icon(Icons.explore, size: 22),
+          label: appLocalizations.discoveryTitle,
         ),
         NavigationDestination(
           icon: const Icon(Icons.people, size: 22),
