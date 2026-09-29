@@ -14,6 +14,7 @@ Map<String, Object?> site(
   int id, {
   String category = 'search',
   int order = 10,
+  String? logoUrl,
 }) => {
   'id': id,
   'name': 'Site $id',
@@ -21,6 +22,7 @@ Map<String, Object?> site(
   'category': category,
   'description': 'Useful tools',
   'sort_order': order,
+  if (logoUrl != null) 'logo_url': logoUrl,
 };
 
 final sample = DiscoveryCatalog.fromJson({
@@ -109,6 +111,31 @@ void main() {
       );
     },
   );
+
+  test('logo URLs are optional and invalid values fall back to initials', () {
+    final catalog = DiscoveryCatalog.fromJson({
+      'sites': [
+        site(1, logoUrl: 'https://images.example.com/google.png'),
+        {...site(2), 'logo_url': 'http://images.example.com/logo.png'},
+        {...site(3), 'logo_url': 'https://user:pass@example.com/logo.png'},
+      ],
+    });
+    expect(catalog.sites.map((entry) => entry.logoUrl), [
+      'https://images.example.com/google.png',
+      null,
+      null,
+    ]);
+    expect(
+      catalog.toJson()['sites'],
+      contains(
+        containsPair('logo_url', 'https://images.example.com/google.png'),
+      ),
+    );
+    expect(
+      catalog.toJson()['sites'],
+      isNot(contains(containsPair('logo_url', isNull))),
+    );
+  });
 
   test('only valid credential-free HTTPS URLs are accepted', () {
     for (final url in [

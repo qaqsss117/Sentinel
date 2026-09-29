@@ -166,12 +166,7 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
                                     children: [
                                       Row(
                                         children: [
-                                          CircleAvatar(
-                                            child: Text(
-                                              site.name.characters.first
-                                                  .toUpperCase(),
-                                            ),
-                                          ),
+                                          _SiteAvatar(site: site),
                                           const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
@@ -218,6 +213,30 @@ class _DiscoveryPageState extends ConsumerState<DiscoveryPage> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SiteAvatar extends StatelessWidget {
+  const _SiteAvatar({required this.site});
+
+  final DiscoverySite site;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Text(site.name.characters.first.toUpperCase());
+    final logoUrl = site.logoUrl;
+    if (logoUrl == null) return CircleAvatar(child: fallback);
+    return CircleAvatar(
+      child: ClipOval(
+        child: Image.network(
+          logoUrl,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => fallback,
         ),
       ),
     );
