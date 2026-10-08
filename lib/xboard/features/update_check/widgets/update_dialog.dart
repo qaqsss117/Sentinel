@@ -189,6 +189,7 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
       await _installer.downloadAndInstall(
         url: url,
         version: state.latestVersion ?? 'latest',
+        expectedSha256: state.sha256,
         onProgress: (progress) {
           if (mounted) {
             setState(() => _downloadProgress = progress);

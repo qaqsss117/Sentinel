@@ -29,7 +29,7 @@ void main() {
       isStoreBuild: true,
     );
 
-    expect(capabilities.supportsExternalUpdateCheck, isFalse);
+    expect(capabilities.supportsExternalUpdateCheck, isTrue);
   });
 
   test('sideload MSIX builds keep external update checks', () {

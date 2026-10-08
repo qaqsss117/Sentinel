@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/plugins/app.dart';
@@ -11,11 +12,12 @@ class UpdateInstaller {
   UpdateInstaller({Dio? dio}) : _dio = dio ?? Dio();
 
   final Dio _dio;
-  final CancelToken _cancelToken = CancelToken();
+  CancelToken? _cancelToken;
 
   void cancel() {
-    if (!_cancelToken.isCancelled) {
-      _cancelToken.cancel('Update dialog closed');
+    final token = _cancelToken;
+    if (token != null && !token.isCancelled) {
+      token.cancel('Update dialog closed');
     }
   }
 
@@ -23,6 +25,7 @@ class UpdateInstaller {
     required String url,
     required String version,
     required UpdateDownloadProgress onProgress,
+    String? expectedSha256,
   }) async {
     if (!Platform.isAndroid) {
       throw UnsupportedError('In-app installation is only available on Android');
@@ -42,21 +45,25 @@ class UpdateInstaller {
     final apkFile = File(
       path.join(updateDirectory.path, 'sentinel-$safeVersion.apk'),
     );
-    final partialFile = File('${apkFile.path}.download');
+    final partialFile = File('${apkFile.path}.part');
     if (await partialFile.exists()) {
       await partialFile.delete();
     }
 
     try {
+      final cancelToken = CancelToken();
+      _cancelToken = cancelToken;
       await _dio.download(
         uri.toString(),
         partialFile.path,
-        cancelToken: _cancelToken,
+        cancelToken: cancelToken,
         deleteOnError: true,
         options: Options(
           followRedirects: true,
           connectTimeout: const Duration(seconds: 15),
           receiveTimeout: const Duration(minutes: 5),
+          validateStatus: (status) =>
+              status != null && status >= 200 && status < 300,
         ),
         onReceiveProgress: (received, total) {
           if (total > 0) {
@@ -67,6 +74,26 @@ class UpdateInstaller {
 
       if (!await _hasZipHeader(partialFile)) {
         throw const FormatException('The downloaded file is not a valid APK');
+      }
+      final fileLength = await partialFile.length();
+      if (fileLength <= 0 || fileLength > 200 * 1024 * 1024) {
+        throw const FormatException('The downloaded APK has an invalid size');
+      }
+      final expected = expectedSha256?.trim().toLowerCase();
+      if (expected != null && expected.isNotEmpty) {
+        final digest = await sha256.bind(partialFile.openRead()).first;
+        if (digest.toString().toLowerCase() != expected) {
+          throw const FormatException('The downloaded APK checksum is invalid');
+        }
+      }
+      final apkValid = await app?.validateApk(partialFile.path) ?? false;
+      if (!apkValid) {
+        throw const FormatException('The downloaded APK is not signed for this app');
+      }
+      final canInstall = await app?.canRequestPackageInstalls() ?? false;
+      if (!canInstall) {
+        await app?.openInstallSettings();
+        throw StateError('Please allow installs from this source and retry');
       }
       if (await apkFile.exists()) {
         await apkFile.delete();
@@ -86,6 +113,8 @@ class UpdateInstaller {
         await partialFile.delete();
       }
       rethrow;
+    } finally {
+      _cancelToken = null;
     }
   }
 

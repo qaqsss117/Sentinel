@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../models/update_check_state.dart';
 import '../services/update_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('update_check_provider.dart');
@@ -21,14 +22,23 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
         super(const UpdateCheckState());
   Future<void> initialize() async {
     _logger.info('开始检查更新');
-    await checkForUpdates();
+    await checkForUpdates(automatic: true);
   }
   Future<void> refresh() async {
     _logger.info('刷新检查更新');
     await checkForUpdates();
   }
-  Future<void> checkForUpdates() async {
+  Future<void> checkForUpdates({bool automatic = false}) async {
     if (!mounted) return;
+    if (state.isChecking) return;
+    if (automatic) {
+      final prefs = await SharedPreferences.getInstance();
+      final last = prefs.getInt('sentinel.update.lastCheck') ?? 0;
+      if (DateTime.now().millisecondsSinceEpoch - last < const Duration(hours: 24).inMilliseconds) {
+        return;
+      }
+      await prefs.setInt('sentinel.update.lastCheck', DateTime.now().millisecondsSinceEpoch);
+    }
     state = state.copyWith(
       isChecking: true,
       error: null,
@@ -46,6 +56,9 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
         updateUrl: updateInfo["updateUrl"]?.toString(),
         releaseNotes: updateInfo["releaseNotes"]?.toString(),
         forceUpdate: updateInfo["forceUpdate"] as bool? ?? false,
+        minimumSupportedVersion: updateInfo["minimumSupportedVersion"]?.toString(),
+        distribution: updateInfo["distribution"]?.toString(),
+        sha256: updateInfo["sha256"]?.toString(),
       );
       if (state.hasUpdate) {
         _logger.info('发现新版本: ${state.latestVersion}');

@@ -74,6 +74,28 @@ class App {
         false;
   }
 
+  Future<bool> validateApk(String path) async {
+    return await methodChannel.invokeMethod<bool>(
+          'validateApk',
+          {'path': path},
+        ) ??
+        false;
+  }
+
+  Future<bool> canRequestPackageInstalls() async {
+    return await methodChannel.invokeMethod<bool>(
+          'canRequestPackageInstalls',
+        ) ??
+        false;
+  }
+
+  Future<bool> openInstallSettings() async {
+    return await methodChannel.invokeMethod<bool>(
+          'openInstallSettings',
+        ) ??
+        false;
+  }
+
   Future<ImageProvider?> getPackageIcon(String packageName) async {
     final base64 = await methodChannel.invokeMethod<String>("getPackageIcon", {
       "packageName": packageName,

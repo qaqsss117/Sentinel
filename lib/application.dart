@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'controller.dart';
 import 'xboard/xboard.dart';
@@ -139,10 +140,6 @@ class ApplicationState extends ConsumerState<Application> {
 
   /// 检查应用更新
   void _checkForUpdates() {
-    if (!buildCapabilities.supportsExternalUpdateCheck) {
-      debugPrint('[Application] 当前分发渠道由应用商店管理更新，跳过');
-      return;
-    }
     // 延迟5秒后检查更新，确保应用完全启动
     Future.delayed(const Duration(seconds: 5), () async {
       if (!ref.read(appSettingProvider).autoCheckUpdate) {
@@ -152,11 +149,11 @@ class ApplicationState extends ConsumerState<Application> {
       try {
         debugPrint('[Application] 开始自动检查更新...');
         final updateNotifier = ref.read(updateCheckProvider.notifier);
-        await updateNotifier.checkForUpdates();
+        await updateNotifier.checkForUpdates(automatic: true);
 
         // 检查是否有更新
         final updateState = ref.read(updateCheckProvider);
-        if (updateState.hasUpdate && mounted) {
+        if (updateState.hasUpdate && mounted && await _shouldShowAutomaticUpdate(updateState.latestVersion, updateState.forceUpdate)) {
           final currentContext = globalState.navigatorKey.currentContext;
           if (currentContext != null) {
             debugPrint('[Application] 发现新版本，显示更新弹窗');
@@ -178,6 +175,16 @@ class ApplicationState extends ConsumerState<Application> {
         // 自动检查异常时静默处理，不影响应用正常使用
       }
     });
+  }
+
+  Future<bool> _shouldShowAutomaticUpdate(String? version, bool force) async {
+    if (force) return true;
+    if (version == null || version.isEmpty) return false;
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'sentinel.update.prompted.$version';
+    if (prefs.getBool(key) == true) return false;
+    await prefs.setBool(key, true);
+    return true;
   }
 
   _autoUpdateGroupTask() {

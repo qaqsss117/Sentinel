@@ -104,9 +104,13 @@ class UpdateService {
       "currentVersion": currentVersion,
       "latestVersion": responseData["latest_version"]?.toString() ?? "",
       "hasUpdate": responseData["update_available"] == true,
-      "updateUrl": responseData["download_url"]?.toString() ?? "",
+      // update_url is the unified field; download_url remains supported by old panels.
+      "updateUrl": (responseData["update_url"] ?? responseData["download_url"])?.toString() ?? "",
       "releaseNotes": responseData["release_notes"]?.toString() ?? "",
       "forceUpdate": responseData["force_update"] == true,
+      "minimumSupportedVersion": responseData["minimum_supported_version"]?.toString(),
+      "distribution": responseData["distribution"]?.toString(),
+      "sha256": responseData["sha256"]?.toString(),
     };
   }
   Future<String> getCurrentVersion() async {

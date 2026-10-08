@@ -11,7 +11,8 @@ class BuildCapabilities {
   bool get supportsHelperService => !isMsix;
   bool get supportsLoopbackExemption => !isMsix;
   bool get supportsAutoLaunchControl => !isMsix;
-  bool get supportsExternalUpdateCheck => !isStoreBuild;
+  // Store builds still need the server supplied version prompt and Store link.
+  bool get supportsExternalUpdateCheck => true;
 
   bool resolveTunEnabled(bool requested) => supportsTun && requested;
 }

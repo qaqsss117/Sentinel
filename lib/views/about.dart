@@ -107,8 +107,7 @@ class AboutView extends ConsumerWidget {
       separated: false,
       title: appLocalizations.more,
       items: [
-        if (buildCapabilities.supportsExternalUpdateCheck)
-          ListItem(
+        ListItem(
             title: Text(appLocalizations.checkUpdate),
             onTap: () {
               _checkUpdate(context, ref);

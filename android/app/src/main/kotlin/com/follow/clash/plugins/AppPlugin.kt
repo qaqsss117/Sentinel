@@ -7,8 +7,11 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.ComponentInfo
 import android.content.pm.PackageManager
+import android.content.pm.Signature
+import android.net.Uri
 import android.net.VpnService
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -40,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.ref.WeakReference
+import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware {
@@ -216,6 +220,19 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 result.success(openFile(path, mimeType))
             }
 
+            "validateApk" -> {
+                val path = call.argument<String>("path")
+                result.success(path != null && validateApk(path))
+            }
+
+            "canRequestPackageInstalls" -> {
+                result.success(canRequestPackageInstalls())
+            }
+
+            "openInstallSettings" -> {
+                result.success(openInstallSettings())
+            }
+
             else -> {
                 result.notImplemented()
             }
@@ -259,6 +276,94 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         } catch (e: Exception) {
             println(e)
             return false
+        }
+    }
+
+    private fun validateApk(path: String): Boolean {
+        return try {
+            val context = FlClashApplication.getAppContext()
+            val packageManager = context.packageManager
+            val archiveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageArchiveInfo(
+                    path,
+                    PackageManager.PackageInfoFlags.of(
+                        (PackageManager.GET_META_DATA or PackageManager.GET_SIGNING_CERTIFICATES).toLong()
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageArchiveInfo(
+                    path,
+                    PackageManager.GET_META_DATA or
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            PackageManager.GET_SIGNING_CERTIFICATES
+                        } else {
+                            @Suppress("DEPRECATION")
+                            PackageManager.GET_SIGNATURES
+                        }
+                )
+            } ?: return false
+
+            if (archiveInfo.packageName != "com.follow.clash") return false
+
+            val installedInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.PackageInfoFlags.of(
+                        (PackageManager.GET_META_DATA or PackageManager.GET_SIGNING_CERTIFICATES).toLong()
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.GET_META_DATA or
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            PackageManager.GET_SIGNING_CERTIFICATES
+                        } else {
+                            @Suppress("DEPRECATION")
+                            PackageManager.GET_SIGNATURES
+                        }
+                )
+            }
+
+            certificateDigests(archiveInfo).toSet() == certificateDigests(installedInfo).toSet()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun certificateDigests(info: android.content.pm.PackageInfo): List<String> {
+        val signatures: Array<Signature> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.apkContentsSigners ?: emptyArray()
+        } else {
+            @Suppress("DEPRECATION")
+            info.signatures ?: emptyArray()
+        }
+        return signatures.map { signature ->
+            MessageDigest.getInstance("SHA-256")
+                .digest(signature.toByteArray())
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+    }
+
+    private fun canRequestPackageInstalls(): Boolean {
+        val context = FlClashApplication.getAppContext()
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+            context.packageManager.canRequestPackageInstalls()
+    }
+
+    private fun openInstallSettings(): Boolean {
+        return try {
+            val context = FlClashApplication.getAppContext()
+            val intent = Intent(
+                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                Uri.parse("package:${context.packageName}")
+            )
+            activityRef?.get()?.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 
