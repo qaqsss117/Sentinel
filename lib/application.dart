@@ -154,8 +154,11 @@ class ApplicationState extends ConsumerState<Application> {
         // 检查是否有更新
         final updateState = ref.read(updateCheckProvider);
         if (updateState.hasUpdate && mounted && await _shouldShowAutomaticUpdate(updateState.latestVersion, updateState.forceUpdate)) {
+          // navigatorKey 的 context 与本 State 无关，上面的 mounted 保护不到它，
+          // 必须对它自己查 mounted —— 否则 await 期间应用被销毁时 showDialog
+          // 会抛异常并被外层 catch 静默吞掉。
           final currentContext = globalState.navigatorKey.currentContext;
-          if (currentContext != null) {
+          if (currentContext != null && currentContext.mounted) {
             debugPrint('[Application] 发现新版本，显示更新弹窗');
             // 显示更新弹窗
             showDialog(
@@ -170,9 +173,9 @@ class ApplicationState extends ConsumerState<Application> {
         } else {
           debugPrint('[Application] 已是最新版本');
         }
-      } catch (e) {
-        debugPrint('[Application] 自动更新检查异常: $e');
-        // 自动检查异常时静默处理，不影响应用正常使用
+      } catch (e, stackTrace) {
+        // 自动检查异常时静默处理，不影响应用正常使用，但保留堆栈便于排查。
+        debugPrint('[Application] 自动更新检查异常: $e\n$stackTrace');
       }
     });
   }
@@ -181,7 +184,15 @@ class ApplicationState extends ConsumerState<Application> {
     if (force) return true;
     if (version == null || version.isEmpty) return false;
     final prefs = await SharedPreferences.getInstance();
-    final key = 'sentinel.update.prompted.$version';
+    final state = ref.read(updateCheckProvider);
+    // 去重键包含更新内容指纹：服务端改了更新说明、下载地址或强制更新状态后
+    // 同一版本号仍会再次提示，否则后台改配置在客户端完全看不到效果。
+    final key = UpdateCheckPolicy.promptKey(
+      version: version,
+      releaseNotes: state.releaseNotes,
+      updateUrl: state.updateUrl,
+      forceUpdate: force,
+    );
     if (prefs.getBool(key) == true) return false;
     await prefs.setBool(key, true);
     return true;
