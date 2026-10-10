@@ -16,8 +16,12 @@ class RemoteTaskManager {
   late final RemoteTaskService _remoteTaskService;
   
   RemoteTaskManager._internal(this._wsUrl) {
-    // For demonstration, a hardcoded token. In a real app, get this securely.
-    const String dummyAuthToken = "a-very-secret-token"; 
+    // 修复既有安全缺陷：此前硬编码 dummyAuthToken = "a-very-secret-token"，
+    // 一个写死在源码里的伪 secret 只给人伪造鉴权的错觉（服务端从未校验它）。
+    // 传 null = 不加 Authorization 头，行为与服务端实际校验逻辑一致。
+    // TODO(server): 服务端 WS 接入真实鉴权后，改为异步取
+    // XBoardSDK.instance.getToken()（注意构造函数需改 async 初始化）。
+    const String? wsAuthToken = null;
 
     _statusReportingService = StatusReportingService(
       _wsUrl,
@@ -25,7 +29,7 @@ class RemoteTaskManager {
         _logger.info('WebSocket 连接状态: $isConnected');
       },
       onMessageReceivedCallback: _handleIncomingMessage, // 将消息处理回调绑定到这里
-      authToken: dummyAuthToken, // Pass the authentication token
+      authToken: wsAuthToken,
     );
     _remoteTaskService = RemoteTaskService();
   }

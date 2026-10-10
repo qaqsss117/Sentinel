@@ -19,6 +19,7 @@ import 'package:path/path.dart';
 import 'common/common.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
+import 'xboard/features/traffic/services/traffic_report_service.dart';
 
 class AppController {
   int? lastProfileModified;
@@ -88,6 +89,8 @@ class AppController {
         updateRunTime,
         updateTraffic,
       ]);
+      // 上游模式：启动流量上报会话（内部自判 routing 是否激活，未激活为 no-op）
+      await TrafficReportService.instance.onTunnelStart();
       final currentLastModified =
           await _ref.read(currentProfileProvider)?.profileLastModified;
       if (currentLastModified == null || lastProfileModified == null) {
@@ -100,6 +103,9 @@ class AppController {
       }
       applyProfileDebounce();
     } else {
+      // 上游模式：必须在 resetTraffic() 之前 flush 尾部流量
+      // （锚点算法依赖：flush 时内核读数尚未清零，见 TrafficReportService 类注释）
+      await TrafficReportService.instance.onTunnelStop();
       await globalState.handleStop();
       await clashCore.resetTraffic();
       _ref.read(trafficsProvider.notifier).clear();

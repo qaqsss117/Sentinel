@@ -7,6 +7,8 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:fl_clash/xboard/features/subscription/services/encrypted_subscription_service.dart';
+import 'package:fl_clash/xboard/features/subscription/services/upstream_routing_resolver.dart';
+import 'package:fl_clash/xboard/features/subscription/services/upstream_subscription_service.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/utils.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 
@@ -143,6 +145,13 @@ class XBoardProfileImportService {
   /// 下载加密的订阅配置
   Future<Profile> _downloadEncryptedProfile(String url) async {
     try {
+      // 上游模式优先：插件标记的套餐直连上游拉取（D1），面板加密网关为回落路径。
+      // resolver 内部缓存上游路由（含上游 token，仅内存），失败/未启用返回 null。
+      final routing = await UpstreamRoutingResolver.resolve();
+      if (routing != null) {
+        return _downloadUpstreamProfile(routing);
+      }
+
       _logger.info('📦 开始下载加密订阅配置流程');
 
       // 优先从登录数据获取 token；URL 仅用于提取 token，不会作为请求目标。
@@ -227,6 +236,49 @@ class XBoardProfileImportService {
       _logger.debug('❌ 加密订阅处理流程异常终止');
       throw Exception('加密订阅处理失败: $e');
     }
+  }
+
+  /// 上游模式：直连上游拉取订阅（明文 HTTPS + flag=clash），失败抛异常由
+  /// 上层 importSubscriptionWithRetry 整体重试（重试时 resolver 已 invalidate，
+  /// 服务端会对 degraded 链路换新 —— D6/D10）。
+  Future<Profile> _downloadUpstreamProfile(UpstreamRouting routing) async {
+    _logger.info(
+      '🛰️ 上游模式：直连拉取 link=${routing.linkId}(${routing.linkName}) '
+      'state=${routing.linkState}',
+    );
+    final content = await UpstreamSubscriptionService.fetch(routing);
+
+    if (content.trim().isEmpty) {
+      throw Exception('上游订阅内容为空');
+    }
+
+    // 落盘与内核校验走与面板订阅完全相同的路径（Clash.Meta 权威验证）
+    final profile = Profile.normal().copyWith(autoUpdate: false);
+    final profileWithContent = await profile.saveFileWithString(content);
+    _logger.info('✅ 上游配置已保存并通过 ClashMeta 核心验证');
+
+    // 订阅信息用「面板」口径（u/d/transfer_enable/expired_at）。
+    // ⚠️ 上游响应的 subscription-userinfo 是上游账号的用量（被多用户共享），
+    // 已在 UpstreamSubscriptionService.fetch 中丢弃，绝不能当本用户配额（D3）。
+    final subscriptionInfo = _panelSubscriptionInfo();
+    _logger.info(
+      '📊 Profile 订阅信息（面板口径）: upload=${subscriptionInfo.upload}, '
+      'download=${subscriptionInfo.download}, total=${subscriptionInfo.total}',
+    );
+
+    return profileWithContent.copyWith(subscriptionInfo: subscriptionInfo);
+  }
+
+  /// 从 resolver 缓存的面板 data 构造订阅信息；缓存缺失时返回空（不阻塞导入）。
+  SubscriptionInfo _panelSubscriptionInfo() {
+    final data = UpstreamRoutingResolver.panelData;
+    if (data == null) return const SubscriptionInfo();
+    return SubscriptionInfo(
+      upload: (data['u'] as num?)?.toInt() ?? 0,
+      download: (data['d'] as num?)?.toInt() ?? 0,
+      total: (data['transfer_enable'] as num?)?.toInt() ?? 0,
+      expire: (data['expired_at'] as num?)?.toInt() ?? 0,
+    );
   }
 
   Future<void> _addProfile(Profile profile) async {

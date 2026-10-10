@@ -11,12 +11,68 @@ import 'package:socks5_proxy/socks_client.dart';
 // 初始化文件级日志器
 final _logger = FileLogger('subscription_downloader.dart');
 
+/// 原始 HTTP 拉取结果（只含字节与关键响应头，不建 Profile）。
+class RawFetchResult {
+  final String content;
+  final String? subscriptionUserInfo;
+  final List<int> bytes;
+
+  const RawFetchResult({
+    required this.content,
+    this.subscriptionUserInfo,
+    required this.bytes,
+  });
+}
+
 /// XBoard 订阅下载服务
-/// 
+///
 /// 并发下载（直连 + 所有代理），第一个成功就获胜
 class SubscriptionDownloader {
   static const Duration _downloadTimeout = Duration(seconds: 30);
-  
+
+  /// 直连拉取任意 HTTPS URL 的原始字节（明文 HTTP，不走加密网关）。
+  ///
+  /// 供上游订阅直连拉取复用：
+  /// - 证书校验保持系统默认（拒绝自签 —— 与 [_downloadWithProxy] 不同，
+  ///   那里为了竞速可用性放行了坏证书，上游是第三方域名，不应放行）
+  /// - 不创建 Profile、不写任何磁盘
+  /// - 返回 [RawFetchResult]，调用方自行决定如何消费
+  static Future<RawFetchResult> fetchRaw(
+    String url, {
+    String? userAgent,
+    Duration timeout = _downloadTimeout,
+  }) async {
+    final client = HttpClient();
+    client.connectionTimeout = timeout;
+    try {
+      final uri = Uri.parse(url);
+      final request = await client.getUrl(uri);
+      request.headers.set(
+        HttpHeaders.userAgentHeader,
+        userAgent ?? 'clash-verge/v2.0.0',
+      );
+      final response = await request.close().timeout(
+        timeout,
+        onTimeout: () => throw TimeoutException('下载超时', timeout),
+      );
+      if (response.statusCode < 200 || response.statusCode >= 400) {
+        throw HttpException('HTTP ${response.statusCode}');
+      }
+      final bytes = await response.fold<List<int>>(
+        <int>[],
+        (previous, element) => previous..addAll(element),
+      );
+      return RawFetchResult(
+        content: utf8.decode(bytes, allowMalformed: false),
+        subscriptionUserInfo:
+            response.headers.value('subscription-userinfo'),
+        bytes: bytes,
+      );
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   /// 下载订阅并返回 Profile（并发竞速）
   /// 
   /// [url] 订阅URL
