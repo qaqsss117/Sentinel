@@ -122,6 +122,10 @@ class UpstreamRoutingResolver {
       final upstreamJson = data is Map ? data['upstream'] : null;
       final routing = UpstreamRouting.fromJson(upstreamJson);
       if (routing == null) {
+        _logger.warning(
+          'getSubscribe 响应中没有 upstream 块（回落面板订阅）。'
+          'data 顶层键: ${data is Map ? data.keys.join(",") : "<非Map>"}',
+        );
         _cached = null;
         _cachedAt = DateTime.now();
         return null;
