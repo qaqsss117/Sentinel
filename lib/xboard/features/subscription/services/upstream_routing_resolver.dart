@@ -31,11 +31,19 @@ class UpstreamRouting {
     required this.deviceTtl,
   });
 
-  /// Sentinel 内核是 Clash.Meta → 优先选 clash；不支持时取 flags 第一个。
+  /// Sentinel 内核是 mihomo（Clash.Meta）→ 优先 meta。
+  ///
+  /// 踩坑记录：上游 Xboard 对 `flag=clash` 走「Clash 经典内核」模板，
+  /// 会把 vless+ech-opts / hysteria2 这类新特性节点全部过滤掉，
+  /// 返回 `proxies: []`（实测某上游 56 节点 → 0 节点）。
+  /// `flag=meta` 才渲染完整列表。内核是 mihomo，不要用 clash。
   String get preferredFlag {
+    if (flags.contains('meta')) return 'meta';
+    // 上游未声明 meta 时才退回 clash（经典内核对现代节点支持有限，
+    // 但好过直接失败 —— 空列表会被内核校验拦下并给出明确错误）
     if (flags.contains('clash')) return 'clash';
     if (flags.isNotEmpty) return flags.first;
-    return 'clash';
+    return 'meta';
   }
 
   /// 完整拉取 URL（追加 flag）。
