@@ -1,0 +1,71 @@
+# XBoard 配置文件示例
+# 复制此文件为 xboard.config.yaml 并修改相应配置
+
+xboard:
+  # 后端提供商类型
+  # 可以是任意字符串，只要远程配置 JSON 的 panels 对象中有对应的键名
+  # 例如: mihomo, 或自定义的任何名称
+  provider: mihomo
+  
+# 远程配置源
+  remote_config:
+    sources:
+      # 主配置源（重定向服务）
+      # 注意：该服务要求返回明文 JSON；当前未部署，已临时指向备用源地址，
+      #       因格式为 AES-GCM 密文，本源会解析失败但秒级返回，不再阻塞启动。
+      - name: redirect
+        url: https://raw.giteeusercontent.com/qaqsss/funny/raw/master/config.txt
+        priority: 90
+
+      # 备用配置源（Gitee加密源，可选）
+      - name: gitee
+        url: https://raw.giteeusercontent.com/qaqsss/funny/raw/master/config.txt
+        priority: 100
+        # Gitee源需要提供AES-GCM加密密钥（Base64格式）
+        encryption_key: 6A9JoC8YtYHOzA5FcoJ/MizUS3Oyd50xEqQF04kzUtw=
+
+
+  
+  # 应用信息
+  app:
+    # 登录页面显示的标题
+    title: 哨兵VPN
+    
+    # 登录页面显示的网站地址
+    website: vpn.donghuyun.top
+  
+  # 订阅配置
+  subscription:
+    # 兼容旧配置解析器；正式客户端始终使用应用层加密网关且不回退明文。
+    prefer_encrypt: true
+
+  # 安全与加密配置
+  security:
+    # 应用层加密网关。部署插件并替换以下公开参数后再开启。
+    encrypted_gateway:
+      enabled: true
+      path: /l3wSpSuI4uaNDq1_7Ox4MbRiVO4y-bAuNXIAbgujiTE
+      key_id: 1
+      server_public_key: r6Jkky0ceH_ENlGlufse3_9SyVI19Yklb9dJjl4m_DE
+      clock_skew_seconds: 120
+      max_envelope_size: 4194304
+
+    # 响应混淆前缀（需要与后端 Caddy 反代配置保持一致）
+    # 例如 Caddy 配置：replace "{\"status\"" "YOUR_PREFIX_{\"status\""
+    # SDK 会自动检测响应是否包含此前缀，有则反混淆，无则直接解析
+    # 如果后端没有使用混淆，设置为空字符串或 null
+    obfuscation_prefix: xuezhimaodawangzuishuai
+    
+    # User-Agent 配置（域名竞速专用）
+    # ⚠️ 重要：这些UA字符串与后端约定，修改可能导致功能异常
+    user_agents:
+      # API请求/域名竞速 UA（包含加密字符串用于 Caddy 认证）
+      # 加密部分应与你的后端配置一致
+      api_encrypted: Mozilla/5.0 (compatible; YOUR_ENCRYPTED_STRING_HERE)
+      
+      # 域名竞速测试 UA
+      domain_racing_test: FlClash/1.0 (Domain Racing Test)
+    
+
+
+
