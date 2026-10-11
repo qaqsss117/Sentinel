@@ -109,6 +109,10 @@ abstract class IHttpClient {
 
 /// 简单的HTTP客户端实现
 class SimpleHttpClient implements IHttpClient {
+  /// 必须显式声明 UA：Dart 原生 HttpClient 默认不发 User-Agent，
+  /// giteeusercontent / Cloudflare 会直接拒绝无 UA 请求（curl 自带 UA 所以正常）。
+  static const String _userAgent = 'SentinelVPN/2.7.0';
+
   @override
   Future<String?> getString(String url, {Duration? timeout}) async {
     HttpClient? client;
@@ -118,14 +122,24 @@ class SimpleHttpClient implements IHttpClient {
       client.connectionTimeout = timeout ?? const Duration(seconds: 10);
 
       final request = await client.getUrl(Uri.parse(url));
+      request.headers.set(HttpHeaders.userAgentHeader, _userAgent);
+      request.headers.set(
+        HttpHeaders.acceptHeader,
+        'application/json, text/plain, */*',
+      );
       final response = await request.close();
 
-      if (response.statusCode == 200) {
-        return await response.transform(utf8.decoder).join();
+      if (response.statusCode != 200) {
+        // 不再吞成「数据为空」——状态码是排查配置源不可用的第一手线索
+        _logger.warning(
+          'HTTP ${response.statusCode} from $url',
+        );
+        return null;
       }
 
-      return null;
+      return await response.transform(utf8.decoder).join();
     } catch (e) {
+      _logger.warning('请求异常 $url: $e');
       return null;
     } finally {
       client?.close();
