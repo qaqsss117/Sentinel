@@ -149,7 +149,7 @@ class XBoardProfileImportService {
       // resolver 内部缓存上游路由（含上游 token，仅内存），失败/未启用返回 null。
       final routing = await UpstreamRoutingResolver.resolve();
       if (routing != null) {
-        return _downloadUpstreamProfile(routing);
+        return await _downloadUpstreamProfile(routing);
       }
 
       _logger.info('📦 开始下载加密订阅配置流程');

@@ -10,7 +10,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/clash/core.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 
-import 'upstream_routing_resolver.dart';
+import '../../subscription/services/upstream_routing_resolver.dart';
 
 final _logger = FileLogger('traffic_report_service.dart');
 
@@ -39,7 +39,7 @@ final _logger = FileLogger('traffic_report_service.dart');
 /// 60s 周期下足够保守。
 class TrafficReportService {
   /// 全局单例：会话锚点必须跨页面/跨会话存活，不能随 Riverpod provider 重建。
-  static final TrafficReportService instance = TrafficReportService();
+  static final TrafficReportService instance = TrafficReportService._();
 
   /// 上报周期。对齐面板 check:traffic-exceeded 每分钟节奏（超摘延迟 ≤2min），
   /// 设备 TTL 10min 有 10 倍冗余，流量成本 ~200B/min。
